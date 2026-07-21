@@ -15,10 +15,10 @@ export const performances: Performance[] = [
     title: '해금, 시대를 잇다',
     subtitle: '해금 창작곡의 변천',
     date: '2026-08-02',
-    displayDate: '2026. 8. 2. (일) 16:00',
+    displayDate: '2026. 8. 2. 16:00',
     venue: '향사아트센터',
     featured: true,
-    heroImage: '/images/hero/hero-watercolor.png',
+    heroImage: '/images/hero/hero-background-v2.png',
   },
 ];
 
