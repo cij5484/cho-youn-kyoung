@@ -23,7 +23,13 @@ export function HomeHero({ performance }: HomeHeroProps) {
         ) : null}
       </div>
       <div className="hero-overlay" aria-hidden="true" />
-      <div className="hero-ink-reveal" aria-hidden="true" />
+      <div className="hero-ink-reveal" aria-hidden="true">
+        <span className="ink-spot ink-spot-hair" />
+        <span className="ink-spot ink-spot-face" />
+        <span className="ink-spot ink-spot-haegeum" />
+        <span className="ink-spot ink-spot-texture" />
+        <span className="ink-spot ink-spot-lower" />
+      </div>
       <div className="hero-content">
         <p className="eyebrow">
           <span /> HAEGEUM RECITAL 2026
