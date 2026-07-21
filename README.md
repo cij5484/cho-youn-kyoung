@@ -58,10 +58,10 @@ base: '/cho-youn-kyoung/'
 
 The workflow at `.github/workflows/deploy-pages.yml` runs on pushes to `main` and performs:
 
-1. `npm install --package-lock-only` when a lockfile is not already present
-2. `npm ci`
+1. `npm ci`
+2. `npm run lint`
 3. `npm run build`
-4. deploys the `dist` folder to GitHub Pages
+4. deploys the `dist` folder to GitHub Pages on `main` pushes only
 
 In GitHub, set **Settings → Pages → Build and deployment → Source** to **GitHub Actions**.
 
