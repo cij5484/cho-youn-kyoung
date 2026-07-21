@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { SafeImage } from '../components/common/SafeImage';
+import { Reveal } from '../components/Reveal';
 import { profile } from '../data/profile';
 import { assetUrl } from '../utils/assetUrl';
 import '../styles/about.css';
@@ -21,12 +22,12 @@ export function AboutPage() {
       </section>
 
       <div className="about-body">
-        <section className="about-section about-bio" aria-labelledby="biography-title">
-          <div className="about-section__heading">
+        <Reveal as="section" className="about-section about-bio" aria-labelledby="biography-title">
+          <div className="about-section__heading reveal__heading">
             <span>01</span>
             <h2 id="biography-title">BIOGRAPHY</h2>
           </div>
-          <div className="about-bio__grid">
+          <div className="about-bio__grid reveal__content">
             <div className="about-prose">
               {profile.biography.map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
@@ -49,14 +50,14 @@ export function AboutPage() {
               </div>
             </aside>
           </div>
-        </section>
+        </Reveal>
 
-        <section className="about-section" aria-labelledby="timeline-title">
-          <div className="about-section__heading">
+        <Reveal as="section" className="about-section" aria-labelledby="timeline-title">
+          <div className="about-section__heading reveal__heading">
             <span>02</span>
             <h2 id="timeline-title">CAREER TIMELINE</h2>
           </div>
-          <div className="about-timeline">
+          <div className="about-timeline reveal__content">
             {profile.performances.map((item) => {
               const content = (
                 <>
@@ -92,15 +93,15 @@ export function AboutPage() {
               </div>
             </div>
           </details>
-        </section>
+        </Reveal>
 
         {featuredAlbum && (
-          <section className="about-section about-discography" aria-labelledby="discography-title">
-            <div className="about-section__heading">
+          <Reveal as="section" className="about-section about-discography" aria-labelledby="discography-title">
+            <div className="about-section__heading reveal__heading">
               <span>03</span>
               <h2 id="discography-title">DISCOGRAPHY</h2>
             </div>
-            <div className={`about-discography__item${featuredAlbum.coverImage ? " has-cover" : ""}`}>
+            <div className={`about-discography__item reveal__content${featuredAlbum.coverImage ? " has-cover" : ""}`}>
               {featuredAlbum.coverImage && <SafeImage src={assetUrl(featuredAlbum.coverImage)} alt={`${featuredAlbum.title} 앨범 커버`} />}
               <div>
                 <p>{featuredAlbum.year}</p>
@@ -109,7 +110,7 @@ export function AboutPage() {
                 {featuredAlbum.detailsPath && <Link to={featuredAlbum.detailsPath}>VIEW DETAILS</Link>}
               </div>
             </div>
-          </section>
+          </Reveal>
         )}
       </div>
     </article>

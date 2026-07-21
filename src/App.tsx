@@ -6,6 +6,7 @@ import { PerformanceDetailPage } from "./pages/PerformanceDetailPage";
 import { AboutPage } from "./pages/AboutPage";
 import { ContactPage } from "./pages/ContactPage";
 import { ScrollToTop } from "./components/layout/ScrollToTop";
+import { PageTransition } from "./components/PageTransition";
 
 export default function App() {
   return (
@@ -13,13 +14,15 @@ export default function App() {
       <Header />
       <ScrollToTop />
       <main>
-        <Routes>
+        <PageTransition>
+          <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/performance" element={<PerformancePage />} />
           <Route path="/performance/:id" element={<PerformanceDetailPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
         </Routes>
+        </PageTransition>
       </main>
     </HashRouter>
   );
