@@ -43,7 +43,7 @@ export function PerformanceDetailPage() {
     return <section className="page-shell"><h1>Performance not found</h1><Link className="text-link" to="/performance">Back to performance</Link></section>;
   }
 
-  const visibleMaterials = performance.archiveMaterials?.filter((material) => material.url || material.previewImageUrl) ?? [];
+  const visibleMaterials = performance.archiveMaterials?.filter((material) => material.viewUrl || material.previewImageUrl) ?? [];
   const activeWork = selectedWork ?? works[0];
   const activeArtistIndex = selectedArtist ? performance.collaborators.findIndex((artist) => artist.id === selectedArtist.id) : -1;
   const heroPreview = performance.posterPreviewImageUrl ?? performance.posterImage;
@@ -52,8 +52,8 @@ export function PerformanceDetailPage() {
 
   const renderWorkNote = (work: ProgramWork) => (
     <article className="performance-detail__work-notes" key={work.number}>
-      <p className="performance-detail__work-index">{work.year} · {String(work.number).padStart(2, '0')}</p>
-      <h3>{work.composer}({work.composerYears}) 「{work.title}」</h3>
+      <p className="performance-detail__work-index">{work.year}</p>
+      <h3>{work.composer} <span>{work.composerYears}</span> | 「{work.title}」</h3>
       <div><h4>COMPOSER</h4><p>{work.composerNote}</p></div>
       <div><h4>WORK NOTE</h4><p>{work.workNote}</p></div>
       <div><h4>ENSEMBLE</h4><p>{work.instrumentation?.join(' · ') ?? '해금: 조윤경'}</p></div>
@@ -70,7 +70,7 @@ export function PerformanceDetailPage() {
           <h1 id="performance-title">{performance.title}</h1>
           <p className="performance-detail__subtitle">{performance.subtitle}</p>
           <dl className="performance-detail__meta" aria-label="공연 기본 정보"><div><dt>DATE</dt><dd>{performance.displayDate}</dd></div><div><dt>VENUE</dt><dd>{performance.venue}</dd></div><div><dt>ARTIST</dt><dd><Link to="/about">{performance.performer}</Link></dd></div></dl>
-          {visibleMaterials.length > 0 && <div className="performance-detail__hero-actions">{visibleMaterials.map((material) => material.url && <a key={material.label} href={assetUrl(material.url)} target="_blank" rel="noreferrer">{material.viewLabel}</a>)}</div>}
+          {visibleMaterials.length > 0 && <div className="performance-detail__hero-actions">{visibleMaterials.map((material) => material.viewUrl && <a key={material.label} href={assetUrl(material.viewUrl)} target="_blank" rel="noreferrer" aria-label={`${performance.title} ${material.viewLabel} 새 창에서 보기`}>{material.viewLabel}</a>)}</div>}
         </div>
       </section>
 
@@ -81,8 +81,8 @@ export function PerformanceDetailPage() {
         </div>
         <div className="performance-detail__dark-sections">
           <section className="performance-detail__section" aria-labelledby="program-title"><div className="performance-detail__section-heading"><span>03</span><h2 id="program-title">PROGRAM</h2></div><div className="performance-detail__program"><div className="performance-detail__timeline">{works.map((work) => <button className={activeWork?.number === work.number ? 'is-active' : ''} type="button" key={work.number} aria-pressed={activeWork?.number === work.number} onClick={() => { setSelectedWork(work); setShowAllNotes(false); }}><span>{work.year}</span><strong>{String(work.number).padStart(2, '0')}</strong><b>{work.title}</b><small>{work.composer}</small><em>{work.instrumentation?.join(' · ') ?? '해금 독주'}</em></button>)}</div><button className="performance-detail__all-notes" type="button" aria-expanded={showAllNotes} onClick={() => setShowAllNotes((value) => !value)}>{showAllNotes ? '선택한 곡만 보기' : '전체 곡 해설 보기'}</button><div className="performance-detail__notes-list">{showAllNotes ? works.map(renderWorkNote) : activeWork && renderWorkNote(activeWork)}</div></div></section>
-          <section className="performance-detail__section" aria-labelledby="collaborator-title"><div className="performance-detail__section-heading"><span>04</span><h2 id="collaborator-title">COLLABORATING ARTISTS</h2></div><div className="performance-detail__artists">{performance.collaborators.map((artist) => <button className="performance-detail__artist" type="button" key={artist.id} onClick={(event) => { lastArtistButton.current = event.currentTarget; setSelectedArtist(artist); }}><span className="performance-detail__artist-photo"><SafeImage src={assetUrl(artist.image)} alt={`${artist.name} ${artist.role} 사진`} fallbackClassName="safe-image-fallback" fallbackLabel={`${artist.role} ${artist.name}`} objectPosition="center top" /></span><small>{artist.role}</small><strong>{artist.name}</strong><p>{artist.shortBio}</p><em>VIEW PROFILE</em></button>)}</div></section>
-          {visibleMaterials.length > 0 && <section className="performance-detail__section" aria-labelledby="materials-title"><div className="performance-detail__section-heading"><span>05</span><h2 id="materials-title">ARCHIVE MATERIALS</h2></div><div className="performance-detail__materials">{visibleMaterials.map((material) => <article className="performance-detail__material" key={material.label}>{material.previewImageUrl && <SafeImage src={assetUrl(material.previewImageUrl)} alt={`${material.label} preview`} /> }<p>{material.label}</p>{material.url && <a href={assetUrl(material.url)} target="_blank" rel="noreferrer">VIEW PDF</a>}{material.downloadUrl && <a href={assetUrl(material.downloadUrl)} download>DOWNLOAD PDF</a>}</article>)}</div></section>}
+          <section className="performance-detail__section" aria-labelledby="collaborator-title"><div className="performance-detail__section-heading"><span>04</span><h2 id="collaborator-title">COLLABORATING ARTISTS</h2></div><div className="performance-detail__artists">{performance.collaborators.map((artist) => <button className="performance-detail__artist" type="button" key={artist.id} onClick={(event) => { lastArtistButton.current = event.currentTarget; setSelectedArtist(artist); }}><span className="performance-detail__artist-photo"><SafeImage src={assetUrl(artist.image)} alt={`${artist.name} ${artist.role} 사진`} fallbackClassName="safe-image-fallback" fallbackLabel={`${artist.role} ${artist.name}`} objectPosition="center top" /></span><small>{artist.role}</small><strong>{artist.name}</strong><em>VIEW PROFILE</em></button>)}</div></section>
+          {visibleMaterials.length > 0 && <section className="performance-detail__section" aria-labelledby="materials-title"><div className="performance-detail__section-heading"><span>05</span><h2 id="materials-title">ARCHIVE MATERIALS</h2></div><div className="performance-detail__materials">{visibleMaterials.map((material) => <article className="performance-detail__material" key={material.label}>{material.previewImageUrl && <SafeImage src={assetUrl(material.previewImageUrl)} alt={`${material.label} preview`} /> }<p>{material.label}</p>{material.viewUrl && <a href={assetUrl(material.viewUrl)} target="_blank" rel="noreferrer" aria-label={`${performance.title} ${material.viewLabel} 새 창에서 보기`}>{material.viewLabel}</a>}{material.downloadUrl && <a href={assetUrl(material.downloadUrl)} download>{material.downloadLabel ?? 'DOWNLOAD PDF'}</a>}</article>)}</div></section>}
         </div>
       </div>
 

@@ -1,7 +1,5 @@
 import { Link } from 'react-router-dom';
-import { SafeImage } from '../components/common/SafeImage';
 import { performances } from '../data/performances';
-import { assetUrl } from '../utils/assetUrl';
 import '../styles/performance.css';
 
 export function PerformancePage() {
@@ -15,19 +13,16 @@ export function PerformancePage() {
           <h1 id="performance-archive-title">PERFORMANCES</h1>
           <p>{featured?.listDescription ?? '해금 창작곡의 변천을 기록하다'}</p>
         </div>
-        <div className="performance-archive__image" aria-hidden="true">
-          {featured?.heroImage && <SafeImage src={assetUrl(featured.heroImage)} alt="" fallbackClassName="safe-image-fallback" fallbackLabel="PERFORMANCE" />}
-        </div>
       </section>
 
       <section className="performance-archive__list" aria-label="공연 목록">
         {performances.map((performance) => (
           <Link className={`performance-archive__row${performance.featured ? ' is-featured' : ''}`} to={`/performance/${performance.id}`} key={performance.id}>
             <span className="performance-archive__year">{performance.date.slice(0, 4)}</span>
-            <span className="performance-archive__date">{performance.displayDate}</span>
-            <span className="performance-archive__title">
-              {performance.title}
-              <small>{performance.subtitle}</small>
+            <span className="performance-archive__info">
+              <span className="performance-archive__title">{performance.title}</span>
+              <small className="performance-archive__subtitle">{performance.subtitle}</small>
+              <small className="performance-archive__meta">{performance.displayDate} · {performance.venue}</small>
             </span>
             <span className="performance-archive__arrow" aria-hidden="true">→</span>
           </Link>
