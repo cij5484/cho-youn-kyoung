@@ -10,15 +10,23 @@ export function HomeHero({ performance }: HomeHeroProps) {
 
   return (
     <section className="home-hero" aria-labelledby="home-hero-title">
-      <div className="hero-copy">
-        <p className="eyebrow"><span /> HAEGEUM RECITAL 2026</p>
-        <h1 id="home-hero-title">해금,<br />시대를 잇다</h1>
+      <div className={`hero-background ${hasHeroImage ? 'has-image' : 'is-fallback'}`} aria-hidden="true">
+        {hasHeroImage ? (
+          <img
+            src={heroImageSrc}
+            alt=""
+            onError={() => setHasHeroImage(false)}
+          />
+        ) : null}
+      </div>
+      <div className="hero-overlay" aria-hidden="true" />
+      <div className="hero-ink-reveal" aria-hidden="true" />
+      <div className="hero-content">
+        <p className="eyebrow"><span /> HAEGEUM ARTIST</p>
+        <h1 id="home-hero-title">{performance.title}</h1>
         <p className="hero-subtitle">{performance.subtitle}</p>
         <p className="hero-meta"><span>{performance.displayDate}</span><span>{performance.venue}</span></p>
         <Link className="text-link" to={`/performance/${performance.id}`}>VIEW PERFORMANCE <span aria-hidden="true">→</span></Link>
-      </div>
-      <div className={`hero-art ${hasHeroImage ? 'has-image' : 'is-fallback'}`} aria-hidden="true">
-        {hasHeroImage ? <img src={heroImageSrc} alt="" onError={() => setHasHeroImage(false)} /> : null}
       </div>
     </section>
   );

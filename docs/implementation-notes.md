@@ -8,11 +8,13 @@ This first implementation establishes a static React, Vite, and TypeScript site 
 - Vite `base` is `/cho-youn-kyoung/` for `https://cij5484.github.io/cho-youn-kyoung/`.
 - `.github/workflows/deploy-pages.yml` runs `npm install --no-audit --no-fund`, `npm run lint`, and `npm run build` for pull requests and pushes. It uploads `dist` and deploys through GitHub Pages only for `main` pushes.
 
-## Images
+## Images and HOME Hero
 - Approved hero mockup and binary artwork files are intentionally not committed.
-- The code references `public/images/hero/hero-watercolor.png` for the future owner-uploaded artwork.
-- If that image is missing, the Hero displays a charcoal CSS fallback background.
-- Replace the hero artwork by uploading that filename or by updating `heroImage` in `src/data/performances.ts`.
+- The HOME Hero now references `public/images/hero/hero-background-v2.png` for the future owner-uploaded full-screen background artwork.
+- To replace the Hero background, upload the final image to `public/images/hero/hero-background-v2.png`; the HOME Hero will pick it up automatically through `src/data/performances.ts`.
+- If `hero-background-v2.png` is missing, the Hero keeps the same layered structure and displays a charcoal/black CSS fallback background without a broken image indicator.
+- The Hero is split into background, dark overlay, ink reveal overlay, and text content layers so a future ink/watercolor texture PNG or SVG can be added without changing the page structure.
+- A lightweight CSS ink-reveal animation is applied on first render, using gradients, blur, transform, and clip-path. It respects `prefers-reduced-motion` and uses a shorter, lighter animation on mobile.
 
 ## Content model
 - Site metadata and contact email live in `src/data/site.ts`.
