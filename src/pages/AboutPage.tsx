@@ -16,7 +16,7 @@ export function AboutPage() {
           <p className="about-hero__position">{profile.currentPosition}</p>
         </div>
         <figure className="about-hero__portrait">
-          <SafeImage src={assetUrl(profile.profileImage)} alt={`${profile.name} 공식 프로필 사진`} fallbackClassName="about-hero__portrait-fallback" fallbackLabel={profile.englishName} objectPosition="center top" />
+          <SafeImage src={assetUrl(profile.profileImage)} alt={`${profile.name} 공식 프로필 사진`} fallbackClassName="about-hero__portrait-fallback" fallbackLabel={profile.englishName} objectPosition="center bottom" />
         </figure>
       </section>
 
