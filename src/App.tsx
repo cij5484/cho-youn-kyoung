@@ -1,11 +1,10 @@
-import { HashRouter, Route, Routes } from 'react-router-dom';
-import { Header } from './components/layout/Header';
-import { Footer } from './components/layout/Footer';
-import { HomePage } from './pages/HomePage';
-import { PerformancePage } from './pages/PerformancePage';
-import { PerformanceDetailPage } from './pages/PerformanceDetailPage';
-import { AboutPage } from './pages/AboutPage';
-import { ContactPage } from './pages/ContactPage';
+import { HashRouter, Route, Routes } from "react-router-dom";
+import { Header } from "./components/layout/Header";
+import { HomePage } from "./pages/HomePage";
+import { PerformancePage } from "./pages/PerformancePage";
+import { PerformanceDetailPage } from "./pages/PerformanceDetailPage";
+import { AboutPage } from "./pages/AboutPage";
+import { ContactPage } from "./pages/ContactPage";
 
 export default function App() {
   return (
@@ -20,7 +19,6 @@ export default function App() {
           <Route path="/contact" element={<ContactPage />} />
         </Routes>
       </main>
-      <Footer />
     </HashRouter>
   );
 }
