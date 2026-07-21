@@ -41,3 +41,14 @@
     border-color: rgba(189, 146, 80, 0.24);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .performance-archive__row,
+  .performance-archive__row:hover,
+  .performance-archive__row:focus-visible,
+  .performance-archive__arrow,
+  .performance-archive__row:hover .performance-archive__arrow,
+  .performance-archive__row:focus-visible .performance-archive__arrow {
+    transform: none !important;
+  }
+}

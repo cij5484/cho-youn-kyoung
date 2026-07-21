@@ -203,6 +203,5 @@
   .performance-detail__notes-list {
     transition: none !important;
     transform: none !important;
-    filter: none !important;
   }
 }
