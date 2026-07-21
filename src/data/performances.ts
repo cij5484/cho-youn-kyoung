@@ -28,10 +28,11 @@ export type ProgramEra = {
 
 export type ArchiveMaterial = {
   label: string;
-  viewLabel: string;
-  url?: string;
+  viewUrl?: string;
   downloadUrl?: string;
   previewImageUrl?: string;
+  viewLabel: string;
+  downloadLabel?: string;
 };
 
 export type Performance = {
@@ -109,6 +110,7 @@ export const performances: Performance[] = [
     performer: '조윤경',
     featured: true,
     heroImage: 'images/hero/hero-background-v2.png',
+    posterPreviewImageUrl: 'images/archive/2026-08-02-poster.png',
     archiveLabel: 'HAEGEUM RECITAL 2026',
     listDescription: '해금 창작곡의 변천을 기록하다',
     introduction: [
@@ -125,16 +127,16 @@ export const performances: Performance[] = [
     artistSignature: '조윤경',
     programEras: [
       { roman: 'Ⅰ', title: '창작의 시작', description: '1960–70년대 창작 해금음악의 출발점과 전통 어법의 현대적 재구성', works: [
-        { number: 1, composer: '김흥교', composerYears: '1918–1995', title: '해금과 장구를 위한 소곡', year: '1966', instrumentation: ['장구: 윤승환'], composerNote: '국악 창작 초창기부터 작품 활동을 이어온 작곡가로, 전통음악의 어법을 바탕으로 해금을 비롯한 국악기의 현대적 가능성을 탐구하였다.', workNote: '해금과 장구라는 기본적인 편성을 통해 해금의 섬세한 음색과 장단의 긴밀한 호흡을 보여준다. 전통적인 선율 어법과 절제된 현대적 작곡기법을 통해 창작 해금음악의 출발점을 보여준다.' },
-        { number: 2, composer: '김기수', composerYears: '1917–1986', title: '등롱', year: '1978', composerNote: '국악의 현대화를 이끈 작곡가이자 교육자로, 한국적 선율과 리듬을 현대적인 감각으로 재구성하였다.', workNote: '은은한 등불이 어둠을 밝히듯 서정적이고 깊이 있는 정서를 담는다. 해금 특유의 유연한 음색과 섬세한 감정의 흐름을 통해 전통과 현대의 균형을 보여준다.' },
+        { number: 1, composer: '김흥교', composerYears: '1918–1995', title: '해금과 장구를 위한 소곡', year: '1966', instrumentation: ['장구 · 윤승환'], composerNote: '김흥교는 국악 창작 초창기부터 활발한 작품 활동을 이어온 작곡가로, 전통음악의 어법을 바탕으로 해금을 비롯한 다양한 국악기의 현대적 가능성을 탐구하였다. 해금 독주곡의 초기 레퍼토리 형성에도 중요한 역할을 하였으며, 절제된 음악어법과 한국적인 정서를 바탕으로 한 작품들을 남겼다.', workNote: '「해금과 장구를 위한 소곡」은 해금과 장구라는 가장 기본적인 편성을 통해 해금의 섬세한 음색과 장단의 긴밀한 호흡을 보여주는 작품이다. 전통적인 선율 어법을 바탕으로 하면서도 현대적 작곡기법을 절제하여 사용함으로써 창작 해금음악의 초기 모습을 잘 보여준다. 이번 공연에서는 해금 창작 독주곡의 출발점을 상징하는 작품으로 자리한다.' },
+        { number: 2, composer: '김기수', composerYears: '1917–1986', title: '등롱', year: '1978', composerNote: '김기수는 국악의 현대화를 이끈 대표적인 작곡가이자 교육자로, 전통음악의 미학을 바탕으로 새로운 국악 창작의 방향을 제시하였다. 그의 작품은 한국적 선율과 리듬을 현대적인 감각으로 재구성한 것이 특징이다.', workNote: '「등롱」은 은은한 등불이 어둠을 밝히듯 서정적이고 깊이 있는 정서를 담아낸 작품이다. 해금 특유의 유연한 음색을 중심으로 섬세한 감정의 흐름을 표현하며, 전통과 현대의 균형 속에서 창작음악의 새로운 가능성을 보여준다.' },
       ] },
       { roman: 'Ⅱ', title: '해금의 확장', description: '1980–90년대 연주 기법과 장단, 춤의 호흡으로 넓어진 해금의 표현 세계', works: [
-        { number: 3, composer: '김영재', composerYears: '1947–', title: '적념', year: '1989', composerNote: '해금 연주자이자 작곡가로서 연주 경험을 바탕으로 해금의 표현 영역을 확장해 왔다.', workNote: '‘쌓인 생각’이라는 제목처럼 내면의 깊은 사색과 감정을 표현한다. 폭넓은 음역과 섬세한 활의 움직임을 통해 해금의 농밀한 정서를 보여준다.' },
-        { number: 4, composer: '이해식', composerYears: '1943–2010', title: '춤사리기', year: '1999', instrumentation: ['장구: 윤승환'], composerNote: '전통 장단과 현대적 작곡기법을 접목하여 한국적 리듬의 현대적 가능성을 탐구한 작곡가이다.', workNote: '한국 춤의 움직임과 호흡을 음악으로 형상화한다. 역동적인 장단과 유려한 선율, 즉흥성과 생동감이 어우러진다.' },
+        { number: 3, composer: '김영재', composerYears: '1947–', title: '적념', year: '1989', composerNote: '김영재는 해금 연주자이자 작곡가로서 연주자의 경험을 바탕으로 해금의 표현 영역을 꾸준히 확장해 왔다. 전통음악에 대한 깊은 이해와 현대적 감각을 바탕으로 다수의 해금 작품을 발표하며 창작 해금음악 발전에 기여하였다.', workNote: '「적념」은 ‘쌓인 생각’이라는 제목처럼 내면의 깊은 사색과 감정을 음악으로 풀어낸 작품이다. 폭넓은 음역과 섬세한 활의 움직임을 통해 해금만이 표현할 수 있는 농밀한 정서를 담아내며, 창작 해금음악이 한층 성숙한 예술적 깊이에 이르렀음을 보여준다.' },
+        { number: 4, composer: '이해식', composerYears: '1943–2010', title: '춤사리기', year: '1999', instrumentation: ['장구 · 윤승환'], composerNote: '이해식은 전통 장단과 현대적 작곡기법을 접목하여 한국 창작음악의 새로운 지평을 개척한 작곡가이다. 다양한 국악 창작 작품을 통해 한국적 리듬의 현대적 가능성을 지속적으로 탐구해 왔다.', workNote: '「춤사리기」는 한국 춤의 움직임과 호흡을 음악으로 형상화한 작품이다. 역동적인 장단과 유려한 선율이 어우러지며 해금의 리듬감과 표현력을 극대화한다. 즉흥성과 생동감이 공존하는 이 작품은 해금 창작곡의 표현 영역이 더욱 다양해졌음을 보여준다.' },
       ] },
       { roman: 'Ⅲ', title: '새로운 시대를 향하여', description: '2000년대 이후 확장된 음향, 현대적 연주법, 세계 음악 언어와의 만남', works: [
-        { number: 5, composer: '이정면', composerYears: '1969–', title: '활의 노래', year: '2009', instrumentation: ['25현가야금: 어윤석'], composerNote: '현대적 음악어법과 국악기의 특성을 결합하며 해금의 새로운 연주기법과 음향 가능성을 탐구해 왔다.', workNote: '활의 움직임 자체를 음악의 중심 요소로 삼는다. 다양한 활쓰기, 음색 변화, 현대적인 연주기법을 통해 해금의 확장성과 실험성을 보여준다.' },
-        { number: 6, composer: 'Donald Reid Womack', composerYears: '1970–', title: '소리 Sori', year: '2014', instrumentation: ['아쟁: 진민진', '타악: 윤승환'], composerNote: '미국 출신 작곡가로 한국 전통음악과 국악기에 깊은 관심을 가지고 한국의 음악적 정서를 현대적 작곡기법과 결합해 왔다.', workNote: '해금의 음색과 호흡, 미세한 음의 움직임을 현대적으로 조명한다. 전통과 현대, 동양과 서양이 만나는 가능성을 보여주며, 해금이 세계적인 현대악기로 확장되는 현재를 상징한다. 원곡은 해금·첼로·타악 편성이지만 이번 공연에서는 해금·아쟁·타악으로 재편성한다.' },
+        { number: 5, composer: '이정면', composerYears: '1969–', title: '활의 노래', year: '2009', instrumentation: ['25현가야금 · 어윤석'], composerNote: '이정면은 현대적 음악어법과 국악기의 특성을 조화롭게 결합하는 작곡가로, 해금의 새로운 연주기법과 음향 가능성을 적극적으로 탐구해 왔다.', workNote: '「활의 노래」는 제목 그대로 활의 움직임 자체를 음악의 중심 요소로 삼는다. 다양한 활쓰기와 음색 변화, 현대적인 연주기법을 통해 해금의 새로운 음향 세계를 펼쳐 보이며, 오늘날 창작 해금음악이 지향하는 확장성과 실험성을 상징하는 작품이다.' },
+        { number: 6, composer: 'Donald Reid Womack', composerYears: '1970–', title: '소리 Sori', year: '2014', instrumentation: ['아쟁 · 진민진', '타악 · 윤승환'], composerNote: '도널드 리드 워맥은 미국 출신의 작곡가로, 한국 전통음악과 국악기에 깊은 관심을 가지고 다양한 작품을 발표하였다. 한국의 음악적 정서를 현대적 작곡기법과 접목하며 국내외에서 활발한 활동을 이어가고 있다.', workNote: '「소리」는 해금의 음색과 호흡, 그리고 미세한 음의 움직임을 현대적인 시각에서 새롭게 조명한 작품이다. 국적과 문화의 경계를 넘어 해금을 하나의 세계적인 현대악기로 바라보며, 전통과 현대, 동양과 서양이 음악 안에서 자연스럽게 만나는 가능성을 제시한다. 본 공연의 마지막을 장식하는 이 작품은 해금 창작음악이 시대를 넘어 세계와 소통하는 현재를 상징적으로 보여준다. 본 곡은 해금, 첼로, 타악으로 편성되었으나 오늘 연주는 해금, 아쟁, 타악으로 재편성하였다.' },
       ] },
     ],
     collaborators,
@@ -142,14 +144,15 @@ export const performances: Performance[] = [
       {
         label: 'POSTER',
         viewLabel: 'VIEW POSTER',
-        url: 'files/2026-08-02-poster.pdf',
-        downloadUrl: 'files/2026-08-02-poster.pdf',
+        previewImageUrl: 'images/archive/2026-08-02-poster.png',
+        viewUrl: 'images/archive/2026-08-02-poster.png',
       },
       {
         label: 'LEAFLET',
         viewLabel: 'VIEW LEAFLET',
-        url: 'files/2026-08-02-leaflet.pdf',
+        viewUrl: 'files/2026-08-02-leaflet.pdf',
         downloadUrl: 'files/2026-08-02-leaflet.pdf',
+        downloadLabel: 'DOWNLOAD PDF',
       },
     ],
   },
