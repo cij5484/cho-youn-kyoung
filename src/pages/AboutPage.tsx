@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { SafeImage } from '../components/common/SafeImage';
 import { Reveal } from '../components/Reveal';
@@ -7,6 +8,8 @@ import '../styles/about.css';
 
 export function AboutPage() {
   const featuredAlbum = profile.discography[0];
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const activeImage = profile.galleryImages[activeImageIndex] ?? profile.galleryImages[0];
   return (
     <article className="about-page">
       <section className="about-hero" aria-labelledby="about-title">
@@ -17,8 +20,36 @@ export function AboutPage() {
           <p className="about-hero__position">{profile.currentPosition}</p>
         </div>
         <figure className="about-hero__portrait">
-          <SafeImage src={assetUrl(profile.profileImage)} alt={`${profile.name} 공식 프로필 사진`} fallbackClassName="about-hero__portrait-fallback" fallbackLabel={profile.englishName} objectPosition="center bottom" />
+          <SafeImage key={activeImage.src} src={assetUrl(activeImage.src)} alt={activeImage.alt} fallbackClassName="about-hero__portrait-fallback" fallbackLabel={profile.englishName} objectPosition={activeImage.objectPosition ?? 'center bottom'} />
         </figure>
+      </section>
+
+      <section className="about-gallery" aria-label="조윤경 프로필 사진 선택">
+        <div className="about-gallery__inner">
+          <div className="about-gallery__spacer" aria-hidden="true" />
+          <div className="about-gallery__strip">
+            {profile.galleryImages.map((image, index) => (
+              <button
+                className={`about-gallery__thumbnail${index === activeImageIndex ? ' is-active' : ''}`}
+                type="button"
+                key={image.src}
+                aria-label={image.ariaLabel}
+                aria-pressed={index === activeImageIndex}
+                onClick={() => setActiveImageIndex(index)}
+              >
+                <SafeImage
+                  src={assetUrl(image.thumbnail)}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  fallbackClassName="about-gallery__thumbnail-fallback"
+                  fallbackLabel="PROFILE"
+                  objectPosition={image.thumbnailObjectPosition ?? image.objectPosition ?? 'center center'}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
       </section>
 
       <div className="about-body">
