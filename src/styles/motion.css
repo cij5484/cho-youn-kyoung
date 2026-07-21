@@ -1,29 +1,21 @@
 @keyframes route-enter {
   from {
     opacity: 0;
-    transform: translateY(12px);
-    filter: blur(2px);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
   }
 }
 
-@keyframes route-enter-home {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 .page-transition {
-  animation: route-enter 410ms cubic-bezier(0.22, 1, 0.36, 1);
+  width: 100%;
+  min-width: 0;
+  animation: route-enter 250ms ease;
 }
 
 .page-transition--home {
-  animation-name: route-enter-home;
-  animation-duration: 290ms;
+  animation-duration: 250ms;
 }
 
 .reveal {
@@ -102,27 +94,9 @@
 }
 
 @media (max-width: 768px) {
-  .page-transition {
-    animation-name: route-enter-mobile;
-    animation-duration: 320ms;
-    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
+  .page-transition,
   .page-transition--home {
-    animation-name: route-enter-home;
-    animation-duration: 280ms;
-  }
-}
-
-@keyframes route-enter-mobile {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
+    animation-duration: 230ms;
   }
 }
 
