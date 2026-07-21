@@ -1,162 +1,81 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { performances } from '../data/performances';
+import { performances, type PerformanceCollaborator, type ProgramWork } from '../data/performances';
 import '../styles/performance-detail.css';
+
+const flattenWorks = (performance: (typeof performances)[number]) => performance.programEras.flatMap((era) => era.works);
+
+function getExistingAsset(url?: string) {
+  return url;
+}
 
 export function PerformanceDetailPage() {
   const { id } = useParams();
   const performance = performances.find((item) => item.id === id);
+  const [selectedWork, setSelectedWork] = useState<ProgramWork | null>(null);
+  const [selectedArtist, setSelectedArtist] = useState<PerformanceCollaborator | null>(null);
+  const lastArtistButton = useRef<HTMLButtonElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+
+  const works = useMemo(() => (performance ? flattenWorks(performance) : []), [performance]);
+
+  useEffect(() => {
+    if (!selectedArtist) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const panel = panelRef.current;
+    panel?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSelectedArtist(null);
+      if (event.key !== 'Tab' || !panel) return;
+      const focusables = Array.from(panel.querySelectorAll<HTMLElement>(focusableSelector));
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => { document.body.style.overflow = previousOverflow; window.removeEventListener('keydown', onKeyDown); lastArtistButton.current?.focus(); };
+  }, [selectedArtist]);
 
   if (!performance) {
-    return (
-      <section className="page-shell">
-        <h1>Performance not found</h1>
-        <Link className="text-link" to="/performance">
-          Back to performance
-        </Link>
-      </section>
-    );
+    return <section className="page-shell"><h1>Performance not found</h1><Link className="text-link" to="/performance">Back to performance</Link></section>;
   }
 
-  const hasArchiveLinks = Boolean(performance.posterUrl || performance.leafletUrl);
+  const visibleMaterials = performance.archiveMaterials?.filter((material) => material.url || material.previewImageUrl) ?? [];
+  const activeWork = selectedWork ?? works[0];
+  const activeArtistIndex = selectedArtist ? performance.collaborators.findIndex((artist) => artist.id === selectedArtist.id) : -1;
 
   return (
     <article className="performance-detail">
       <section className="performance-detail__hero" aria-labelledby="performance-title">
-        <div className="performance-detail__hero-media" aria-hidden="true">
-          <img src={performance.heroImage} alt="" />
+        <Link className="performance-detail__back" to="/performance"><span aria-hidden="true">←</span>BACK TO PERFORMANCES</Link>
+        <div className="performance-detail__poster">
+          {getExistingAsset(performance.posterImage) && <img src={performance.posterImage} alt={`${performance.title} 포스터`} onError={(event) => event.currentTarget.remove()} />}
         </div>
         <div className="performance-detail__hero-content">
           <p className="performance-detail__eyebrow">{performance.archiveLabel}</p>
           <h1 id="performance-title">{performance.title}</h1>
           <p className="performance-detail__subtitle">{performance.subtitle}</p>
-          <dl className="performance-detail__meta" aria-label="공연 기본 정보">
-            <div>
-              <dt>일시</dt>
-              <dd>{performance.displayDate}</dd>
-            </div>
-            <div>
-              <dt>장소</dt>
-              <dd>{performance.venue}</dd>
-            </div>
-            <div>
-              <dt>연주</dt>
-              <dd>{performance.performer}</dd>
-            </div>
-          </dl>
+          <dl className="performance-detail__meta" aria-label="공연 기본 정보"><div><dt>DATE</dt><dd>{performance.displayDate}</dd></div><div><dt>VENUE</dt><dd>{performance.venue}</dd></div><div><dt>ARTIST</dt><dd>{performance.performer}</dd></div></dl>
+          {visibleMaterials.length > 0 && <div className="performance-detail__hero-actions">{visibleMaterials.map((material) => material.url && <a key={material.label} href={material.url}>{material.viewLabel}</a>)}</div>}
         </div>
       </section>
 
       <div className="performance-detail__body">
-        <section className="performance-detail__section performance-detail__intro" aria-labelledby="intro-title">
-          <div className="performance-detail__section-heading">
-            <span>01</span>
-            <h2 id="intro-title">공연 소개</h2>
-          </div>
-          <div className="performance-detail__prose">
-            {performance.introduction.map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
-            ))}
-          </div>
-        </section>
+        <section className="performance-detail__section" aria-labelledby="intro-title"><div className="performance-detail__section-heading"><span>01</span><h2 id="intro-title">ABOUT</h2></div><div className="performance-detail__prose">{performance.introduction.map((p) => <p key={p}>{p}</p>)}</div></section>
+        <section className="performance-detail__section performance-detail__note" aria-labelledby="note-title"><div className="performance-detail__section-heading"><span>02</span><h2 id="note-title">ARTIST’S NOTE</h2></div><blockquote className="performance-detail__prose">{performance.artistNote.map((p) => <p key={p}>{p}</p>)}<cite>{performance.artistSignature}</cite></blockquote></section>
 
-        <section className="performance-detail__section performance-detail__note" aria-labelledby="note-title">
-          <div className="performance-detail__section-heading">
-            <span>02</span>
-            <h2 id="note-title">연주자의 말</h2>
-          </div>
-          <div className="performance-detail__prose">
-            {performance.artistNote.map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
-            ))}
-            <p className="performance-detail__signature">{performance.artistSignature}</p>
-          </div>
-        </section>
+        <section className="performance-detail__section" aria-labelledby="program-title"><div className="performance-detail__section-heading"><span>03</span><h2 id="program-title">PROGRAM</h2></div><div className="performance-detail__program"><div className="performance-detail__timeline">{works.map((work) => <button className={activeWork?.number === work.number ? 'is-active' : ''} type="button" key={work.number} onClick={() => setSelectedWork(work)}><span>{work.year}</span><strong>{String(work.number).padStart(2, '0')}</strong><b>{work.title}</b><small>{work.composer}</small><em>{work.instrumentation?.join(' · ') ?? '해금 독주'}</em></button>)}</div><button className="performance-detail__all-notes" type="button" onClick={() => setSelectedWork(works[0])}>전체 해설 보기</button>{activeWork && <div className="performance-detail__work-notes"><h3>{activeWork.composer}({activeWork.composerYears}) 「{activeWork.title}」</h3><div><h4>COMPOSER</h4><p>{activeWork.composerNote}</p></div><div><h4>WORK NOTE</h4><p>{activeWork.workNote}</p></div><div><h4>ENSEMBLE</h4><p>{activeWork.instrumentation?.join(' · ') ?? '해금: 조윤경'}</p></div></div>}</div></section>
 
-        <section className="performance-detail__section" aria-labelledby="program-title">
-          <div className="performance-detail__section-heading">
-            <span>03</span>
-            <h2 id="program-title">프로그램 시대 구분</h2>
-          </div>
-          <div className="performance-detail__eras">
-            {performance.programEras.map((era) => (
-              <section className="performance-detail__era" key={era.title}>
-                <div className="performance-detail__era-heading">
-                  <span>{era.roman}</span>
-                  <div>
-                    <h3>{era.title}</h3>
-                    <p>{era.description}</p>
-                  </div>
-                </div>
-                <div className="performance-detail__works">
-                  {era.works.map((work) => (
-                    <article className="performance-detail__work" key={`${work.number}-${work.title}`}>
-                      <div className="performance-detail__work-title">
-                        <span>{String(work.number).padStart(2, '0')}</span>
-                        <div>
-                          <p>{work.year}</p>
-                          <h4>
-                            {work.composer}({work.composerYears}) 「{work.title}」
-                          </h4>
-                          {work.instrumentation && (
-                            <ul aria-label="협연 및 편성">
-                              {work.instrumentation.map((item) => (
-                                <li key={item}>{item}</li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-                      </div>
-                      <div className="performance-detail__commentary">
-                        <div>
-                          <h5>작곡가</h5>
-                          <p>{work.composerNote}</p>
-                        </div>
-                        <div>
-                          <h5>작품해설</h5>
-                          <p>{work.workNote}</p>
-                        </div>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
-        </section>
+        <section className="performance-detail__section" aria-labelledby="collaborator-title"><div className="performance-detail__section-heading"><span>04</span><h2 id="collaborator-title">COLLABORATING ARTISTS</h2></div><div className="performance-detail__artists">{performance.collaborators.map((artist) => <button className="performance-detail__artist" type="button" key={artist.id} onClick={(event) => { lastArtistButton.current = event.currentTarget; setSelectedArtist(artist); }}><span className="performance-detail__artist-photo">{artist.image && <img src={artist.image} alt="" onError={(event) => event.currentTarget.remove()} />}</span><small>{artist.role}</small><strong>{artist.name}</strong><p>{artist.shortBio}</p><em>VIEW PROFILE</em></button>)}</div></section>
 
-        <section className="performance-detail__section" aria-labelledby="collaborator-title">
-          <div className="performance-detail__section-heading">
-            <span>04</span>
-            <h2 id="collaborator-title">함께한 연주자</h2>
-          </div>
-          <div className="performance-detail__collaborators">
-            {performance.collaborators.map((collaborator) => (
-              <article className="performance-detail__collaborator" key={collaborator.name}>
-                <p>{collaborator.role}</p>
-                <h3>{collaborator.name}</h3>
-                <ul>
-                  {collaborator.bio.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {hasArchiveLinks && (
-          <section className="performance-detail__section performance-detail__materials" aria-labelledby="materials-title">
-            <div className="performance-detail__section-heading">
-              <span>05</span>
-              <h2 id="materials-title">포스터·리플렛</h2>
-            </div>
-            <div className="performance-detail__material-links">
-              {performance.posterUrl && <a href={performance.posterUrl}>포스터 보기</a>}
-              {performance.leafletUrl && <a href={performance.leafletUrl}>리플렛 보기</a>}
-            </div>
-          </section>
-        )}
+        {visibleMaterials.length > 0 && <section className="performance-detail__section" aria-labelledby="materials-title"><div className="performance-detail__section-heading"><span>05</span><h2 id="materials-title">ARCHIVE MATERIALS</h2></div><div className="performance-detail__materials">{visibleMaterials.map((material) => <div className="performance-detail__material" key={material.label}>{material.previewImageUrl && <img src={material.previewImageUrl} alt={`${material.label} preview`} onError={(event) => event.currentTarget.parentElement?.remove()} />}{material.url && <a href={material.url}>{material.viewLabel}</a>}{material.downloadUrl && <a href={material.downloadUrl} download>DOWNLOAD PDF</a>}</div>)}</div></section>}
       </div>
+
+      {selectedArtist && <div className="performance-detail__panel-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedArtist(null); }}><aside className="performance-detail__artist-panel" role="dialog" aria-modal="true" aria-labelledby="artist-panel-title" tabIndex={-1} ref={panelRef}><button className="performance-detail__panel-close" type="button" onClick={() => setSelectedArtist(null)}>CLOSE</button><div className="performance-detail__panel-photo">{selectedArtist.image && <img src={selectedArtist.image} alt="" onError={(event) => event.currentTarget.remove()} />}</div><p>{selectedArtist.role}</p><h2 id="artist-panel-title">{selectedArtist.name}</h2><ul>{selectedArtist.fullBio.map((bio) => <li key={bio}>{bio}</li>)}</ul><h3>PARTICIPATING WORKS</h3><ol>{selectedArtist.participatingWorks.map((work) => <li key={work}>{work}</li>)}</ol><nav><button type="button" onClick={() => setSelectedArtist(performance.collaborators[(activeArtistIndex - 1 + performance.collaborators.length) % performance.collaborators.length])}>← PREV</button><button type="button" onClick={() => setSelectedArtist(performance.collaborators[(activeArtistIndex + 1) % performance.collaborators.length])}>NEXT →</button></nav></aside></div>}
     </article>
   );
 }
