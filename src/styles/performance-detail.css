@@ -1,4 +1,4 @@
-.performance-detail { min-height: 100svh; color: #151515; background: #d8cdb8; overflow-x: hidden; }
+.performance-detail { min-height: 100svh; color: #151515; background: #d8cdb8; overflow-x: clip; }
 .performance-detail__hero { position: relative; display: grid; grid-template-columns: minmax(280px,.44fr) minmax(0,.56fr); gap: clamp(34px,5vw,76px); min-height: clamp(660px,88svh,920px); padding: calc(var(--header) + 52px) clamp(22px,6vw,92px) 78px; background: #e4dccf; isolation: isolate; }
 .performance-detail__hero::before { content:""; position:absolute; inset:0 auto 0 0; width:44%; background:#0b0d0c; border-right:1px solid rgba(119,80,39,.42); pointer-events:none; z-index:0; }
 .performance-detail__back { position: absolute; z-index:2; top: calc(var(--header) + 24px); left: clamp(22px,6vw,92px); display: inline-flex; align-items: center; gap: 12px; color: rgba(241,237,229,.8); font-size: .68rem; font-weight: 800; letter-spacing: .2em; }
@@ -25,6 +25,7 @@
 .performance-detail__section-heading { position:sticky; top:calc(var(--header) + 36px); align-self:start; }
 .performance-detail__section-heading span { display:block; margin-bottom:16px; }
 .performance-detail h2 { font-size: clamp(1.8rem,3vw,2.8rem); }
+.performance-detail__section-heading h2 span { color: inherit; font: inherit; letter-spacing: inherit; display:block; margin:0; line-height:.92; }
 .performance-detail__prose { width:min(100%,900px); max-width:900px; margin-inline:auto; justify-self:center; }
 .performance-detail__prose p { margin:0 0 1.35em; font-size:1.05rem; line-height:2.05; word-break:keep-all; }
 .performance-detail__note blockquote { position:relative; width:min(100%,880px); padding-left: clamp(36px,4vw,58px); border-left:1px solid rgba(119,80,39,.36); }
@@ -54,10 +55,10 @@
 .performance-detail__artist strong { display:block; margin-top:10px; font-family:var(--serif); font-size:1.65rem; font-weight:500; }
 
 .performance-detail__artist em { color:var(--gold); margin-top:auto;color:var(--gold);font-size:.72rem;font-style:normal;font-weight:900;letter-spacing:.16em;padding-top:22px; }
-.performance-detail__materials { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:32px; }
-.performance-detail__material { min-height:148px; display:flex; flex-direction:column; justify-content:space-between; gap:22px; padding:26px 0; border-top:1px solid rgba(189,146,80,.26); }
+.performance-detail__materials { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); column-gap:clamp(64px,8vw,140px); row-gap:44px; }
+.performance-detail__material { min-height:148px; display:flex; flex-direction:column; justify-content:space-between; align-items:center; text-align:center; gap:22px; padding:26px 0; border-top:1px solid rgba(189,146,80,.26); }
 .performance-detail__material p { margin:0; color:var(--text); font-family:var(--serif); font-size:clamp(1.45rem,2.2vw,2.15rem); }
-.performance-detail__material div { display:flex; flex-wrap:wrap; gap:16px 22px; align-items:center; }
+.performance-detail__material div { display:flex; flex-wrap:wrap; gap:16px 26px; align-items:center; justify-content:center; }
 .performance-detail__material a { color:var(--gold); border-bottom:1px solid rgba(189,146,80,.45); padding-bottom:8px; font-size:.76rem; font-weight:900; letter-spacing:.18em; width:max-content; }
 .safe-image-fallback { display:grid; place-items:center; min-height:100%; background:linear-gradient(140deg,#101211,#24201b); color:var(--gold); font-size:.78rem; font-weight:900; letter-spacing:.18em; text-align:center; padding:18px; }
 
@@ -89,6 +90,7 @@
   .performance-detail__section { padding:66px 0; gap:26px; }
   .performance-detail__section-heading { position:static; }
   .performance-detail__timeline, .performance-detail__artists, .performance-detail__materials { grid-template-columns:1fr; }
+  .performance-detail__materials { row-gap:40px; }
   .performance-detail__timeline { border-top:0; }
   .performance-detail__timeline button { border-left:0; border-top:1px solid rgba(189,146,80,.28); padding:22px 0; min-height:0; grid-template-rows:auto; gap:8px; }
   .performance-detail__artist-panel { width:100%; }
