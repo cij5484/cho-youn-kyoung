@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
+import { SafeImage } from '../components/common/SafeImage';
 import { performances } from '../data/performances';
+import { assetUrl } from '../utils/assetUrl';
 import '../styles/performance.css';
 
 export function PerformancePage() {
@@ -14,7 +16,7 @@ export function PerformancePage() {
           <p>{featured?.listDescription ?? '해금 창작곡의 변천을 기록하다'}</p>
         </div>
         <div className="performance-archive__image" aria-hidden="true">
-          {featured?.heroImage && <img src={featured.heroImage} alt="" onError={(event) => event.currentTarget.remove()} />}
+          {featured?.heroImage && <SafeImage src={assetUrl(featured.heroImage)} alt="" fallbackClassName="safe-image-fallback" fallbackLabel="PERFORMANCE" />}
         </div>
       </section>
 

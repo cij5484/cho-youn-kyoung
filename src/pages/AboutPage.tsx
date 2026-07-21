@@ -1,12 +1,11 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { SafeImage } from '../components/common/SafeImage';
 import { profile } from '../data/profile';
+import { assetUrl } from '../utils/assetUrl';
 import '../styles/about.css';
 
 export function AboutPage() {
   const featuredAlbum = profile.discography[0];
-  const [hasProfileImage, setHasProfileImage] = useState(true);
-
   return (
     <article className="about-page">
       <section className="about-hero" aria-labelledby="about-title">
@@ -16,14 +15,8 @@ export function AboutPage() {
           <p className="about-hero__role">{profile.role}</p>
           <p className="about-hero__position">{profile.currentPosition}</p>
         </div>
-        <figure className="about-hero__portrait" data-has-image={hasProfileImage}>
-          {hasProfileImage && (
-            <img
-              src={profile.profileImage}
-              alt={`${profile.name} 공식 프로필 사진`}
-              onError={() => setHasProfileImage(false)}
-            />
-          )}
+        <figure className="about-hero__portrait">
+          <SafeImage src={assetUrl(profile.profileImage)} alt={`${profile.name} 공식 프로필 사진`} fallbackClassName="about-hero__portrait-fallback" fallbackLabel={profile.englishName} objectPosition="center top" />
         </figure>
       </section>
 
@@ -50,9 +43,9 @@ export function AboutPage() {
               </div>
               <div>
                 <h3>CURRENT POSITION</h3>
-                <p>{profile.currentPosition}</p>
-                <p>국가무형유산 종묘제례악 이수자</p>
-                <p>우리음악앙상블 새, 봄(New,봄) 동인</p>
+                {profile.positions.slice(0, 3).map((item) => (
+                  <p key={item}>{item}</p>
+                ))}
               </div>
             </aside>
           </div>
@@ -107,8 +100,8 @@ export function AboutPage() {
               <span>03</span>
               <h2 id="discography-title">DISCOGRAPHY</h2>
             </div>
-            <div className="about-discography__item">
-              {featuredAlbum.coverImage && <img src={featuredAlbum.coverImage} alt={`${featuredAlbum.title} 앨범 커버`} />}
+            <div className={`about-discography__item${featuredAlbum.coverImage ? " has-cover" : ""}`}>
+              {featuredAlbum.coverImage && <SafeImage src={assetUrl(featuredAlbum.coverImage)} alt={`${featuredAlbum.title} 앨범 커버`} />}
               <div>
                 <p>{featuredAlbum.year}</p>
                 <h3>「{featuredAlbum.title}」</h3>
