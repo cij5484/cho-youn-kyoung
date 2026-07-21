@@ -79,8 +79,13 @@
   .performance-detail__hero { background:#0b0d0c; }
   .performance-detail__hero::before { display:none; }
   .performance-detail h1 { color:#f1ede5; }
+  .performance-detail__eyebrow,
+  .performance-detail__meta dt { color:#d6ad6c; }
   .performance-detail__subtitle { color:rgba(241,237,229,.78); }
   .performance-detail__meta div { color:#f1ede5; }
+  .performance-detail__hero-actions a { color:#d6ad6c; border-bottom-color:rgba(214,173,108,.72); }
+  .performance-detail__hero-actions a:hover,
+  .performance-detail__hero-actions a:focus-visible { color:var(--gold); border-bottom-color:var(--gold); }
   .performance-detail__section { padding:66px 0; gap:26px; }
   .performance-detail__section-heading { position:static; }
   .performance-detail__timeline, .performance-detail__artists, .performance-detail__materials { grid-template-columns:1fr; }
