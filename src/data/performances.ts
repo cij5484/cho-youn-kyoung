@@ -92,8 +92,8 @@ const collaborators: PerformanceCollaborator[] = [
     name: '양승환',
     role: '사회',
     image: 'images/performers/yang-seung-hwan.jpg',
-    shortBio: '부산대학교 예술대학 한국음악학과 교수. 국악 이론과 현장 해설을 바탕으로 공연을 안내한다.',
-    fullBio: ['부산대학교 예술대학 한국음악학과 교수'],
+    shortBio: 'KBS 국악대상 작곡상 수상. 국악방송 21C 한국음악프로젝트 예술감독 역임.',
+    fullBio: ['KBS 국악대상 작곡상 수상', '국악방송 21C 한국음악프로젝트 예술감독 역임', '작곡집단 오선지한음 대표', '대구문화예술회관 국악인큐베이팅 사업 JUMP UP 음악감독', '영남대학교 겸임교수', '한국예술종합대학교 전통예술원 출강'],
     participatingWorks: ['해금, 시대를 잇다'],
   },
 ];
