@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { performances } from '../data/performances';
+import { Reveal } from '../components/Reveal';
 import '../styles/performance.css';
 
 const formatArchiveDate = (displayDate: string) => displayDate.replace(/^\d{4}\.\s*/, '');
@@ -17,7 +18,7 @@ export function PerformancePage() {
         </div>
       </section>
 
-      <section className="performance-archive__list" aria-label="공연 목록">
+      <Reveal as="section" className="performance-archive__list" aria-label="공연 목록">
         {performances.map((performance) => (
           <Link className={`performance-archive__row${performance.featured ? ' is-featured' : ''}`} to={`/performance/${performance.id}`} key={performance.id}>
             <span className="performance-archive__year">{performance.date.slice(0, 4)}</span>
@@ -30,7 +31,7 @@ export function PerformancePage() {
             <span className="performance-archive__arrow" aria-hidden="true">→</span>
           </Link>
         ))}
-      </section>
+      </Reveal>
     </article>
   );
 }

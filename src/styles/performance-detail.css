@@ -93,3 +93,116 @@
   .performance-detail__timeline button { border-left:0; border-top:1px solid rgba(189,146,80,.28); padding:22px 0; min-height:0; grid-template-rows:auto; gap:8px; }
   .performance-detail__artist-panel { width:100%; }
 }
+
+.performance-detail__hero-actions a,
+.performance-detail__material a,
+.performance-detail__all-notes,
+.performance-detail__panel-close,
+.performance-detail__artist-panel nav button {
+  border-bottom-color: transparent;
+}
+
+.performance-detail__timeline button {
+  transition: color 220ms ease, background-color 220ms ease, border-color 220ms ease, opacity 220ms ease;
+}
+
+.performance-detail__timeline button:hover,
+.performance-detail__timeline button:focus-visible {
+  background: rgba(189, 146, 80, 0.06);
+}
+
+.performance-detail__timeline button b,
+.performance-detail__timeline button small,
+.performance-detail__timeline button em,
+.performance-detail__notes-list {
+  transition: color 220ms ease, opacity 260ms ease, transform 260ms ease;
+}
+
+.performance-detail__work-notes {
+  animation: program-note-enter 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes program-note-enter {
+  from { opacity: 0.72; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.performance-detail__panel-backdrop {
+  animation: artist-backdrop-enter 280ms ease;
+}
+
+.performance-detail__artist-panel {
+  animation: artist-panel-enter 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes artist-backdrop-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes artist-panel-enter {
+  from { transform: translateX(18px); }
+  to { transform: translateX(0); }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .performance-detail__artist {
+    transition: transform 260ms ease, color 260ms ease, background-color 260ms ease;
+  }
+
+  .performance-detail__artist-photo img,
+  .performance-detail__artist-photo .safe-image-fallback {
+    transition: filter 260ms ease, transform 260ms ease;
+  }
+
+  .performance-detail__artist:hover,
+  .performance-detail__artist:focus-visible {
+    transform: translateY(-3px);
+  }
+
+  .performance-detail__artist:hover .performance-detail__artist-photo img,
+  .performance-detail__artist:focus-visible .performance-detail__artist-photo img,
+  .performance-detail__artist:hover .performance-detail__artist-photo .safe-image-fallback,
+  .performance-detail__artist:focus-visible .performance-detail__artist-photo .safe-image-fallback {
+    filter: saturate(0.88) brightness(0.94);
+    transform: scale(1.01);
+  }
+
+  .performance-detail__artist:hover strong,
+  .performance-detail__artist:focus-visible strong,
+  .performance-detail__artist:hover em,
+  .performance-detail__artist:focus-visible em {
+    color: var(--gold);
+  }
+}
+
+@media (max-width: 900px) {
+  .performance-detail__artist-panel {
+    animation-name: artist-panel-enter-mobile;
+  }
+}
+
+@keyframes artist-panel-enter-mobile {
+  from { transform: translateX(18px); }
+  to { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .performance-detail__panel-backdrop,
+  .performance-detail__artist-panel,
+  .performance-detail__work-notes {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  .performance-detail__artist,
+  .performance-detail__artist-photo img,
+  .performance-detail__artist-photo .safe-image-fallback,
+  .performance-detail__timeline button,
+  .performance-detail__notes-list {
+    transition: none !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
