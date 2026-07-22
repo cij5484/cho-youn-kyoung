@@ -26,11 +26,20 @@ export function SanjoMatiereHero({ slide, isActive }: SanjoMatiereHeroProps) {
       ) : null}
       <div className="sanjo-hero__content" key={isActive ? `${slide.id}-active` : slide.id}>
         <p className="sanjo-hero__eyebrow">{slide.eyebrow}</p>
-        <h1 id="sanjo-hero-title">{slide.title}</h1>
-        <p className="sanjo-hero__subtitle">{slide.subtitle}</p>
-        <p className="sanjo-hero__meta">
-          <span>{slide.displayDate}</span>
-          <span>{slide.time}</span>
+        <h1 className="sanjo-hero__title" id="sanjo-hero-title">
+          <span className="sanjo-hero__title-primary">산조길,</span>
+          <span className="sanjo-hero__title-accent">둘</span>
+        </h1>
+        <div className="sanjo-hero__divider" aria-hidden="true" />
+        <p className="sanjo-hero__subtitle">
+          <span>한범수류</span>
+          <span>해금산조</span>
+        </p>
+        <p className="sanjo-hero__artist">CHO YOUN KYOUNG</p>
+        <p className="sanjo-hero__date">
+          <span>2026.</span>
+          <span className="sanjo-hero__date-accent">8. 16.</span>
+          <span>SUN 15:30</span>
         </p>
         <p className="sanjo-hero__venue">{slide.venue}</p>
         <Link className="sanjo-hero__link" to={slide.detailLink}>

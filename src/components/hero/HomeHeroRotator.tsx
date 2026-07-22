@@ -36,6 +36,17 @@ export function HomeHeroRotator() {
   const timerRef = useRef<number | null>(null);
   const prefersReducedMotion = usePrefersReducedMotion();
   const canRotate = slides.length > 1 && !prefersReducedMotion;
+  const activeTheme = slides[activeIndex]?.theme;
+
+  useEffect(() => {
+    if (!activeTheme) return undefined;
+
+    document.documentElement.dataset.homeHeroTheme = activeTheme;
+
+    return () => {
+      delete document.documentElement.dataset.homeHeroTheme;
+    };
+  }, [activeTheme]);
 
   useEffect(() => {
     if (!canRotate) return undefined;
@@ -81,7 +92,7 @@ export function HomeHeroRotator() {
   };
 
   return (
-    <div className="home-hero-rotator" data-theme={slides[activeIndex]?.theme}>
+    <div className="home-hero-rotator" data-theme={activeTheme}>
       <div className="home-hero-rotator__stage">
         {slides.map((slide, index) => {
           const isActive = index === activeIndex;
