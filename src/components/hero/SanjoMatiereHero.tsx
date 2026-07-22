@@ -31,10 +31,7 @@ export function SanjoMatiereHero({ slide, isActive }: SanjoMatiereHeroProps) {
           <span className="sanjo-hero__title-accent">둘</span>
         </h1>
         <div className="sanjo-hero__divider" aria-hidden="true" />
-        <p className="sanjo-hero__subtitle">
-          <span>한범수류</span>
-          <span>해금산조</span>
-        </p>
+        <p className="sanjo-hero__subtitle">한범수류 해금산조</p>
         <p className="sanjo-hero__artist">CHO YOUN KYOUNG</p>
         <p className="sanjo-hero__date">
           <span>2026.</span>
