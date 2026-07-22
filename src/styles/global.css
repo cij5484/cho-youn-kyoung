@@ -122,29 +122,47 @@ img {
     ),
     linear-gradient(115deg, #070808 0%, #111312 42%, #1f1a17 72%, #0b0d0c 100%);
 }
-.hero-ink-reveal {
+.hero-background__image {
   width: 100%;
   height: 100%;
   display: block;
+  object-fit: cover;
+  object-position: center center;
   opacity: 1;
   filter: brightness(1.27) saturate(0.96) contrast(0.97);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
 }
-.ink-mask-flow {
-  transform-box: fill-box;
-  transform-origin: 70% 48%;
+.hero-mask-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
 }
-.ink-wash {
+.ink-mask-bloom {
+  transform-box: view-box;
+  transform-origin: 61% 39%;
   opacity: 0;
-  transform-box: fill-box;
-  transform-origin: 66% 42%;
-  animation: inkWashSpread 4.05s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation: inkWashBloom 4.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
-.ink-wash--core { animation-name: inkWashCore; transform-origin: 69% 42%; }
-.ink-wash--fiber { animation-name: inkWashFiber; transform-origin: 72% 48%; }
-.ink-wash--hand { animation-name: inkWashHand; transform-origin: 68% 64%; }
-.ink-wash--upper { animation-name: inkWashUpper; transform-origin: 78% 32%; }
-.ink-wash--lower { animation-name: inkWashLower; transform-origin: 64% 78%; }
-.ink-wash--finish { animation-name: inkWashFinish; transform-origin: 70% 56%; }
+.ink-mask-main,
+.ink-mask-fiber {
+  transform-box: view-box;
+  transform-origin: 61% 39%;
+}
+.ink-mask-main {
+  opacity: 0.98;
+}
+.ink-mask-fiber--wide {
+  opacity: 0.72;
+}
+.ink-mask-fiber--threads {
+  opacity: 0.42;
+}
 .hero-background.is-fallback {
   background:
     radial-gradient(
@@ -362,46 +380,35 @@ img {
     transform: translateY(0);
   }
 }
-@keyframes inkWashCore {
-  0%, 12% { opacity: 0; transform: translate(-1.5%, 1%) scale(0.015) rotate(-8deg); }
-  24% { opacity: 0.9; transform: translate(-1%, 0.5%) scale(0.18) rotate(-6deg); }
-  40% { opacity: 1; transform: translate(-0.5%, 0) scale(0.42) rotate(-4deg); }
-  64% { opacity: 1; transform: translate(0, 0) scale(0.7) rotate(-1deg); }
-  84% { opacity: 1; transform: translate(0, 0) scale(0.9) rotate(0deg); }
-  100% { opacity: 1; transform: translate(0, 0) scale(1.08) rotate(0deg); }
-}
-@keyframes inkWashFiber {
-  0%, 18% { opacity: 0; transform: translate(0.5%, -0.5%) scale(0.03) rotate(7deg); }
-  32% { opacity: 0.34; transform: translate(0.2%, -0.3%) scale(0.22) rotate(5deg); }
-  52% { opacity: 0.58; transform: translate(0, 0) scale(0.5) rotate(2deg); }
-  74% { opacity: 0.76; transform: translate(0, 0) scale(0.78) rotate(0deg); }
-  100% { opacity: 0.82; transform: translate(0, 0) scale(1.08) rotate(0deg); }
-}
-@keyframes inkWashHand {
-  0%, 30% { opacity: 0; transform: translate(-2%, 2%) scale(0.06) rotate(-10deg); }
-  46% { opacity: 0.36; transform: translate(-1%, 1%) scale(0.25) rotate(-7deg); }
-  66% { opacity: 0.62; transform: translate(-0.4%, 0.3%) scale(0.54) rotate(-3deg); }
-  84% { opacity: 0.74; transform: translate(0, 0) scale(0.78) rotate(0deg); }
-  100% { opacity: 0.8; transform: translate(0, 0) scale(1.03) rotate(0deg); }
-}
-@keyframes inkWashUpper {
-  0%, 34% { opacity: 0; transform: translate(2%, -1.5%) scale(0.05) rotate(14deg); }
-  52% { opacity: 0.2; transform: translate(1%, -0.7%) scale(0.26) rotate(9deg); }
-  72% { opacity: 0.38; transform: translate(0.3%, -0.2%) scale(0.54) rotate(4deg); }
-  100% { opacity: 0.52; transform: translate(0, 0) scale(1.02) rotate(0deg); }
-}
-@keyframes inkWashLower {
-  0%, 38% { opacity: 0; transform: translate(-3%, 2%) scale(0.04) rotate(-13deg); }
-  56% { opacity: 0.24; transform: translate(-1.6%, 1%) scale(0.25) rotate(-9deg); }
-  76% { opacity: 0.42; transform: translate(-0.5%, 0.3%) scale(0.55) rotate(-4deg); }
-  100% { opacity: 0.58; transform: translate(0, 0) scale(1.04) rotate(0deg); }
-}
-@keyframes inkWashFinish {
-  0%, 46% { opacity: 0; transform: scale(0.08) rotate(6deg); }
-  62% { opacity: 0.18; transform: scale(0.34) rotate(4deg); }
-  78% { opacity: 0.48; transform: scale(0.64) rotate(2deg); }
-  90% { opacity: 0.74; transform: scale(0.86) rotate(0.8deg); }
-  100% { opacity: 1; transform: scale(1.18) rotate(0deg); }
+@keyframes inkWashBloom {
+  0%, 11% {
+    opacity: 0;
+    transform: translate(3.5%, -1.5%) scale(0.018) rotate(-5deg);
+  }
+  15% {
+    opacity: 0.28;
+    transform: translate(2.8%, -1.2%) scale(0.055) rotate(-4.5deg);
+  }
+  30% {
+    opacity: 0.78;
+    transform: translate(1.8%, -0.8%) scale(0.18) rotate(-3.2deg);
+  }
+  50% {
+    opacity: 0.92;
+    transform: translate(1%, -0.4%) scale(0.43) rotate(-1.8deg);
+  }
+  70% {
+    opacity: 0.98;
+    transform: translate(0.4%, -0.1%) scale(0.74) rotate(-0.7deg);
+  }
+  85% {
+    opacity: 1;
+    transform: translate(0.1%, 0) scale(0.98) rotate(-0.2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1.2) rotate(0deg);
+  }
 }
 @media (max-width: 760px) {
   :root {
@@ -440,7 +447,8 @@ img {
     padding: 0 22px 38px;
     align-items: flex-end;
   }
-  .hero-ink-reveal {
+  .hero-background__image {
+    object-position: 58% center;
     filter: brightness(1.22) saturate(0.95) contrast(0.97);
   }
   .hero-overlay {
@@ -497,10 +505,10 @@ img {
     transition: none !important;
     scroll-behavior: auto !important;
   }
-  .ink-wash {
+  .ink-mask-bloom {
     animation: none !important;
     opacity: 1;
-    transform: none;
+    transform: translate(0, 0) scale(1.2) rotate(0deg);
   }
   .hero-content > * {
     opacity: 1;

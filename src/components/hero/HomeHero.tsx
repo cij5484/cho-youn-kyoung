@@ -16,62 +16,96 @@ export function HomeHero({ performance }: HomeHeroProps) {
         aria-hidden="true"
       >
         {hasHeroImage ? (
-          <svg
-            className="hero-ink-reveal"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            focusable="false"
-          >
-            <defs>
-              <filter id={`${maskId}-paper-grain`} x="-12%" y="-12%" width="124%" height="124%">
-                <feTurbulence
-                  type="fractalNoise"
-                  baseFrequency="0.018 0.07"
-                  numOctaves="3"
-                  seed="19"
-                  result="paperNoise"
-                />
-                <feDisplacementMap in="SourceGraphic" in2="paperNoise" scale="5.8" xChannelSelector="R" yChannelSelector="G" />
-                <feGaussianBlur stdDeviation="0.52" result="feather" />
-                <feComponentTransfer>
-                  <feFuncA type="gamma" amplitude="1.08" exponent="0.72" offset="0" />
-                </feComponentTransfer>
-              </filter>
-              <filter id={`${maskId}-fiber-edge`} x="-18%" y="-18%" width="136%" height="136%">
-                <feTurbulence
-                  type="fractalNoise"
-                  baseFrequency="0.055 0.16"
-                  numOctaves="2"
-                  seed="43"
-                  result="fiberNoise"
-                />
-                <feDisplacementMap in="SourceGraphic" in2="fiberNoise" scale="8.4" xChannelSelector="R" yChannelSelector="B" />
-                <feGaussianBlur stdDeviation="1.2" result="softBloom" />
-                <feComponentTransfer>
-                  <feFuncA type="table" tableValues="0 0.08 0.3 0.68 0.92 1" />
-                </feComponentTransfer>
-              </filter>
-              <mask id={`${maskId}-ink-mask`} maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
-                <rect width="100" height="100" fill="black" />
-                <g className="ink-mask-flow" filter={`url(#${maskId}-paper-grain)`}>
-                  <path className="ink-wash ink-wash--core" fill="white" d="M62 33 C67 24 79 25 84 34 C91 43 91 58 83 68 C74 80 55 82 46 70 C38 60 43 43 54 38 C57 36 59 35 62 33Z" />
-                  <path className="ink-wash ink-wash--fiber" fill="rgba(255,255,255,.62)" filter={`url(#${maskId}-fiber-edge)`} d="M58 38 C63 20 83 16 95 29 C108 43 98 64 87 78 C73 96 43 91 32 73 C22 57 33 43 48 39 C52 38 55 38 58 38Z" />
-                  <path className="ink-wash ink-wash--hand" fill="rgba(255,255,255,.72)" filter={`url(#${maskId}-fiber-edge)`} d="M57 59 C65 51 79 55 85 65 C91 75 80 88 64 88 C47 88 40 77 45 68 C47 64 52 62 57 59Z" />
-                  <path className="ink-wash ink-wash--upper" fill="rgba(255,255,255,.48)" filter={`url(#${maskId}-fiber-edge)`} d="M70 17 C84 11 100 18 106 32 C111 45 99 53 86 50 C73 47 61 42 61 31 C61 25 65 20 70 17Z" />
-                  <path className="ink-wash ink-wash--lower" fill="rgba(255,255,255,.5)" filter={`url(#${maskId}-fiber-edge)`} d="M42 73 C55 62 81 66 96 82 C110 97 93 115 66 112 C39 109 20 93 29 81 C32 77 37 76 42 73Z" />
-                  <path className="ink-wash ink-wash--finish" fill="white" filter={`url(#${maskId}-fiber-edge)`} d="M53 44 C70 14 112 14 128 47 C145 82 113 119 68 121 C26 123 -8 101 -8 69 C-8 43 29 56 53 44Z" />
-                </g>
-              </mask>
-            </defs>
-            <image
-              href={heroImageSrc}
-              width="100"
-              height="100"
-              preserveAspectRatio="xMidYMid slice"
-              mask={`url(#${maskId}-ink-mask)`}
+          <>
+            <img
+              className="hero-background__image"
+              src={heroImageSrc}
+              alt=""
+              decoding="async"
+              style={{
+                WebkitMaskImage: `url(#${maskId}-ink-mask)`,
+                maskImage: `url(#${maskId}-ink-mask)`,
+              }}
               onError={() => setHasHeroImage(false)}
             />
-          </svg>
+            <svg className="hero-mask-defs" focusable="false" aria-hidden="true">
+              <defs>
+                <filter id={`${maskId}-ink-edge`} x="-28%" y="-28%" width="156%" height="156%">
+                  <feTurbulence
+                    type="fractalNoise"
+                    baseFrequency="0.012 0.052"
+                    numOctaves="3"
+                    seed="19"
+                    result="wideNoise"
+                  />
+                  <feDisplacementMap
+                    in="SourceGraphic"
+                    in2="wideNoise"
+                    scale="0.095"
+                    xChannelSelector="R"
+                    yChannelSelector="G"
+                    result="warpedEdge"
+                  />
+                  <feGaussianBlur in="warpedEdge" stdDeviation="0.012" result="softEdge" />
+                  <feComponentTransfer in="softEdge">
+                    <feFuncA type="table" tableValues="0 0.1 0.32 0.72 0.93 1" />
+                  </feComponentTransfer>
+                </filter>
+                <filter id={`${maskId}-paper-fiber`} x="-34%" y="-34%" width="168%" height="168%">
+                  <feTurbulence
+                    type="fractalNoise"
+                    baseFrequency="0.18 0.56"
+                    numOctaves="2"
+                    seed="43"
+                    result="fiberNoise"
+                  />
+                  <feDisplacementMap
+                    in="SourceGraphic"
+                    in2="fiberNoise"
+                    scale="0.032"
+                    xChannelSelector="R"
+                    yChannelSelector="B"
+                    result="fibers"
+                  />
+                  <feGaussianBlur in="fibers" stdDeviation="0.005" result="fiberFeather" />
+                  <feComponentTransfer in="fiberFeather">
+                    <feFuncA type="table" tableValues="0 0.04 0.18 0.42 0.7 0.86" />
+                  </feComponentTransfer>
+                </filter>
+                <mask
+                  id={`${maskId}-ink-mask`}
+                  maskUnits="objectBoundingBox"
+                  maskContentUnits="objectBoundingBox"
+                  x="0"
+                  y="0"
+                  width="1"
+                  height="1"
+                >
+                  <rect width="1" height="1" fill="black" />
+                  <g className="ink-mask-bloom">
+                    <path
+                      className="ink-mask-main"
+                      fill="white"
+                      filter={`url(#${maskId}-ink-edge)`}
+                      d="M0.64 0.34 C0.69 0.22 0.82 0.21 0.91 0.33 C1.02 0.47 0.94 0.71 0.8 0.83 C0.65 0.96 0.37 0.91 0.25 0.72 C0.15 0.55 0.31 0.39 0.49 0.37 C0.56 0.36 0.6 0.37 0.64 0.34Z"
+                    />
+                    <path
+                      className="ink-mask-fiber ink-mask-fiber--wide"
+                      fill="rgba(255,255,255,.68)"
+                      filter={`url(#${maskId}-paper-fiber)`}
+                      d="M0.59 0.34 C0.66 0.12 0.88 0.13 0.99 0.3 C1.14 0.52 0.98 0.83 0.77 0.97 C0.56 1.1 0.17 0.96 0.08 0.7 C0.02 0.52 0.21 0.41 0.42 0.37 C0.49 0.36 0.55 0.37 0.59 0.34Z"
+                    />
+                    <path
+                      className="ink-mask-fiber ink-mask-fiber--threads"
+                      fill="rgba(255,255,255,.38)"
+                      filter={`url(#${maskId}-paper-fiber)`}
+                      d="M0.62 0.33 C0.72 0.18 0.94 0.23 1.04 0.42 C1.17 0.67 0.9 1.02 0.58 1.04 C0.3 1.06 0.05 0.86 0.12 0.65 C0.17 0.5 0.38 0.43 0.52 0.36 C0.57 0.34 0.6 0.34 0.62 0.33Z"
+                    />
+                  </g>
+                </mask>
+              </defs>
+            </svg>
+          </>
         ) : null}
       </div>
       <div className="hero-overlay" aria-hidden="true" />
