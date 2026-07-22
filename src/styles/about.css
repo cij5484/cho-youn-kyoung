@@ -488,3 +488,24 @@
     animation: none !important;
   }
 }
+
+@media (min-width: 1181px) {
+  .about-hero__portrait::before {
+    background: linear-gradient(90deg, rgba(11, 13, 12, 0.46) 0%, rgba(11, 13, 12, 0.1) 38%, rgba(11, 13, 12, 0.04) 100%);
+  }
+
+  .about-hero__portrait img {
+    opacity: 1;
+    filter: brightness(1.1) contrast(1.02);
+  }
+
+  .about-gallery__thumbnail {
+    opacity: 0.78;
+  }
+
+  .about-gallery__thumbnail:hover,
+  .about-gallery__thumbnail:focus-visible,
+  .about-gallery__thumbnail.is-active {
+    opacity: 1;
+  }
+}

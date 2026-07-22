@@ -35,6 +35,12 @@ export type ArchiveMaterial = {
   downloadLabel?: string;
 };
 
+export type LeafletPreviewImage = {
+  src: string;
+  alt: string;
+  label: string;
+};
+
 export type Performance = {
   id: string;
   title: string;
@@ -42,6 +48,8 @@ export type Performance = {
   date: string;
   displayDate: string;
   venue: string;
+  venueAddress?: string;
+  venueUrl?: string;
   performer: string;
   featured: boolean;
   heroImage: string;
@@ -58,6 +66,7 @@ export type Performance = {
   leafletUrl?: string;
   posterPreviewImageUrl?: string;
   leafletPreviewImageUrl?: string;
+  leafletPreviewImages?: LeafletPreviewImage[];
 };
 
 const collaborators: PerformanceCollaborator[] = [
@@ -107,10 +116,24 @@ export const performances: Performance[] = [
     date: '2026-08-02',
     displayDate: '2026. 8. 2. (일) 16:00',
     venue: '향사아트센터',
+    venueAddress: '경북 칠곡군 석적읍 강변대로 1570 향사아트센터',
+    venueUrl: 'https://www.chilgokctf.or.kr/ctf/main.do',
     performer: '조윤경',
     featured: true,
     heroImage: 'images/hero/hero-background-v2.png',
     posterPreviewImageUrl: 'images/archive/2026-08-02-poster.png',
+    leafletPreviewImages: [
+      {
+        src: 'images/archive/2026-08-02-leaflet-outer.png',
+        alt: '해금, 시대를 잇다 리플렛 바깥면',
+        label: 'OUTER',
+      },
+      {
+        src: 'images/archive/2026-08-02-leaflet-inner.png',
+        alt: '해금, 시대를 잇다 리플렛 안쪽면',
+        label: 'INNER',
+      },
+    ],
     archiveLabel: 'HAEGEUM RECITAL 2026',
     listDescription: '해금 창작곡의 변천을 기록하다',
     introduction: [
