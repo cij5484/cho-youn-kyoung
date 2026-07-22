@@ -90,6 +90,7 @@ export function HomeHeroRotator() {
               className={`home-hero-rotator__slide${isActive ? ' is-active' : ''}`}
               key={slide.id}
               aria-hidden={!isActive}
+              inert={!isActive ? true : undefined}
             >
               {renderSlide(slide, isActive)}
             </div>
