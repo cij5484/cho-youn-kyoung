@@ -283,10 +283,32 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   font-weight: 700;
   letter-spacing: 0.22em;
 }
+.home-hero .text-link {
+  position: relative;
+  border-bottom: 0;
+  background-image: none;
+}
+.home-hero .text-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.home-hero .text-link:hover::after,
+.home-hero .text-link:focus-visible::after {
+  transform: scaleX(1);
+}
 .text-link span {
   transition: transform 0.2s ease;
 }
-.text-link:hover span {
+.text-link:hover span,
+.text-link:focus-visible span {
   transform: translateX(4px);
 }
 .page-shell {
@@ -683,7 +705,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
 }
 
 .sanjo-hero {
-  grid-template-columns: minmax(0, 58%) minmax(360px, 42%);
+  grid-template-columns: minmax(0, 62%) minmax(360px, 38%);
   background: #efe8dc;
   color: #292a29;
   overflow: hidden;
@@ -724,8 +746,9 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   position: relative;
   z-index: 2;
   grid-column: 2;
-  width: min(460px, calc(100% - 56px));
-  padding: calc(var(--header) + 14px) clamp(34px, 4.2vw, 76px) 44px 0;
+  width: min(600px, calc(100% - 64px));
+  max-width: 600px;
+  padding: calc(var(--header) + 14px) clamp(40px, 5vw, 88px) 44px 0;
   align-self: center;
   justify-self: stretch;
   color: #292a29;
@@ -735,7 +758,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   animation: sanjoTextIn 1.9s cubic-bezier(0.22, 0.61, 0.36, 1) 0.68s both;
 }
 .sanjo-hero__eyebrow {
-  margin: 0 0 26px;
+  margin: 0 0 clamp(28px, 3.4vh, 36px);
   color: #3b3d3d;
   font-size: clamp(0.66rem, 0.72vw, 0.76rem);
   font-weight: 600;
@@ -743,25 +766,31 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
 }
 .sanjo-hero__title {
   display: grid;
-  gap: 0.04em;
+  align-items: start;
   margin: 0;
   font-family: var(--serif);
-  font-size: clamp(2.55rem, 4vw, 3.65rem);
+  font-size: clamp(2.7rem, 4.2vw, 3.9rem);
   font-weight: 450;
-  line-height: 0.98;
+  line-height: 1;
   letter-spacing: -0.055em;
 }
 .sanjo-hero__title-primary {
+  display: block;
   color: #262626;
 }
 .sanjo-hero__title-accent {
+  display: block;
+  width: fit-content;
+  margin-top: -0.08em;
+  margin-left: clamp(1.5em, 4vw, 2.4em);
   color: #183a60;
-  padding-left: 0.12em;
+  font-size: 1.18em;
+  line-height: 0.92;
 }
 .sanjo-hero__divider {
   width: 1px;
   height: clamp(48px, 5.2vh, 58px);
-  margin: clamp(22px, 3.1vh, 34px) 0 clamp(20px, 2.9vh, 32px) 0.2em;
+  margin: clamp(24px, 3.4vh, 38px) 0 clamp(20px, 2.9vh, 32px) 0.2em;
   background: rgba(40, 42, 42, 0.55);
 }
 .sanjo-hero__subtitle {
@@ -807,18 +836,37 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   letter-spacing: 0.02em;
 }
 .sanjo-hero__link {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  padding-bottom: 8px;
   color: #183a60;
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.14em;
 }
+.sanjo-hero__link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.sanjo-hero__link:hover::after,
+.sanjo-hero__link:focus-visible::after {
+  transform: scaleX(1);
+}
 .sanjo-hero__link span {
   transition: transform 0.2s ease;
 }
-.sanjo-hero__link:hover span {
+.sanjo-hero__link:hover span,
+.sanjo-hero__link:focus-visible span {
   transform: translateX(4px);
 }
 @keyframes sanjoImageIn {
@@ -884,6 +932,10 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   .sanjo-hero__title {
     font-size: clamp(2.3rem, 12vw, 3.1rem);
   }
+  .sanjo-hero__title-accent {
+    margin-left: clamp(1em, 8vw, 1.6em);
+    font-size: 1.12em;
+  }
   .sanjo-hero__divider {
     height: 44px;
     margin-block: 18px;
@@ -912,5 +964,9 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
     opacity: 1;
     filter: none;
     transform: none;
+  }
+  .home-hero .text-link::after,
+  .sanjo-hero__link::after {
+    transition: none;
   }
 }

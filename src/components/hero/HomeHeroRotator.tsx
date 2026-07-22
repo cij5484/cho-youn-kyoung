@@ -3,7 +3,7 @@ import { HomeHeroSlide, getHomeHeroSlidesForDate, homeHeroSlides } from '../../d
 import { HomeHero } from './HomeHero';
 import { SanjoMatiereHero } from './SanjoMatiereHero';
 
-const ROTATION_INTERVAL_MS = 7000;
+const ROTATION_INTERVAL_MS = 12000;
 
 const dotLabels = ['첫 번째 공연 보기', '두 번째 공연 보기', '세 번째 공연 보기', '네 번째 공연 보기'];
 
