@@ -559,6 +559,16 @@ img {
   font-weight: 500;
 }
 
+.editorial-title {
+  max-width: 7.8em;
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(3.2rem, 7.5vw, 8.4rem);
+  font-weight: 700;
+  line-height: 0.86;
+  letter-spacing: -0.075em;
+}
+
 .contact-page {
   min-height: 100svh;
   display: grid;
@@ -639,6 +649,12 @@ img {
 @media (max-width: 640px) {
   .page-title {
     font-size: clamp(3rem, 16vw, 4.9rem);
+    letter-spacing: -0.065em;
+  }
+
+  .editorial-title {
+    max-width: 100%;
+    font-size: clamp(3rem, 17vw, 5.2rem);
     letter-spacing: -0.065em;
   }
 
