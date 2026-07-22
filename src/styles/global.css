@@ -122,35 +122,29 @@ img {
     ),
     linear-gradient(115deg, #070808 0%, #111312 42%, #1f1a17 72%, #0b0d0c 100%);
 }
-.hero-background img {
+.hero-ink-reveal {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: 72% center;
+  display: block;
   opacity: 1;
   filter: brightness(1.27) saturate(0.96) contrast(0.97);
-  --ink-drop: 0%;
-  --ink-face: 0%;
-  --ink-haegeum: 0%;
-  --ink-texture: 0%;
-  --ink-lower: 0%;
-  --ink-wash: 0%;
-  -webkit-mask-image:
-    radial-gradient(ellipse 18% 13% at 64% 33%, #000 0 var(--ink-drop), rgba(0, 0, 0, 0.72) calc(var(--ink-drop) + 3%), transparent calc(var(--ink-drop) + 9%)),
-    radial-gradient(ellipse 25% 18% at 72% 43%, #000 0 var(--ink-face), rgba(0, 0, 0, 0.6) calc(var(--ink-face) + 6%), transparent calc(var(--ink-face) + 15%)),
-    radial-gradient(ellipse 30% 22% at 75% 61%, #000 0 var(--ink-haegeum), rgba(0, 0, 0, 0.58) calc(var(--ink-haegeum) + 7%), transparent calc(var(--ink-haegeum) + 18%)),
-    radial-gradient(ellipse 28% 34% at 89% 34%, #000 0 var(--ink-texture), rgba(0, 0, 0, 0.48) calc(var(--ink-texture) + 8%), transparent calc(var(--ink-texture) + 20%)),
-    radial-gradient(ellipse 40% 20% at 58% 78%, #000 0 var(--ink-lower), rgba(0, 0, 0, 0.5) calc(var(--ink-lower) + 8%), transparent calc(var(--ink-lower) + 22%)),
-    radial-gradient(ellipse 78% 62% at 71% 50%, #000 0 var(--ink-wash), rgba(0, 0, 0, 0.5) calc(var(--ink-wash) + 12%), transparent calc(var(--ink-wash) + 28%));
-  mask-image:
-    radial-gradient(ellipse 18% 13% at 64% 33%, #000 0 var(--ink-drop), rgba(0, 0, 0, 0.72) calc(var(--ink-drop) + 3%), transparent calc(var(--ink-drop) + 9%)),
-    radial-gradient(ellipse 25% 18% at 72% 43%, #000 0 var(--ink-face), rgba(0, 0, 0, 0.6) calc(var(--ink-face) + 6%), transparent calc(var(--ink-face) + 15%)),
-    radial-gradient(ellipse 30% 22% at 75% 61%, #000 0 var(--ink-haegeum), rgba(0, 0, 0, 0.58) calc(var(--ink-haegeum) + 7%), transparent calc(var(--ink-haegeum) + 18%)),
-    radial-gradient(ellipse 28% 34% at 89% 34%, #000 0 var(--ink-texture), rgba(0, 0, 0, 0.48) calc(var(--ink-texture) + 8%), transparent calc(var(--ink-texture) + 20%)),
-    radial-gradient(ellipse 40% 20% at 58% 78%, #000 0 var(--ink-lower), rgba(0, 0, 0, 0.5) calc(var(--ink-lower) + 8%), transparent calc(var(--ink-lower) + 22%)),
-    radial-gradient(ellipse 78% 62% at 71% 50%, #000 0 var(--ink-wash), rgba(0, 0, 0, 0.5) calc(var(--ink-wash) + 12%), transparent calc(var(--ink-wash) + 28%));
-  animation: inkImageReveal 3.05s cubic-bezier(0.22, 0.72, 0.22, 1) 0.18s both;
 }
+.ink-mask-flow {
+  transform-box: fill-box;
+  transform-origin: 70% 48%;
+}
+.ink-wash {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: 66% 42%;
+  animation: inkWashSpread 4.05s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+.ink-wash--core { animation-name: inkWashCore; transform-origin: 69% 42%; }
+.ink-wash--fiber { animation-name: inkWashFiber; transform-origin: 72% 48%; }
+.ink-wash--hand { animation-name: inkWashHand; transform-origin: 68% 64%; }
+.ink-wash--upper { animation-name: inkWashUpper; transform-origin: 78% 32%; }
+.ink-wash--lower { animation-name: inkWashLower; transform-origin: 64% 78%; }
+.ink-wash--finish { animation-name: inkWashFinish; transform-origin: 70% 56%; }
 .hero-background.is-fallback {
   background:
     radial-gradient(
@@ -206,20 +200,20 @@ img {
   opacity: 0;
   filter: blur(7px);
   transform: translateY(8px);
-  animation: heroTextIn 1.12s ease-out both;
+  animation: heroTextIn 1.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 .hero-content .eyebrow,
 .hero-content h1 {
-  animation-delay: 1.05s;
+  animation-delay: 1.2s;
 }
 .hero-subtitle {
-  animation-delay: 1.42s;
+  animation-delay: 1.38s;
 }
 .hero-meta {
-  animation-delay: 1.78s;
+  animation-delay: 1.58s;
 }
 .hero-content .text-link {
-  animation-delay: 2.08s;
+  animation-delay: 1.78s;
 }
 
 .eyebrow {
@@ -361,12 +355,6 @@ img {
   color: var(--muted);
   font-size: 0.85rem;
 }
-@property --ink-drop { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
-@property --ink-face { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
-@property --ink-haegeum { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
-@property --ink-texture { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
-@property --ink-lower { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
-@property --ink-wash { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
 @keyframes heroTextIn {
   to {
     opacity: 1;
@@ -374,55 +362,46 @@ img {
     transform: translateY(0);
   }
 }
-@keyframes inkImageReveal {
-  0%, 9% {
-    --ink-drop: 0%;
-    --ink-face: 0%;
-    --ink-haegeum: 0%;
-    --ink-texture: 0%;
-    --ink-lower: 0%;
-    --ink-wash: 0%;
-  }
-  22% {
-    --ink-drop: 17%;
-    --ink-face: 0%;
-    --ink-haegeum: 0%;
-    --ink-texture: 0%;
-    --ink-lower: 0%;
-    --ink-wash: 0%;
-  }
-  43% {
-    --ink-drop: 33%;
-    --ink-face: 18%;
-    --ink-haegeum: 12%;
-    --ink-texture: 10%;
-    --ink-lower: 7%;
-    --ink-wash: 0%;
-  }
-  72% {
-    --ink-drop: 48%;
-    --ink-face: 34%;
-    --ink-haegeum: 32%;
-    --ink-texture: 30%;
-    --ink-lower: 28%;
-    --ink-wash: 22%;
-  }
-  88% {
-    --ink-drop: 58%;
-    --ink-face: 44%;
-    --ink-haegeum: 42%;
-    --ink-texture: 42%;
-    --ink-lower: 40%;
-    --ink-wash: 68%;
-  }
-  100% {
-    --ink-drop: 100%;
-    --ink-face: 100%;
-    --ink-haegeum: 100%;
-    --ink-texture: 100%;
-    --ink-lower: 100%;
-    --ink-wash: 100%;
-  }
+@keyframes inkWashCore {
+  0%, 12% { opacity: 0; transform: translate(-1.5%, 1%) scale(0.015) rotate(-8deg); }
+  24% { opacity: 0.9; transform: translate(-1%, 0.5%) scale(0.18) rotate(-6deg); }
+  40% { opacity: 1; transform: translate(-0.5%, 0) scale(0.42) rotate(-4deg); }
+  64% { opacity: 1; transform: translate(0, 0) scale(0.7) rotate(-1deg); }
+  84% { opacity: 1; transform: translate(0, 0) scale(0.9) rotate(0deg); }
+  100% { opacity: 1; transform: translate(0, 0) scale(1.08) rotate(0deg); }
+}
+@keyframes inkWashFiber {
+  0%, 18% { opacity: 0; transform: translate(0.5%, -0.5%) scale(0.03) rotate(7deg); }
+  32% { opacity: 0.34; transform: translate(0.2%, -0.3%) scale(0.22) rotate(5deg); }
+  52% { opacity: 0.58; transform: translate(0, 0) scale(0.5) rotate(2deg); }
+  74% { opacity: 0.76; transform: translate(0, 0) scale(0.78) rotate(0deg); }
+  100% { opacity: 0.82; transform: translate(0, 0) scale(1.08) rotate(0deg); }
+}
+@keyframes inkWashHand {
+  0%, 30% { opacity: 0; transform: translate(-2%, 2%) scale(0.06) rotate(-10deg); }
+  46% { opacity: 0.36; transform: translate(-1%, 1%) scale(0.25) rotate(-7deg); }
+  66% { opacity: 0.62; transform: translate(-0.4%, 0.3%) scale(0.54) rotate(-3deg); }
+  84% { opacity: 0.74; transform: translate(0, 0) scale(0.78) rotate(0deg); }
+  100% { opacity: 0.8; transform: translate(0, 0) scale(1.03) rotate(0deg); }
+}
+@keyframes inkWashUpper {
+  0%, 34% { opacity: 0; transform: translate(2%, -1.5%) scale(0.05) rotate(14deg); }
+  52% { opacity: 0.2; transform: translate(1%, -0.7%) scale(0.26) rotate(9deg); }
+  72% { opacity: 0.38; transform: translate(0.3%, -0.2%) scale(0.54) rotate(4deg); }
+  100% { opacity: 0.52; transform: translate(0, 0) scale(1.02) rotate(0deg); }
+}
+@keyframes inkWashLower {
+  0%, 38% { opacity: 0; transform: translate(-3%, 2%) scale(0.04) rotate(-13deg); }
+  56% { opacity: 0.24; transform: translate(-1.6%, 1%) scale(0.25) rotate(-9deg); }
+  76% { opacity: 0.42; transform: translate(-0.5%, 0.3%) scale(0.55) rotate(-4deg); }
+  100% { opacity: 0.58; transform: translate(0, 0) scale(1.04) rotate(0deg); }
+}
+@keyframes inkWashFinish {
+  0%, 46% { opacity: 0; transform: scale(0.08) rotate(6deg); }
+  62% { opacity: 0.18; transform: scale(0.34) rotate(4deg); }
+  78% { opacity: 0.48; transform: scale(0.64) rotate(2deg); }
+  90% { opacity: 0.74; transform: scale(0.86) rotate(0.8deg); }
+  100% { opacity: 1; transform: scale(1.18) rotate(0deg); }
 }
 @media (max-width: 760px) {
   :root {
@@ -461,10 +440,8 @@ img {
     padding: 0 22px 38px;
     align-items: flex-end;
   }
-  .hero-background img {
-    opacity: 1;
-    object-position: 66% center;
-    filter: brightness(1.2) saturate(0.95) contrast(0.97);
+  .hero-ink-reveal {
+    filter: brightness(1.22) saturate(0.95) contrast(0.97);
   }
   .hero-overlay {
     background:
@@ -520,9 +497,10 @@ img {
     transition: none !important;
     scroll-behavior: auto !important;
   }
-  .hero-background img {
-    -webkit-mask-image: none;
-    mask-image: none;
+  .ink-wash {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
   }
   .hero-content > * {
     opacity: 1;
