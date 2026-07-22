@@ -123,45 +123,19 @@ img {
     linear-gradient(115deg, #070808 0%, #111312 42%, #1f1a17 72%, #0b0d0c 100%);
 }
 .hero-background__image {
+  --hero-image-filter: brightness(1.27) saturate(0.96) contrast(0.97);
+  --hero-image-blur: 8px;
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
-  object-position: center center;
-  opacity: 1;
-  filter: brightness(1.27) saturate(0.96) contrast(0.97);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
-}
-.hero-mask-defs {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-}
-.ink-mask-bloom {
-  transform-box: view-box;
-  transform-origin: 61% 39%;
+  object-position: 72% center;
   opacity: 0;
-  animation: inkWashBloom 4.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
-}
-.ink-mask-main,
-.ink-mask-fiber {
-  transform-box: view-box;
-  transform-origin: 61% 39%;
-}
-.ink-mask-main {
-  opacity: 0.98;
-}
-.ink-mask-fiber--wide {
-  opacity: 0.72;
-}
-.ink-mask-fiber--threads {
-  opacity: 0.42;
+  filter: var(--hero-image-filter) blur(var(--hero-image-blur));
+  transform: scale(1.018);
+  transform-origin: center;
+  animation: heroImageFade 3.9s cubic-bezier(0.22, 0.61, 0.36, 1) 0.3s both;
+  will-change: opacity, transform;
 }
 .hero-background.is-fallback {
   background:
@@ -213,25 +187,11 @@ img {
   z-index: 4;
   width: min(560px, calc(100% - 44px));
   padding: calc(var(--header) + 14px) 0 34px clamp(28px, 8vw, 132px);
-}
-.hero-content > * {
   opacity: 0;
-  filter: blur(7px);
-  transform: translateY(8px);
-  animation: heroTextIn 1.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
-}
-.hero-content .eyebrow,
-.hero-content h1 {
-  animation-delay: 1.2s;
-}
-.hero-subtitle {
-  animation-delay: 1.38s;
-}
-.hero-meta {
-  animation-delay: 1.58s;
-}
-.hero-content .text-link {
-  animation-delay: 1.78s;
+  filter: blur(5px);
+  transform: translateY(7px);
+  animation: heroTextIn 2.4s cubic-bezier(0.22, 0.61, 0.36, 1) 0.85s both;
+  will-change: opacity, transform;
 }
 
 .eyebrow {
@@ -373,41 +333,28 @@ img {
   color: var(--muted);
   font-size: 0.85rem;
 }
+@keyframes heroImageFade {
+  from {
+    opacity: 0;
+    filter: var(--hero-image-filter) blur(var(--hero-image-blur));
+    transform: scale(1.018);
+  }
+  to {
+    opacity: 1;
+    filter: var(--hero-image-filter) blur(0);
+    transform: scale(1);
+  }
+}
 @keyframes heroTextIn {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translateY(7px);
+  }
   to {
     opacity: 1;
     filter: blur(0);
     transform: translateY(0);
-  }
-}
-@keyframes inkWashBloom {
-  0%, 11% {
-    opacity: 0;
-    transform: translate(3.5%, -1.5%) scale(0.018) rotate(-5deg);
-  }
-  15% {
-    opacity: 0.28;
-    transform: translate(2.8%, -1.2%) scale(0.055) rotate(-4.5deg);
-  }
-  30% {
-    opacity: 0.78;
-    transform: translate(1.8%, -0.8%) scale(0.18) rotate(-3.2deg);
-  }
-  50% {
-    opacity: 0.92;
-    transform: translate(1%, -0.4%) scale(0.43) rotate(-1.8deg);
-  }
-  70% {
-    opacity: 0.98;
-    transform: translate(0.4%, -0.1%) scale(0.74) rotate(-0.7deg);
-  }
-  85% {
-    opacity: 1;
-    transform: translate(0.1%, 0) scale(0.98) rotate(-0.2deg);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(0, 0) scale(1.2) rotate(0deg);
   }
 }
 @media (max-width: 760px) {
@@ -448,8 +395,9 @@ img {
     align-items: flex-end;
   }
   .hero-background__image {
-    object-position: 58% center;
-    filter: brightness(1.22) saturate(0.95) contrast(0.97);
+    --hero-image-filter: brightness(1.22) saturate(0.95) contrast(0.97);
+    --hero-image-blur: 6px;
+    object-position: 65% center;
   }
   .hero-overlay {
     background:
@@ -505,12 +453,12 @@ img {
     transition: none !important;
     scroll-behavior: auto !important;
   }
-  .ink-mask-bloom {
-    animation: none !important;
+  .hero-background__image {
     opacity: 1;
-    transform: translate(0, 0) scale(1.2) rotate(0deg);
+    filter: var(--hero-image-filter) blur(0);
+    transform: none;
   }
-  .hero-content > * {
+  .hero-content {
     opacity: 1;
     filter: none;
     transform: none;
