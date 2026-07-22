@@ -14,6 +14,9 @@ export function PerformanceDetailPage() {
   const [selectedWork, setSelectedWork] = useState<ProgramWork | null>(null);
   const [showAllNotes, setShowAllNotes] = useState(false);
   const [selectedArtist, setSelectedArtist] = useState<PerformanceCollaborator | null>(null);
+  const [isLeafletViewerOpen, setIsLeafletViewerOpen] = useState(false);
+  const lastLeafletButton = useRef<HTMLButtonElement | null>(null);
+  const leafletViewerRef = useRef<HTMLDivElement | null>(null);
   const lastArtistButton = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
 
@@ -40,6 +43,27 @@ export function PerformanceDetailPage() {
     return () => { document.body.style.overflow = previousOverflow; window.removeEventListener('keydown', onKeyDown); lastArtistButton.current?.focus(); };
   }, [selectedArtist]);
 
+  useEffect(() => {
+    if (!isLeafletViewerOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const viewer = leafletViewerRef.current;
+    viewer?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsLeafletViewerOpen(false);
+      if (event.key !== 'Tab' || !viewer) return;
+      const focusables = Array.from(viewer.querySelectorAll<HTMLElement>(focusableSelector));
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => { document.body.style.overflow = previousOverflow; window.removeEventListener('keydown', onKeyDown); lastLeafletButton.current?.focus(); };
+  }, [isLeafletViewerOpen]);
+
   if (!performance) {
     return <section className="page-shell"><h1>Performance not found</h1><Link className="text-link" to="/performance">Back to performance</Link></section>;
   }
@@ -50,6 +74,7 @@ export function PerformanceDetailPage() {
   const heroPreview = performance.posterPreviewImageUrl ?? performance.posterImage;
   const heroImage = assetUrl(heroPreview ?? performance.heroImage);
   const heroAlt = heroPreview ? `${performance.title} 포스터` : `${performance.title} 공연 대표 이미지`;
+  const leafletPreviewImages = performance.leafletPreviewImages ?? [];
 
   const renderWorkNote = (work: ProgramWork) => (
     <article className="performance-detail__work-notes" key={work.number}>
@@ -70,8 +95,8 @@ export function PerformanceDetailPage() {
           <p className="performance-detail__eyebrow">{performance.archiveLabel}</p>
           <h1 id="performance-title">{performance.title}</h1>
           <p className="performance-detail__subtitle">{performance.subtitle}</p>
-          <dl className="performance-detail__meta" aria-label="공연 기본 정보"><div><dt>DATE</dt><dd>{performance.displayDate}</dd></div><div><dt>VENUE</dt><dd>{performance.venue}</dd></div><div><dt>ARTIST</dt><dd><Link to="/about">{performance.performer}</Link></dd></div></dl>
-          {visibleMaterials.length > 0 && <div className="performance-detail__hero-actions">{visibleMaterials.map((material) => material.viewUrl && <a key={material.label} href={assetUrl(material.viewUrl)} target="_blank" rel="noreferrer" aria-label={`${performance.title} ${material.label === 'POSTER' ? '포스터' : '리플렛'} 새 창에서 보기`}>{material.viewLabel}</a>)}</div>}
+          <dl className="performance-detail__meta" aria-label="공연 기본 정보"><div><dt>DATE</dt><dd>{performance.displayDate}</dd></div><div><dt>VENUE</dt><dd><span className="performance-detail__venue-name">{performance.venue}</span>{performance.venueAddress && <span className="performance-detail__venue-address">{performance.venueAddress}</span>}{performance.venueUrl && <a className="performance-detail__venue-link" href={performance.venueUrl} target="_blank" rel="noopener noreferrer" aria-label="향사아트센터 공식 홈페이지 새 창에서 열기">VISIT VENUE WEBSITE <span aria-hidden="true">↗</span></a>}</dd></div><div><dt>ARTIST</dt><dd><Link to="/about">{performance.performer}</Link></dd></div></dl>
+          {visibleMaterials.length > 0 && <div className="performance-detail__hero-actions">{visibleMaterials.map((material) => material.viewUrl && (material.label === 'LEAFLET' && leafletPreviewImages.length > 0 ? <button key={material.label} type="button" onClick={(event) => { lastLeafletButton.current = event.currentTarget; setIsLeafletViewerOpen(true); }}>{material.viewLabel}</button> : <a key={material.label} href={assetUrl(material.viewUrl)} target="_blank" rel="noreferrer" aria-label={`${performance.title} ${material.label === 'POSTER' ? '포스터' : '리플렛'} 새 창에서 보기`}>{material.viewLabel}</a>))}</div>}
         </div>
       </section>
 
@@ -83,9 +108,11 @@ export function PerformanceDetailPage() {
         <div className="performance-detail__dark-sections">
           <Reveal as="section" className="performance-detail__section" aria-labelledby="program-title"><div className="performance-detail__section-heading reveal__heading"><span>03</span><h2 id="program-title">PROGRAM</h2></div><div className="performance-detail__program reveal__content"><div className="performance-detail__timeline">{works.map((work) => <button className={activeWork?.number === work.number ? 'is-active' : ''} type="button" key={work.number} aria-pressed={activeWork?.number === work.number} onClick={() => { setSelectedWork(work); setShowAllNotes(false); }}><span>{work.year}</span><strong>{String(work.number).padStart(2, '0')}</strong><b>{work.title}</b><small>{work.composer}</small><em>{work.instrumentation?.join(' · ') ?? '해금 독주'}</em></button>)}</div><button className="performance-detail__all-notes" type="button" aria-expanded={showAllNotes} onClick={() => setShowAllNotes((value) => !value)}>{showAllNotes ? '선택한 곡만 보기' : '전체 곡 해설 보기'}</button><div className="performance-detail__notes-list">{showAllNotes ? works.map(renderWorkNote) : activeWork && renderWorkNote(activeWork)}</div></div></Reveal>
           <Reveal as="section" className="performance-detail__section" aria-labelledby="artists-title"><div className="performance-detail__section-heading reveal__heading"><span>04</span><h2 id="artists-title" aria-label="GUEST ARTISTS"><span>GUEST</span><span>ARTISTS</span></h2></div><div className="performance-detail__artists reveal__content">{performance.collaborators.map((artist) => <button className="performance-detail__artist" type="button" key={artist.id} onClick={(event) => { lastArtistButton.current = event.currentTarget; setSelectedArtist(artist); }}><span className="performance-detail__artist-photo"><SafeImage src={assetUrl(artist.image)} alt={`${artist.name} ${artist.role} 사진`} fallbackClassName="safe-image-fallback" fallbackLabel={`${artist.role} ${artist.name}`} objectPosition="center top" /></span><small>{artist.role}</small><strong>{artist.name}</strong><em>VIEW PROFILE</em></button>)}</div></Reveal>
-          {visibleMaterials.length > 0 && <Reveal as="section" className="performance-detail__section" aria-labelledby="materials-title"><div className="performance-detail__section-heading reveal__heading"><span>05</span><h2 id="materials-title">ARCHIVE MATERIALS</h2></div><div className="performance-detail__materials reveal__content">{visibleMaterials.map((material) => <article className="performance-detail__material" key={material.label}><p>{material.label}</p><div>{material.viewUrl && <a href={assetUrl(material.viewUrl)} target="_blank" rel="noreferrer" aria-label={`${performance.title} ${material.label === 'POSTER' ? '포스터' : '리플렛'} 새 창에서 보기`}>{material.viewLabel}</a>}{material.downloadUrl && <a href={assetUrl(material.downloadUrl)} download aria-label={`${performance.title} ${material.label === 'POSTER' ? '포스터 PNG' : '리플렛 PDF'} 다운로드`}>{material.downloadLabel ?? 'DOWNLOAD PDF'}</a>}</div></article>)}</div></Reveal>}
+          {visibleMaterials.length > 0 && <Reveal as="section" className="performance-detail__section" aria-labelledby="materials-title"><div className="performance-detail__section-heading reveal__heading"><span>05</span><h2 id="materials-title">ARCHIVE MATERIALS</h2></div><div className="performance-detail__materials reveal__content">{visibleMaterials.map((material) => <article className="performance-detail__material" key={material.label}><p>{material.label}</p><div>{material.viewUrl && (material.label === 'LEAFLET' && leafletPreviewImages.length > 0 ? <button type="button" onClick={(event) => { lastLeafletButton.current = event.currentTarget; setIsLeafletViewerOpen(true); }}>{material.viewLabel}</button> : <a href={assetUrl(material.viewUrl)} target="_blank" rel="noreferrer" aria-label={`${performance.title} ${material.label === 'POSTER' ? '포스터' : '리플렛'} 새 창에서 보기`}>{material.viewLabel}</a>)}{material.downloadUrl && <a href={assetUrl(material.downloadUrl)} download aria-label={`${performance.title} ${material.label === 'POSTER' ? '포스터 PNG' : '리플렛 PDF'} 다운로드`}>{material.downloadLabel ?? 'DOWNLOAD PDF'}</a>}</div></article>)}</div></Reveal>}
         </div>
       </div>
+
+      {isLeafletViewerOpen && <div className="performance-detail__leaflet-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setIsLeafletViewerOpen(false); }}><div className="performance-detail__leaflet-viewer" role="dialog" aria-modal="true" aria-labelledby="leaflet-viewer-title" tabIndex={-1} ref={leafletViewerRef}><header><p id="leaflet-viewer-title">LEAFLET</p><button type="button" aria-label="리플렛 뷰어 닫기" onClick={() => setIsLeafletViewerOpen(false)}>CLOSE</button></header><div className="performance-detail__leaflet-images">{leafletPreviewImages.map((image) => <figure key={image.src}><figcaption>{image.label}</figcaption><SafeImage src={assetUrl(image.src)} alt={image.alt} fallbackClassName="safe-image-fallback" fallbackLabel={image.label} /></figure>)}</div></div></div>}
 
       {selectedArtist && <div className="performance-detail__panel-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedArtist(null); }}><aside className="performance-detail__artist-panel" role="dialog" aria-modal="true" aria-labelledby="artist-panel-title" tabIndex={-1} ref={panelRef}><button className="performance-detail__panel-close" type="button" onClick={() => setSelectedArtist(null)}>CLOSE</button><div className="performance-detail__panel-photo"><SafeImage src={assetUrl(selectedArtist.image)} alt={`${selectedArtist.name} ${selectedArtist.role} 사진`} fallbackClassName="safe-image-fallback" fallbackLabel={`${selectedArtist.role} ${selectedArtist.name}`} objectPosition="center top" /></div><p>{selectedArtist.role}</p><h2 id="artist-panel-title">{selectedArtist.name}</h2><ul>{selectedArtist.fullBio.map((bio) => <li key={bio}>{bio}</li>)}</ul><h3>PARTICIPATING WORKS</h3><ol>{selectedArtist.participatingWorks.map((work) => <li key={work}>{work}</li>)}</ol><nav><button type="button" onClick={() => setSelectedArtist(performance.collaborators[(activeArtistIndex - 1 + performance.collaborators.length) % performance.collaborators.length])}>← PREV</button><button type="button" onClick={() => setSelectedArtist(performance.collaborators[(activeArtistIndex + 1) % performance.collaborators.length])}>NEXT →</button></nav></aside></div>}
     </article>

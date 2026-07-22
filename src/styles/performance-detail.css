@@ -207,3 +207,184 @@
     transform: none !important;
   }
 }
+
+.performance-detail__meta dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+}
+
+.performance-detail__venue-name {
+  color: inherit;
+}
+
+.performance-detail__venue-address {
+  color: rgba(52, 44, 36, 0.58);
+  font-size: 0.86rem;
+  line-height: 1.65;
+}
+
+.performance-detail__venue-link {
+  display: inline-flex;
+  gap: 6px;
+  color: #7d542c;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 5px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+}
+
+.performance-detail__venue-link span,
+.performance-detail__material button,
+.performance-detail__hero-actions button {
+  transition: transform 180ms ease, border-color 180ms ease;
+}
+
+.performance-detail__venue-link:hover,
+.performance-detail__venue-link:focus-visible {
+  border-bottom-color: rgba(125, 84, 44, 0.55);
+}
+
+.performance-detail__venue-link:hover span,
+.performance-detail__venue-link:focus-visible span {
+  transform: translate(5px, -5px);
+}
+
+.performance-detail__hero-actions button,
+.performance-detail__material button {
+  width: max-content;
+  color: var(--gold);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(189, 146, 80, 0.45);
+  padding: 0 0 8px;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+}
+
+.performance-detail__hero-actions button {
+  color: #513516;
+  border-bottom-color: rgba(81, 53, 22, 0.55);
+}
+
+.performance-detail__hero-actions button:hover,
+.performance-detail__hero-actions button:focus-visible,
+.performance-detail__material button:hover,
+.performance-detail__material button:focus-visible {
+  border-bottom-color: currentColor;
+}
+
+.performance-detail__leaflet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(7, 8, 8, 0.86);
+  overflow-y: auto;
+  overflow-x: hidden;
+  animation: artist-backdrop-enter 240ms ease;
+}
+
+.performance-detail__leaflet-viewer {
+  min-height: 100svh;
+  width: min(100% - 48px, 1600px);
+  margin: 0 auto;
+  padding: clamp(22px, 4vw, 48px) 0 64px;
+  color: var(--text);
+  outline: 0;
+}
+
+.performance-detail__leaflet-viewer header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 0 0 24px;
+  background: linear-gradient(180deg, rgba(7, 8, 8, 0.96), rgba(7, 8, 8, 0));
+}
+
+.performance-detail__leaflet-viewer p,
+.performance-detail__leaflet-viewer figcaption,
+.performance-detail__leaflet-viewer button {
+  margin: 0;
+  color: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+}
+
+.performance-detail__leaflet-viewer button {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(189, 146, 80, 0.5);
+  padding: 0 0 8px;
+  cursor: pointer;
+}
+
+.performance-detail__leaflet-images {
+  display: grid;
+  gap: clamp(32px, 4vw, 48px);
+}
+
+.performance-detail__leaflet-images figure {
+  margin: 0;
+}
+
+.performance-detail__leaflet-images figcaption {
+  margin-bottom: 14px;
+}
+
+.performance-detail__leaflet-images img,
+.performance-detail__leaflet-images .safe-image-fallback {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 1600px;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+@media (max-width: 900px) {
+  .performance-detail__meta dd {
+    display: grid;
+    gap: 8px;
+  }
+
+  .performance-detail__venue-address {
+    color: rgba(241, 237, 229, 0.62);
+  }
+
+  .performance-detail__venue-link {
+    color: #d6ad6c;
+  }
+
+  .performance-detail__hero-actions button {
+    color: #d6ad6c;
+    border-bottom-color: rgba(214, 173, 108, 0.72);
+  }
+
+  .performance-detail__leaflet-viewer {
+    width: min(100% - 28px, 1600px);
+    padding-bottom: 42px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .performance-detail__leaflet-backdrop {
+    animation: none !important;
+  }
+
+  .performance-detail__venue-link span,
+  .performance-detail__material button,
+  .performance-detail__hero-actions button {
+    transition: none !important;
+    transform: none !important;
+  }
+}
