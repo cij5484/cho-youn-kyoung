@@ -765,8 +765,8 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   letter-spacing: 0.1em;
 }
 .sanjo-hero__title {
-  display: grid;
-  align-items: start;
+  position: relative;
+  min-height: clamp(6.35rem, 9.8vw, 9rem);
   margin: 0;
   font-family: var(--serif);
   font-size: clamp(3.2rem, 4.95vw, 4.6rem);
@@ -779,12 +779,13 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   color: #262626;
 }
 .sanjo-hero__title-accent {
+  position: absolute;
+  top: 0.52em;
+  left: clamp(2.6em, 13vw, 3.35em);
   display: block;
   width: fit-content;
-  margin-top: -0.16em;
-  margin-left: clamp(70px, 5vw, 110px);
   color: #183a60;
-  font-size: 1.3em;
+  font-size: 1.32em;
   line-height: 0.92;
 }
 .sanjo-hero__divider {
@@ -819,6 +820,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
 }
 .sanjo-hero__date {
   display: flex;
+  align-items: baseline;
   gap: 0.55em;
   margin-bottom: 8px;
   font-size: clamp(1.1rem, 1.3vw, 1.27rem);
@@ -828,7 +830,9 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
 }
 .sanjo-hero__date-accent {
   color: #183a60;
-  font-weight: 650;
+  font-size: 1.28em;
+  font-weight: 700;
+  line-height: 1;
 }
 .sanjo-hero__venue {
   margin-bottom: clamp(28px, 4vh, 42px);
@@ -931,12 +935,13 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
     letter-spacing: 0.18em;
   }
   .sanjo-hero__title {
+    min-height: clamp(4.75rem, 22vw, 6.1rem);
     font-size: clamp(2.45rem, 11.5vw, 3.18rem);
   }
   .sanjo-hero__title-accent {
-    margin-top: -0.12em;
-    margin-left: clamp(34px, 12vw, 58px);
-    font-size: 1.2em;
+    top: 0.56em;
+    left: clamp(2.15em, 34vw, 2.85em);
+    font-size: 1.18em;
   }
   .sanjo-hero__divider {
     height: 44px;
