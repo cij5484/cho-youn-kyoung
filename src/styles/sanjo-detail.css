@@ -59,7 +59,7 @@
 .sanjo-detail h1 {
   max-width: 8em;
   margin: 0.13em 0 0.09em;
-  color: var(--sanjo-navy-dark);
+  color: var(--sanjo-navy);
   font-size: clamp(3.45rem, 7.5vw, 7.65rem);
   line-height: 0.88;
 }
@@ -279,13 +279,18 @@
 }
 
 .sanjo-program h2 {
-  font-size: clamp(1.95rem, 3.35vw, 3.85rem);
-  line-height: 1.08;
+  font-size: clamp(2.2rem, 3.8vw, 4.35rem);
+  line-height: 1.06;
   margin: 0 0 18px;
   text-wrap: balance;
 }
 
+.sanjo-program--light h2 {
+  color: var(--sanjo-navy);
+}
+
 .sanjo-program--dark h2 {
+  color: var(--sanjo-ivory);
   white-space: nowrap;
 }
 
@@ -385,7 +390,8 @@
   margin-top: 7px;
   margin-bottom: 24px;
   font-family: var(--serif);
-  font-size: clamp(1.5rem, 2.2vw, 2.45rem);
+  color: var(--sanjo-navy);
+  font-size: clamp(1.75rem, 2.55vw, 2.85rem);
   font-weight: 400;
   letter-spacing: -0.055em;
   line-height: 1.08;
@@ -499,9 +505,13 @@
   border-top: 1px solid rgba(31, 79, 122, 0.18);
 }
 
+.sanjo-detail__bottom a:last-child,
+.sanjo-detail__bottom a:last-child strong {
+  color: var(--sanjo-navy);
+}
+
 .sanjo-detail__bottom a:last-child {
   text-align: right;
-  color: #222;
 }
 
 .sanjo-detail__bottom span {
@@ -516,7 +526,7 @@
   display: block;
   margin-top: 7px;
   font-family: var(--serif);
-  font-size: clamp(1.25rem, 2vw, 2.1rem);
+  font-size: clamp(1.35rem, 2.15vw, 2.25rem);
   font-weight: 400;
 }
 
@@ -570,6 +580,8 @@
 
   .sanjo-program--dark h2 {
     white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: normal;
   }
 
   .sanjo-detail__artist-grid,

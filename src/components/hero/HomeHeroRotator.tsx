@@ -6,6 +6,10 @@ import { SanjoMatiereHero } from './SanjoMatiereHero';
 
 const ROTATION_INTERVAL_MS = 12000;
 
+const isInteractiveTarget = (target: EventTarget | null) =>
+  target instanceof Element &&
+  Boolean(target.closest('a, button, [role="button"]'));
+
 const dotLabels = ['첫 번째 공연 보기', '두 번째 공연 보기', '세 번째 공연 보기', '네 번째 공연 보기'];
 
 const usePrefersReducedMotion = () => {
@@ -98,8 +102,16 @@ export function HomeHeroRotator() {
     setActiveIndex((currentIndex) => (currentIndex + direction + slides.length) % slides.length);
   };
 
+  const resetTouch = () => {
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+  };
+
   const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
-    if (slides.length <= 1) return;
+    if (slides.length <= 1 || isInteractiveTarget(event.target)) {
+      resetTouch();
+      return;
+    }
 
     const touch = event.touches[0];
     touchStartXRef.current = touch.clientX;
@@ -107,16 +119,25 @@ export function HomeHeroRotator() {
   };
 
   const handleTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
-    if (slides.length <= 1 || touchStartXRef.current === null || touchStartYRef.current === null) return;
+    const startX = touchStartXRef.current;
+    const startY = touchStartYRef.current;
+
+    resetTouch();
+
+    if (slides.length <= 1 || startX === null || startY === null) {
+      return;
+    }
 
     const touch = event.changedTouches[0];
-    const deltaX = touch.clientX - touchStartXRef.current;
-    const deltaY = touch.clientY - touchStartYRef.current;
+    const deltaX = touch.clientX - startX;
+    const deltaY = touch.clientY - startY;
 
-    touchStartXRef.current = null;
-    touchStartYRef.current = null;
-
-    if (Math.abs(deltaX) < 48 || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) return;
+    if (
+      Math.abs(deltaX) < 48 ||
+      Math.abs(deltaX) < Math.abs(deltaY) * 1.2
+    ) {
+      return;
+    }
 
     goToAdjacentSlide(deltaX < 0 ? 1 : -1);
   };
@@ -127,6 +148,7 @@ export function HomeHeroRotator() {
       data-theme={activeTheme}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      onTouchCancel={resetTouch}
     >
       <div className="home-hero-rotator__stage">
         {slides.map((slide, index) => {

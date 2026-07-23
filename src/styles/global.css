@@ -999,8 +999,10 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
 }
 
 .site-header--sanjo-detail {
-  background: transparent;
-  box-shadow: none;
+  background: rgba(243, 237, 226, 0.92);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 1px 0 rgba(31, 79, 122, 0.08);
 }
 .site-header--sanjo-detail .brand,
 .site-header--sanjo-detail .desktop-nav a,
