@@ -10,8 +10,8 @@ export const site = {
   instagramUrl: 'https://www.instagram.com/cho.younkyoung/',
   inquiries: '공연 및 협업 문의',
   affiliation: '국립부산국악원 기악단 단원',
-  githubPagesUrl: 'https://cij5484.github.io/cho-youn-kyoung/',
-  shareImage: 'https://cij5484.github.io/cho-youn-kyoung/images/archive/2026-08-02-poster.png',
+  siteUrl: 'https://choyounkyoung.com/',
+  shareImage: 'https://choyounkyoung.com/images/archive/2026-08-02/2026-08-02-poster.png',
 } as const;
 
 export const navigationItems = [

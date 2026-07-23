@@ -26,19 +26,24 @@ export type ProgramEra = {
   works: ProgramWork[];
 };
 
+export type ArchivePreviewImage = {
+  src: string;
+  alt: string;
+  label?: string;
+};
+
 export type ArchiveMaterial = {
-  label: string;
-  viewUrl?: string;
-  downloadUrl?: string;
-  previewImageUrl?: string;
+  label: 'POSTER' | 'LEAFLET';
   viewLabel: string;
+  previewImages: ArchivePreviewImage[];
+  downloadUrl?: string;
   downloadLabel?: string;
 };
 
-export type LeafletPreviewImage = {
-  src: string;
-  alt: string;
-  label: string;
+export type HomeHeroSettings = {
+  theme: 'haegeum-recital' | 'sanjo-matiere';
+  displayDate: string;
+  time: string;
 };
 
 export type Performance = {
@@ -53,7 +58,6 @@ export type Performance = {
   performer: string;
   featured: boolean;
   heroImage: string;
-  posterImage?: string;
   archiveLabel: string;
   listDescription: string;
   introduction: string[];
@@ -62,11 +66,12 @@ export type Performance = {
   programEras: ProgramEra[];
   collaborators: PerformanceCollaborator[];
   archiveMaterials?: ArchiveMaterial[];
-  posterUrl?: string;
-  leafletUrl?: string;
-  posterPreviewImageUrl?: string;
-  leafletPreviewImageUrl?: string;
-  leafletPreviewImages?: LeafletPreviewImage[];
+  runningTime?: string;
+  ticketPrice?: string;
+  ticketing?: string;
+  seating?: string;
+  ageRestriction?: string;
+  homeHero?: HomeHeroSettings;
 };
 
 const collaborators: PerformanceCollaborator[] = [
@@ -121,6 +126,12 @@ export const performances: Performance[] = [
     performer: '조윤경',
     featured: false,
     heroImage: 'images/hero/sanjo-gil-02/hero-background.png',
+    runningTime: '약 60분 · 인터미션 없음',
+    ticketPrice: '전석 10,000원',
+    ticketing: '현장 발권',
+    seating: '전석 자유석',
+    ageRestriction: '미취학 아동 관람 불가',
+    homeHero: { theme: 'sanjo-matiere', displayDate: '2026. 8. 16.', time: '15:30' },
     archiveLabel: 'SANJO-GIL PROJECT 02',
     listDescription: '한범수류 해금산조의 길을 잇다',
     introduction: [],
@@ -146,8 +157,8 @@ export const performances: Performance[] = [
       { id: 'kim-na-young', name: '김나영', role: '가야금', image: 'images/performers/kim-na-young.jpg', shortBio: '국가무형유산 가야금산조 및 병창 이수자. 국가유산진흥원 예술단.', fullBio: ['국가무형유산 가야금산조 및 병창 이수자', '국가유산진흥원 예술단', '제10회 의정부 죽파 가야금 경연대회 일반부 대상', '제3회 영암 김창조 전국 국악대악대전 일반부 대상'], participatingWorks: ['육자배기 · 흥타령'] },
     ],
     archiveMaterials: [
-      { label: 'POSTER', viewLabel: 'POSTER' },
-      { label: 'LEAFLET', viewLabel: 'LEAFLET' },
+      { label: 'POSTER', viewLabel: 'VIEW POSTER', previewImages: [{ src: 'images/archive/2026-08-16/2026-08-16-poster.png', alt: '산조길, 둘 공연 포스터' }], downloadUrl: 'images/archive/2026-08-16/2026-08-16-poster.pdf', downloadLabel: 'DOWNLOAD PDF' },
+      { label: 'LEAFLET', viewLabel: 'VIEW LEAFLET', previewImages: [{ src: 'images/archive/2026-08-16/2026-08-16-leaflet-outer.png', alt: '산조길, 둘 리플렛 바깥면', label: 'OUTER' }, { src: 'images/archive/2026-08-16/2026-08-16-leaflet-inner.png', alt: '산조길, 둘 리플렛 안쪽면', label: 'INNER' }], downloadUrl: 'images/archive/2026-08-16/2026-08-16-leaflet.pdf', downloadLabel: 'DOWNLOAD PDF' },
     ],
   },
   {
@@ -162,19 +173,7 @@ export const performances: Performance[] = [
     performer: '조윤경',
     featured: true,
     heroImage: 'images/hero/hero-background-v2.png',
-    posterPreviewImageUrl: 'images/archive/2026-08-02-poster.png',
-    leafletPreviewImages: [
-      {
-        src: 'images/archive/2026-08-02-leaflet-outer.png',
-        alt: '해금, 시대를 잇다 리플렛 바깥면',
-        label: 'OUTER',
-      },
-      {
-        src: 'images/archive/2026-08-02-leaflet-inner.png',
-        alt: '해금, 시대를 잇다 리플렛 안쪽면',
-        label: 'INNER',
-      },
-    ],
+    homeHero: { theme: 'haegeum-recital', displayDate: '2026. 8. 2.', time: '16:00' },
     archiveLabel: 'HAEGEUM RECITAL 2026',
     listDescription: '해금 창작곡의 변천을 기록하다',
     introduction: [
@@ -213,15 +212,15 @@ export const performances: Performance[] = [
       {
         label: 'POSTER',
         viewLabel: 'VIEW POSTER',
-        viewUrl: 'images/archive/2026-08-02-poster.png',
-        downloadUrl: 'images/archive/2026-08-02-poster.png',
-        downloadLabel: 'DOWNLOAD PNG',
+        previewImages: [{ src: 'images/archive/2026-08-02/2026-08-02-poster.png', alt: '해금, 시대를 잇다 공연 포스터' }],
+        downloadUrl: 'images/archive/2026-08-02/2026-08-02-poster.pdf',
+        downloadLabel: 'DOWNLOAD PDF',
       },
       {
         label: 'LEAFLET',
         viewLabel: 'VIEW LEAFLET',
-        viewUrl: 'files/2026-08-02-leaflet.pdf',
-        downloadUrl: 'files/2026-08-02-leaflet.pdf',
+        previewImages: [{ src: 'images/archive/2026-08-02/2026-08-02-leaflet-outer.png', alt: '해금, 시대를 잇다 리플렛 바깥면', label: 'OUTER' }, { src: 'images/archive/2026-08-02/2026-08-02-leaflet-inner.png', alt: '해금, 시대를 잇다 리플렛 안쪽면', label: 'INNER' }],
+        downloadUrl: 'images/archive/2026-08-02/2026-08-02-leaflet.pdf',
         downloadLabel: 'DOWNLOAD PDF',
       },
     ],

@@ -444,3 +444,114 @@
 .performance-detail__artist-panel--navy .performance-detail__panel-photo .safe-image-fallback {
   background: #d9d3c8;
 }
+
+.performance-archive {
+  display: grid;
+  gap: 1rem;
+}
+
+.performance-archive--hero {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.performance-archive__material {
+  border: 1px solid color-mix(in srgb, var(--archive-tone, #b99a52) 48%, transparent);
+  padding: 1rem;
+}
+
+.performance-archive__material p {
+  margin: 0 0 .75rem;
+  letter-spacing: .18em;
+  font-size: .78rem;
+  color: var(--archive-tone, #b99a52);
+}
+
+.performance-archive__material div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .65rem;
+}
+
+.performance-archive__material button,
+.performance-archive__material a,
+.performance-adjacent a {
+  color: inherit;
+  background: transparent;
+  border: 1px solid currentColor;
+  padding: .65rem .9rem;
+  font: inherit;
+  font-size: .72rem;
+  letter-spacing: .14em;
+  text-decoration: none;
+}
+
+.performance-archive--gold { --archive-tone: #c8a85a; }
+.performance-archive--navy { --archive-tone: #1f4f7a; }
+.performance-archive--gold .performance-archive__material button,
+.performance-archive--gold .performance-archive__material a { color: #f0d283; }
+.performance-archive--navy .performance-archive__material button,
+.performance-archive--navy .performance-archive__material a { color: #1f4f7a; }
+
+.archive-viewer__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(8, 10, 12, .82);
+  display: grid;
+  place-items: center;
+  padding: clamp(1rem, 3vw, 2rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.archive-viewer {
+  width: min(1120px, 100%);
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #fbfaf6;
+  color: #151515;
+  padding: clamp(1rem, 3vw, 2rem);
+  outline: none;
+}
+
+.archive-viewer header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.archive-viewer header p { margin: 0; letter-spacing: .18em; font-weight: 700; }
+.archive-viewer header button { border: 1px solid currentColor; background: transparent; padding: .55rem .8rem; }
+.archive-viewer__images { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 1rem; }
+.archive-viewer--poster .archive-viewer__images { grid-template-columns: minmax(0, 620px); justify-content: center; }
+.archive-viewer__images figure { margin: 0; min-width: 0; }
+.archive-viewer__images figcaption { margin-bottom: .5rem; color: #1f4f7a; font-weight: 700; letter-spacing: .14em; }
+.archive-viewer__images img { width: 100%; height: auto; display: block; }
+
+.performance-adjacent {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: stretch;
+  padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 5vw, 5rem);
+}
+.performance-adjacent__links { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: flex-end; }
+.performance-adjacent a { display: grid; gap: .35rem; min-width: min(18rem, 100%); }
+.performance-adjacent a span { font-size: .68rem; letter-spacing: .18em; }
+.performance-adjacent a strong { font-size: clamp(1rem, 2vw, 1.35rem); }
+.performance-adjacent--gold { color: #e7c76f; background: #111312; }
+.performance-adjacent--navy { color: #1f4f7a; background: #f6f1e8; }
+.performance-archive__material button:focus-visible,
+.performance-archive__material a:focus-visible,
+.archive-viewer button:focus-visible,
+.performance-adjacent a:focus-visible { outline: 3px solid currentColor; outline-offset: 4px; }
+
+@media (max-width: 720px) {
+  .performance-archive--hero,
+  .performance-adjacent,
+  .performance-adjacent__links { grid-template-columns: 1fr; flex-direction: column; justify-content: stretch; }
+  .performance-adjacent a { width: 100%; }
+}

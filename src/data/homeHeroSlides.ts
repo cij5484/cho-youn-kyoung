@@ -16,40 +16,21 @@ export type HomeHeroSlide = {
   heroImage?: string;
 };
 
-const featuredPerformance = performances.find((performance) => performance.id === 'haegeum-2026-08-02');
-
-export const homeHeroSlides: HomeHeroSlide[] = [
-  ...(featuredPerformance
-    ? [
-        {
-          id: featuredPerformance.id,
-          eyebrow: featuredPerformance.archiveLabel,
-          title: featuredPerformance.title,
-          subtitle: featuredPerformance.subtitle,
-          date: featuredPerformance.date,
-          displayDate: '2026. 8. 2.',
-          time: '16:00',
-          venue: featuredPerformance.venue,
-          theme: 'haegeum-recital' as const,
-          detailLink: `/performance/${featuredPerformance.id}`,
-          heroImage: featuredPerformance.heroImage,
-        },
-      ]
-    : []),
-  {
-    id: 'sanjo-gil-2026-08-16',
-    eyebrow: 'SANJO-GIL PROJECT 02',
-    title: '산조길, 둘',
-    subtitle: '한범수류 해금산조',
-    date: '2026-08-16',
-    displayDate: '2026. 8. 16.',
-    time: '15:30',
-    venue: '해운대문화회관 고운홀',
-    theme: 'sanjo-matiere',
-    detailLink: '/performance/sanjo-gil-2026-08-16',
-    heroImage: 'images/hero/sanjo-gil-02/hero-background.png',
-  },
-];
+export const homeHeroSlides: HomeHeroSlide[] = performances
+  .filter((performance) => performance.homeHero)
+  .map((performance) => ({
+    id: performance.id,
+    eyebrow: performance.archiveLabel,
+    title: performance.title,
+    subtitle: performance.subtitle,
+    date: performance.date,
+    displayDate: performance.homeHero!.displayDate,
+    time: performance.homeHero!.time,
+    venue: performance.venue,
+    theme: performance.homeHero!.theme,
+    detailLink: `/performance/${performance.id}`,
+    heroImage: performance.heroImage,
+  }));
 
 export const getSeoulDateString = (date = new Date()) => {
   const parts = new Intl.DateTimeFormat('en-CA', {
