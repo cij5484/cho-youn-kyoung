@@ -781,7 +781,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
 .sanjo-hero__title-accent {
   position: absolute;
   top: 0.52em;
-  left: clamp(2.6em, 13vw, 3.35em);
+  left: clamp(2.35em, 11.5vw, 3.05em);
   display: block;
   width: fit-content;
   color: #183a60;
