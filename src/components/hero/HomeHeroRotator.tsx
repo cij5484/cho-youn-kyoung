@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { TouchEvent } from 'react';
 import { HomeHeroSlide, getHomeHeroSlidesForDate, homeHeroSlides } from '../../data/homeHeroSlides';
 import { HomeHero } from './HomeHero';
 import { SanjoMatiereHero } from './SanjoMatiereHero';
@@ -34,6 +35,8 @@ export function HomeHeroRotator() {
   const slides = useMemo(() => getHomeHeroSlidesForDate(homeHeroSlides), []);
   const [activeIndex, setActiveIndex] = useState(0);
   const timerRef = useRef<number | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
   const prefersReducedMotion = usePrefersReducedMotion();
   const canRotate = slides.length > 1 && !prefersReducedMotion;
   const activeTheme = slides[activeIndex]?.theme;
@@ -91,8 +94,40 @@ export function HomeHeroRotator() {
     setActiveIndex(index);
   };
 
+  const goToAdjacentSlide = (direction: 1 | -1) => {
+    setActiveIndex((currentIndex) => (currentIndex + direction + slides.length) % slides.length);
+  };
+
+  const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (slides.length <= 1) return;
+
+    const touch = event.touches[0];
+    touchStartXRef.current = touch.clientX;
+    touchStartYRef.current = touch.clientY;
+  };
+
+  const handleTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
+    if (slides.length <= 1 || touchStartXRef.current === null || touchStartYRef.current === null) return;
+
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - touchStartXRef.current;
+    const deltaY = touch.clientY - touchStartYRef.current;
+
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+
+    if (Math.abs(deltaX) < 48 || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) return;
+
+    goToAdjacentSlide(deltaX < 0 ? 1 : -1);
+  };
+
   return (
-    <div className="home-hero-rotator" data-theme={activeTheme}>
+    <div
+      className="home-hero-rotator"
+      data-theme={activeTheme}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <div className="home-hero-rotator__stage">
         {slides.map((slide, index) => {
           const isActive = index === activeIndex;

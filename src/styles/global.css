@@ -399,94 +399,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
     transform: translateY(0);
   }
 }
-@media (max-width: 760px) {
-  :root {
-    --header: 70px;
-  }
-  .desktop-nav {
-    display: none;
-  }
-  .menu-button {
-    display: block;
-  }
-  .mobile-menu {
-    display: flex;
-    position: fixed;
-    top: var(--header);
-    left: 14px;
-    right: 14px;
-    padding: 24px;
-    background: rgba(26, 28, 27, 0.98);
-    flex-direction: column;
-    gap: 20px;
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(-8px);
-    transition: 0.2s ease;
-  }
-  .mobile-menu.is-open {
-    opacity: 1;
-    pointer-events: auto;
-    transform: none;
-  }
-  .home-hero {
-    display: flex;
-    height: auto;
-    min-height: 100svh;
-    padding: 0 22px 38px;
-    align-items: flex-end;
-  }
-  .hero-background__image {
-    --hero-image-filter: brightness(1.22) saturate(0.95) contrast(0.97);
-    --hero-image-blur: 6px;
-    object-position: 65% center;
-  }
-  .hero-overlay {
-    background:
-      linear-gradient(
-        180deg,
-        rgba(7, 8, 8, 0.18) 0%,
-        rgba(7, 8, 8, 0.36) 42%,
-        rgba(7, 8, 8, 0.9) 92%
-      ),
-      linear-gradient(90deg, rgba(7, 8, 8, 0.7) 0%, rgba(7, 8, 8, 0.12) 100%);
-  }
-  .hero-content {
-    padding: var(--header) 0 0;
-    max-width: 100%;
-    width: 100%;
-  }
-  .eyebrow {
-    gap: 12px;
-    letter-spacing: 0.25em;
-    font-size: 0.68rem;
-  }
-  .eyebrow span {
-    width: 30px;
-  }
-  .hero-content h1 {
-    margin: 28px 0 18px;
-  }
-  .title-primary {
-    font-size: clamp(2.55rem, 12vw, 3rem);
-  }
-  .title-secondary {
-    font-size: clamp(2rem, 9.2vw, 2.42rem);
-    padding-left: clamp(28px, 11vw, 48px);
-  }
-  .hero-subtitle {
-    font-size: 1.22rem;
-    margin-bottom: 28px;
-  }
-  .hero-meta {
-    font-size: 1.05rem;
-    margin-bottom: 34px;
-  }
-  .performance-preview {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -899,10 +812,99 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   }
 }
 
+
+
 @media (max-width: 760px) {
+  :root {
+    --header: 70px;
+  }
+  .desktop-nav {
+    display: none;
+  }
+  .menu-button {
+    display: block;
+  }
+  .mobile-menu {
+    display: flex;
+    position: fixed;
+    top: var(--header);
+    left: 14px;
+    right: 14px;
+    padding: 24px;
+    background: rgba(26, 28, 27, 0.98);
+    flex-direction: column;
+    gap: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transition: 0.2s ease;
+  }
+  .mobile-menu.is-open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+  }
+  .home-hero {
+    display: flex;
+    height: auto;
+    min-height: 100svh;
+    padding: 0 22px 38px;
+    align-items: flex-end;
+  }
+  .hero-background__image {
+    --hero-image-filter: brightness(1.22) saturate(0.95) contrast(0.97);
+    --hero-image-blur: 6px;
+    object-position: 65% center;
+  }
+  .hero-overlay {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(7, 8, 8, 0.18) 0%,
+        rgba(7, 8, 8, 0.36) 42%,
+        rgba(7, 8, 8, 0.9) 92%
+      ),
+      linear-gradient(90deg, rgba(7, 8, 8, 0.7) 0%, rgba(7, 8, 8, 0.12) 100%);
+  }
+  .hero-content {
+    padding: var(--header) 0 0;
+    max-width: 100%;
+    width: 100%;
+  }
+  .eyebrow {
+    gap: 12px;
+    letter-spacing: 0.25em;
+    font-size: 0.68rem;
+  }
+  .eyebrow span {
+    width: 30px;
+  }
+  .hero-content h1 {
+    margin: 28px 0 18px;
+  }
+  .title-primary {
+    font-size: clamp(2.55rem, 12vw, 3rem);
+  }
+  .title-secondary {
+    font-size: clamp(2rem, 9.2vw, 2.42rem);
+    padding-left: clamp(28px, 11vw, 48px);
+  }
+  .hero-subtitle {
+    font-size: 1.22rem;
+    margin-bottom: 28px;
+  }
+  .hero-meta {
+    font-size: 1.05rem;
+    margin-bottom: 34px;
+  }
+  .performance-preview {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
   .home-hero-rotator {
     height: 100svh;
     min-height: 100svh;
+    touch-action: pan-y;
   }
   .home-hero-rotator .home-hero {
     min-height: 100svh;
@@ -912,54 +914,71 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   }
   .sanjo-hero {
     display: flex;
-    align-items: flex-end;
-    padding: 0 clamp(22px, 6vw, 26px) 54px;
+    align-items: center;
+    justify-content: flex-end;
+    padding: calc(var(--header) + 24px) clamp(14px, 4.4vw, 20px) 54px 0;
   }
   .sanjo-hero__image {
-    object-position: center top;
+    object-position: 30% center;
   }
   .sanjo-hero::after {
-    inset: auto 0 0;
-    width: 100%;
-    height: 62%;
-    background: linear-gradient(180deg, rgba(239, 232, 220, 0), rgba(239, 232, 220, 0.82) 30%, rgba(239, 232, 220, 0.97) 100%);
+    inset: 0 0 0 auto;
+    width: 72%;
+    height: 100%;
+    background:
+      linear-gradient(90deg, rgba(239, 232, 220, 0), rgba(239, 232, 220, 0.78) 32%, rgba(239, 232, 220, 0.98) 100%),
+      linear-gradient(180deg, rgba(239, 232, 220, 0.18), rgba(239, 232, 220, 0) 34%, rgba(239, 232, 220, 0.48));
   }
   .sanjo-hero__content {
-    width: 100%;
-    max-width: 430px;
-    padding: var(--header) 0 0;
-    align-self: flex-end;
+    width: min(58vw, 255px);
+    max-width: 255px;
+    margin-left: auto;
+    padding: 0;
+    align-self: center;
+    justify-self: end;
   }
   .sanjo-hero__eyebrow {
-    font-size: 0.66rem;
+    margin-bottom: 20px;
+    font-size: clamp(0.56rem, 2.5vw, 0.66rem);
+    line-height: 1.45;
     letter-spacing: 0.18em;
   }
   .sanjo-hero__title {
-    min-height: clamp(4.75rem, 22vw, 6.1rem);
-    font-size: clamp(2.45rem, 11.5vw, 3.18rem);
+    min-height: clamp(4.25rem, 19vw, 5.35rem);
+    font-size: clamp(2.08rem, 9.5vw, 2.82rem);
   }
   .sanjo-hero__title-accent {
     top: 0.56em;
-    left: clamp(2.15em, 34vw, 2.85em);
+    left: clamp(1.95em, 27vw, 2.55em);
     font-size: 1.18em;
   }
   .sanjo-hero__divider {
-    height: 44px;
-    margin-block: 18px;
+    height: 34px;
+    margin-block: 15px;
   }
   .sanjo-hero__subtitle {
-    margin-bottom: 28px;
-    font-size: clamp(1.05rem, 5vw, 1.22rem);
+    margin-bottom: 20px;
+    font-size: clamp(0.96rem, 4.2vw, 1.1rem);
   }
   .sanjo-hero__artist {
-    margin-bottom: 26px;
+    margin-bottom: 20px;
+    font-size: clamp(0.68rem, 3vw, 0.8rem);
+    line-height: 1.5;
   }
   .sanjo-hero__date {
-    gap: 0.45em;
+    flex-wrap: wrap;
+    gap: 0.18em 0.42em;
+    margin-bottom: 7px;
     font-size: clamp(0.88rem, 3.9vw, 1rem);
   }
   .sanjo-hero__venue {
-    margin-bottom: 32px;
+    margin-bottom: 24px;
+    font-size: clamp(0.84rem, 3.6vw, 0.98rem);
+    line-height: 1.45;
+  }
+  .sanjo-hero__link {
+    font-size: 0.68rem;
+    line-height: 1.4;
   }
 }
 
@@ -980,7 +999,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
 }
 
 .site-header--sanjo-detail {
-  background: linear-gradient(180deg, rgba(243, 237, 226, 0.72), rgba(243, 237, 226, 0.08));
+  background: transparent;
   box-shadow: none;
 }
 .site-header--sanjo-detail .brand,

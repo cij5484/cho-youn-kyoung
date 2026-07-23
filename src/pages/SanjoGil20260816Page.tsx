@@ -46,7 +46,10 @@ export function SanjoGil20260816Page({ performance }: { performance: Performance
           <h1 id="sanjo-detail-title"><span>산조길,</span><strong>둘</strong></h1>
           <p className="sanjo-detail__subtitle">{performance.subtitle}</p>
           <p className="sanjo-detail__date"><span>2026.</span><strong>8. 16.</strong><span>SUN 15:30</span></p>
-          <p className="sanjo-detail__venue">{performance.venue}</p>
+          <p className="sanjo-detail__venue">
+            <span>{performance.venue}</span>
+            {performance.venueAddress ? <small>{performance.venueAddress}</small> : null}
+          </p>
         </div>
         <div className="sanjo-detail__matiere-layer" aria-hidden="true"><div className="sanjo-detail__orb" /></div>
       </section>
@@ -69,7 +72,18 @@ export function SanjoGil20260816Page({ performance }: { performance: Performance
         <div className="sanjo-detail__artist-grid">{performance.collaborators.map((artist) => <button className="sanjo-detail__artist" type="button" key={artist.id} onClick={(event) => { lastArtistButton.current = event.currentTarget; setSelectedArtist(artist); }}><span><SafeImage src={assetUrl(artist.image)} alt={`${artist.name} ${artist.role} 사진`} fallbackClassName="safe-image-fallback" fallbackLabel={`${artist.role} ${artist.name}`} objectPosition={artist.id === 'kim-na-young' ? 'center center' : 'center top'} /></span><small>{artist.role}</small><strong>{artist.name}</strong><em>VIEW PROFILE</em></button>)}</div>
       </Reveal>
 
-      <section className="sanjo-detail__info sanjo-detail__section" aria-labelledby="sanjo-info-title"><p className="sanjo-detail__label" id="sanjo-info-title">INFORMATION</p><dl>{['일시|2026. 8. 16. (일) 15:30','장소|해운대문화회관 고운홀','관람료|전석 10,000원','공연시간|약 60분 · 인터미션 없음','현장 발권|당일 현장 발권','자유석|전석 자유석','관람 연령|미취학 아동 관람 불가'].map((item)=>{const [k,v]=item.split('|'); return <div key={k}><dt>{k}</dt><dd>{v}</dd></div>;})}</dl></section>
+      <section className="sanjo-detail__info sanjo-detail__section" aria-labelledby="sanjo-info-title">
+        <p className="sanjo-detail__label" id="sanjo-info-title">INFORMATION</p>
+        <div className="sanjo-detail__info-content">
+          <article className="sanjo-detail__venue-card">
+            <p>VENUE</p>
+            <h2>{performance.venue}</h2>
+            {performance.venueAddress ? <address>{performance.venueAddress}</address> : null}
+            {performance.venueUrl ? <a href={performance.venueUrl} target="_blank" rel="noreferrer">OFFICIAL SITE <span aria-hidden="true">↗</span></a> : null}
+          </article>
+          <dl>{['일시|2026. 8. 16. (일) 15:30','관람료|전석 10,000원','공연시간|약 60분 · 인터미션 없음','현장 발권|당일 현장 발권','자유석|전석 자유석','관람 연령|미취학 아동 관람 불가'].map((item)=>{const [k,v]=item.split('|'); return <div key={k}><dt>{k}</dt><dd>{v}</dd></div>;})}</dl>
+        </div>
+      </section>
       <section className="sanjo-detail__print" aria-labelledby="sanjo-print-title"><p className="sanjo-detail__label" id="sanjo-print-title">PRINT ARCHIVE</p><div>{performance.archiveMaterials?.map((m) => <span key={m.label}>{m.label}</span>)}</div></section>
       <nav className="sanjo-detail__bottom" aria-label="공연 상세 내비게이션"><PerformanceBackLink tone="navy" />{previousPerformance && <Link to={`/performance/${previousPerformance.id}`}><span>PREVIOUS PERFORMANCE</span><strong>{previousPerformance.title} →</strong></Link>}</nav>
       {selectedArtist && <ArtistProfilePanel artist={selectedArtist} artists={performance.collaborators} activeIndex={activeArtistIndex} panelRef={panelRef} onClose={() => setSelectedArtist(null)} onSelect={setSelectedArtist} tone="navy" />}
