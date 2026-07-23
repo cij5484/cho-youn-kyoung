@@ -16,6 +16,13 @@ export type HomeHeroSlide = {
   heroImage?: string;
 };
 
+const formatHomeDate = (date: string) => {
+  const [year, month, day] = date.split('-').map(Number);
+  return `${year}. ${month}. ${day}.`;
+};
+
+const getDisplayTime = (displayDate: string) => displayDate.trim().split(/\s+/).at(-1) ?? '';
+
 export const homeHeroSlides: HomeHeroSlide[] = performances
   .filter((performance) => performance.homeHero)
   .map((performance) => ({
@@ -24,8 +31,8 @@ export const homeHeroSlides: HomeHeroSlide[] = performances
     title: performance.title,
     subtitle: performance.subtitle,
     date: performance.date,
-    displayDate: performance.homeHero!.displayDate,
-    time: performance.homeHero!.time,
+    displayDate: formatHomeDate(performance.date),
+    time: getDisplayTime(performance.displayDate),
     venue: performance.venue,
     theme: performance.homeHero!.theme,
     detailLink: `/performance/${performance.id}`,

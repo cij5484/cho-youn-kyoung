@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArtistProfilePanel } from '../components/performance/ArtistProfilePanel';
 import { PerformanceBackLink } from '../components/performance/PerformanceBackLink';
-import { PerformanceArchive } from '../components/performance/PerformanceArchive';
+import { ArchiveViewer } from '../components/performance/PerformanceArchive';
+import { useArchiveViewer } from '../components/performance/useArchiveViewer';
 import { PerformanceAdjacentNavigation } from '../components/performance/PerformanceAdjacentNavigation';
 import { SanjoGil20260816Page } from './SanjoGil20260816Page';
 import { SafeImage } from '../components/common/SafeImage';
@@ -23,6 +24,7 @@ export function PerformanceDetailPage() {
   const [selectedArtist, setSelectedArtist] = useState<PerformanceCollaborator | null>(null);
   const lastArtistButton = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
+  const archiveViewer = useArchiveViewer();
 
   const works = useMemo(() => (performance ? flattenWorks(performance) : []), [performance]);
   const activeArtistIndex = selectedArtist && performance ? performance.collaborators.findIndex((artist) => artist.id === selectedArtist.id) : -1;
@@ -57,6 +59,7 @@ export function PerformanceDetailPage() {
   }
 
   const activeWork = selectedWork ?? works[0];
+  const visibleMaterials = performance.archiveMaterials ?? [];
   const heroImage = assetUrl(performance.archiveMaterials?.[0]?.previewImages[0]?.src ?? performance.heroImage);
   const heroAlt = performance.archiveMaterials?.[0]?.previewImages[0] ? `${performance.title} 포스터` : `${performance.title} 공연 대표 이미지`;
 
@@ -80,7 +83,7 @@ export function PerformanceDetailPage() {
           <h1 id="performance-title" aria-label={performance.title}><span>해금,</span><span>시대를 잇다</span></h1>
           <p className="performance-detail__subtitle">{performance.subtitle}</p>
           <dl className="performance-detail__meta" aria-label="공연 기본 정보"><div><dt>DATE</dt><dd>{performance.displayDate}</dd></div><div><dt>VENUE</dt><dd><span className="performance-detail__venue-name">{performance.venue}</span>{performance.venueAddress && <span className="performance-detail__venue-address">{performance.venueAddress}</span>}{performance.venueUrl && <a className="performance-detail__venue-link" href={performance.venueUrl} target="_blank" rel="noopener noreferrer" aria-label="향사아트센터 공식 홈페이지 새 창에서 열기">VISIT VENUE WEBSITE <span aria-hidden="true">↗</span></a>}</dd></div><div><dt>ARTIST</dt><dd><Link to="/about">{performance.performer}</Link></dd></div></dl>
-          {performance.archiveMaterials && <div className="performance-detail__hero-actions"><PerformanceArchive performanceTitle={performance.title} materials={performance.archiveMaterials} tone="gold" className="performance-archive performance-archive--hero" /></div>}
+          {visibleMaterials.length > 0 && <div className="performance-detail__hero-actions">{visibleMaterials.map((material) => material.previewImages.length > 0 ? <span key={material.label}><button type="button" aria-label={`${performance.title} ${material.label === 'POSTER' ? '포스터' : '리플렛'} 확대 보기`} onClick={(event) => archiveViewer.openMaterial(material, event.currentTarget)}>{material.viewLabel}</button></span> : null)}</div>}
         </div>
       </section>
 
@@ -92,9 +95,11 @@ export function PerformanceDetailPage() {
         <div className="performance-detail__dark-sections">
           <Reveal as="section" className="performance-detail__section" aria-labelledby="program-title"><div className="performance-detail__section-heading reveal__heading"><span>03</span><h2 id="program-title">PROGRAM</h2></div><div className="performance-detail__program reveal__content"><div className="performance-detail__timeline">{works.map((work) => <button className={activeWork?.number === work.number ? 'is-active' : ''} type="button" key={work.number} aria-pressed={activeWork?.number === work.number} onClick={() => { setSelectedWork(work); setShowAllNotes(false); }}><span>{work.year}</span><strong>{String(work.number).padStart(2, '0')}</strong><b>{work.title}</b><small>{work.composer}</small><em>{work.instrumentation?.join(' · ') ?? '해금 독주'}</em></button>)}</div><button className="performance-detail__all-notes" type="button" aria-expanded={showAllNotes} onClick={() => setShowAllNotes((value) => !value)}>{showAllNotes ? '선택한 곡만 보기' : '전체 곡 해설 보기'}</button><div className="performance-detail__notes-list">{showAllNotes ? works.map(renderWorkNote) : activeWork && renderWorkNote(activeWork)}</div></div></Reveal>
           <Reveal as="section" className="performance-detail__section" aria-labelledby="artists-title"><div className="performance-detail__section-heading reveal__heading"><span>04</span><h2 id="artists-title" aria-label="GUEST ARTISTS"><span>GUEST</span><span>ARTISTS</span></h2></div><div className="performance-detail__artists reveal__content">{performance.collaborators.map((artist) => <button className="performance-detail__artist" type="button" key={artist.id} onClick={(event) => { lastArtistButton.current = event.currentTarget; setSelectedArtist(artist); }}><span className="performance-detail__artist-photo"><SafeImage src={assetUrl(artist.image)} alt={`${artist.name} ${artist.role} 사진`} fallbackClassName="safe-image-fallback" fallbackLabel={`${artist.role} ${artist.name}`} objectPosition="center top" /></span><small>{artist.role}</small><strong>{artist.name}</strong><em>VIEW PROFILE</em></button>)}</div></Reveal>
-          {performance.archiveMaterials && <Reveal as="section" className="performance-detail__section" aria-labelledby="materials-title"><div className="performance-detail__section-heading reveal__heading"><span>05</span><h2 id="materials-title">ARCHIVE MATERIALS</h2></div><PerformanceArchive performanceTitle={performance.title} materials={performance.archiveMaterials} tone="gold" className="performance-archive performance-detail__materials reveal__content" /></Reveal>}
+          {visibleMaterials.length > 0 && <Reveal as="section" className="performance-detail__section" aria-labelledby="materials-title"><div className="performance-detail__section-heading reveal__heading"><span>05</span><h2 id="materials-title">ARCHIVE MATERIALS</h2></div><div className="performance-detail__materials reveal__content">{visibleMaterials.map((material) => <article className="performance-detail__material" key={material.label}><p>{material.label}</p><div>{material.previewImages.length > 0 && <button type="button" aria-label={`${performance.title} ${material.label === 'POSTER' ? '포스터' : '리플렛'} 확대 보기`} onClick={(event) => archiveViewer.openMaterial(material, event.currentTarget)}>{material.viewLabel}</button>}{material.downloadUrl && <a href={assetUrl(material.downloadUrl)} download aria-label={`${performance.title} ${material.label === 'POSTER' ? '포스터' : '리플렛'} PDF 다운로드`}>{material.downloadLabel ?? 'DOWNLOAD PDF'}</a>}</div></article>)}</div></Reveal>}
         </div>
       </div>
+
+      <ArchiveViewer activeMaterial={archiveViewer.activeMaterial} closeMaterial={archiveViewer.closeMaterial} lastTriggerRef={archiveViewer.lastTriggerRef} tone="gold" />
 
       <PerformanceAdjacentNavigation currentId={performance.id} tone="gold" />
 
