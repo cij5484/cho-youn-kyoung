@@ -83,7 +83,7 @@ html[data-home-hero-theme="sanjo-matiere"] .menu-button {
 html[data-home-hero-theme="sanjo-matiere"] .desktop-nav a.active,
 html[data-home-hero-theme="sanjo-matiere"] .desktop-nav a:hover,
 html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
-  color: #183a60;
+  color: #1F4F7A;
 }
 .menu-button {
   display: none;
@@ -689,7 +689,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
 }
 .sanjo-hero__title-primary {
   display: block;
-  color: #262626;
+  color: #1F4F7A;
 }
 .sanjo-hero__title-accent {
   position: absolute;
@@ -697,7 +697,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   left: clamp(2.35em, 11.5vw, 3.05em);
   display: block;
   width: fit-content;
-  color: #183a60;
+  color: #1F4F7A;
   font-size: 1.32em;
   line-height: 0.92;
 }
@@ -742,7 +742,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   white-space: nowrap;
 }
 .sanjo-hero__date-accent {
-  color: #183a60;
+  color: #1F4F7A;
   font-size: 1.28em;
   font-weight: 700;
   line-height: 1;
@@ -759,7 +759,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   align-items: center;
   gap: 10px;
   padding-bottom: 8px;
-  color: #183a60;
+  color: #1F4F7A;
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.14em;

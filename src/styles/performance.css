@@ -248,3 +248,35 @@
     transform: none !important;
   }
 }
+
+.performance-archive__row:focus-visible {
+  outline: 3px solid var(--performance-row-accent);
+  outline-offset: 8px;
+  border-top-color: transparent;
+}
+
+.performance-archive__row:focus-visible::before,
+.performance-archive__row:focus-visible::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.performance-archive__row:focus-visible .performance-archive__info {
+  transform: translateX(5px);
+}
+
+.performance-archive__row:focus-visible .performance-archive__arrow {
+  transform: translateX(8px);
+}
+
+.performance-archive__row:focus-visible .performance-archive__title,
+.performance-archive__row:focus-visible .performance-archive__arrow {
+  color: var(--performance-row-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .performance-archive__row:focus-visible .performance-archive__info,
+  .performance-archive__row:focus-visible .performance-archive__arrow {
+    transform: none;
+  }
+}

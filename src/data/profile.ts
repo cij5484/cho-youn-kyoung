@@ -121,6 +121,12 @@ export const profile = {
     { year: '2023', title: '산조길, 하나－지영희류 해금산조' },
     {
       year: '2026',
+      title: '산조길, 둘',
+      description: '한범수류 해금산조',
+      href: '/performance/sanjo-gil-2026-08-16',
+    },
+    {
+      year: '2026',
       title: '해금, 시대를 잇다',
       description: '해금 창작곡의 변천',
       href: '/performance/haegeum-2026-08-02',
