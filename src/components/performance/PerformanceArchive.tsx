@@ -9,13 +9,14 @@ const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:n
 export function PerformanceArchive({ performanceTitle, materials = [], tone, className = 'performance-archive' }: Props) {
   const [active, setActive] = useState<ArchiveMaterial | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const lastButton = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     if (!active) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    dialogRef.current?.focus();
+    closeButtonRef.current?.focus();
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setActive(null);
       if (event.key !== 'Tab' || !dialogRef.current) return;
@@ -46,7 +47,7 @@ export function PerformanceArchive({ performanceTitle, materials = [], tone, cla
     </div>
     {active && <div className="archive-viewer__backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setActive(null); }}>
       <div className={`archive-viewer archive-viewer--${active.label.toLowerCase()}`} role="dialog" aria-modal="true" aria-labelledby="archive-viewer-title" tabIndex={-1} ref={dialogRef}>
-        <header><p id="archive-viewer-title">{active.label}</p><button type="button" aria-label={`${active.label === 'POSTER' ? '포스터' : '리플렛'} 뷰어 닫기`} onClick={() => setActive(null)}>CLOSE</button></header>
+        <header><p id="archive-viewer-title">{active.label}</p><button type="button" ref={closeButtonRef} aria-label={`${active.label === 'POSTER' ? '포스터' : '리플렛'} 뷰어 닫기`} onClick={() => setActive(null)}>CLOSE</button></header>
         <div className="archive-viewer__images">{active.previewImages.map((image) => <figure key={image.src}>{image.label && <figcaption>{image.label}</figcaption>}<SafeImage src={assetUrl(image.src)} alt={image.alt} fallbackClassName="safe-image-fallback" fallbackLabel={image.label ?? active.label} /></figure>)}</div>
       </div>
     </div>}
