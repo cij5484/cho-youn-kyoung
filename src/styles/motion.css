@@ -56,7 +56,6 @@
 
 .motion-link,
 .performance-detail__hero-actions a,
-.performance-detail__material a,
 .performance-detail__all-notes,
 .performance-detail__panel-close,
 .performance-detail__artist-panel nav button,
@@ -78,8 +77,6 @@
 .motion-link:focus-visible,
 .performance-detail__hero-actions a:hover,
 .performance-detail__hero-actions a:focus-visible,
-.performance-detail__material a:hover,
-.performance-detail__material a:focus-visible,
 .performance-detail__all-notes:hover,
 .performance-detail__all-notes:focus-visible,
 .performance-detail__panel-close:hover,
