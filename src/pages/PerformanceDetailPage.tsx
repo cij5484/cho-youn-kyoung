@@ -32,6 +32,7 @@ export function PerformanceDetailPage() {
   const panelRef = useRef<HTMLDivElement | null>(null);
 
   const works = useMemo(() => (performance ? flattenWorks(performance) : []), [performance]);
+  const activeArtistIndex = selectedArtist && performance ? performance.collaborators.findIndex((artist) => artist.id === selectedArtist.id) : -1;
 
   useEffect(() => {
     if (!selectedArtist) return;
@@ -79,9 +80,69 @@ export function PerformanceDetailPage() {
     return <section className="page-shell"><h1>Performance not found</h1><Link className="text-link" to="/performance">Back to performance</Link></section>;
   }
 
+  if (performance.id === 'sanjo-gil-2026-08-16') {
+    const [program01, program02] = performance.programEras;
+    const previousPerformance = performances.find((item) => item.id === 'haegeum-2026-08-02');
+
+    return (
+      <article className="sanjo-detail">
+        <section className="sanjo-detail__hero" aria-labelledby="sanjo-detail-title">
+          <div className="sanjo-detail__hero-copy">
+            <Link className="sanjo-detail__back" to="/performance">← BACK TO PERFORMANCE</Link>
+            <p>SANJO-GIL PROJECT 02</p>
+            <h1 id="sanjo-detail-title"><span>산조길,</span><strong>둘</strong></h1>
+            <h2>{performance.subtitle}</h2>
+            <dl>
+              <div><dt>DATE</dt><dd>{performance.displayDate}</dd></div>
+              <div><dt>VENUE</dt><dd>{performance.venue}</dd></div>
+            </dl>
+          </div>
+          <div className="sanjo-detail__orb" aria-hidden="true" />
+        </section>
+
+        <Reveal as="section" className="sanjo-detail__quick sanjo-detail__section" aria-labelledby="sanjo-quick-title">
+          <p className="sanjo-detail__label">QUICK INFORMATION</p>
+          <h2 id="sanjo-quick-title">공연 정보</h2>
+          <dl><div><dt>일시</dt><dd>{performance.displayDate}</dd></div><div><dt>장소</dt><dd>{performance.venue}</dd></div></dl>
+        </Reveal>
+
+        <Reveal as="section" className="sanjo-detail__note sanjo-detail__section" aria-labelledby="sanjo-note-title">
+          <p className="sanjo-detail__label">ARTIST’S NOTE</p>
+          <h2 id="sanjo-note-title">연주자의 말</h2>
+          <blockquote>
+            <p className="sanjo-detail__lead">{performance.artistNote[0]}</p>
+            {performance.artistNote.slice(1).map((note) => <p key={note}>{note}</p>)}
+            <cite>{performance.artistSignature}</cite>
+          </blockquote>
+        </Reveal>
+
+        <Reveal as="section" className="sanjo-program sanjo-program--one" aria-labelledby="sanjo-program-one">
+          <span className="sanjo-program__ghost">01</span>
+          <div className="sanjo-program__side"><p>PROGRAM 01</p><h2 id="sanjo-program-one">{program01.title}</h2><ul>{program01.works[0].instrumentation?.map((item) => <li key={item}>{item}</li>)}</ul></div>
+          <div className="sanjo-program__notes"><p>{program01.works[0].composerNote}</p><p>{program01.works[0].workNote}</p></div>
+        </Reveal>
+
+        <Reveal as="section" className="sanjo-program sanjo-program--two" aria-labelledby="sanjo-program-two">
+          <div className="sanjo-program__side"><p>PROGRAM 02</p><h2 id="sanjo-program-two">{program02.title}</h2><ul>{program02.works[0].instrumentation?.map((item) => <li key={item}>{item}</li>)}</ul><strong>{program02.description}</strong></div>
+          <div className="sanjo-program__notes"><p>{program02.works[0].composerNote}</p><p>{program02.works[0].workNote}</p></div>
+        </Reveal>
+
+        <Reveal as="section" className="sanjo-detail__artists sanjo-detail__section" aria-labelledby="sanjo-artists-title">
+          <p className="sanjo-detail__label">GUEST ARTISTS</p><h2 id="sanjo-artists-title">객원 연주자</h2>
+          <div className="sanjo-detail__artist-grid">{performance.collaborators.map((artist) => <button className="sanjo-detail__artist" type="button" key={artist.id} onClick={(event) => { lastArtistButton.current = event.currentTarget; setSelectedArtist(artist); }}><span><SafeImage src={assetUrl(artist.image)} alt={`${artist.name} ${artist.role} 사진`} fallbackClassName="safe-image-fallback" fallbackLabel={`${artist.role} ${artist.name}`} objectPosition={artist.id === 'kim-na-young' ? 'center center' : 'center top'} /></span><small>{artist.role}</small><strong>{artist.name}</strong><em>VIEW PROFILE</em></button>)}</div>
+        </Reveal>
+
+        <Reveal as="section" className="sanjo-detail__info sanjo-detail__section" aria-labelledby="sanjo-info-title"><p className="sanjo-detail__label">INFORMATION</p><h2 id="sanjo-info-title">안내</h2><dl><div><dt>일시</dt><dd>{performance.displayDate}</dd></div><div><dt>장소</dt><dd>{performance.venue}</dd></div></dl></Reveal>
+        <Reveal as="section" className="sanjo-detail__print sanjo-detail__section" aria-labelledby="sanjo-print-title"><p className="sanjo-detail__label">PRINT ARCHIVE</p><h2 id="sanjo-print-title">인쇄 아카이브</h2><div>{performance.archiveMaterials?.map((m) => <span key={m.label}>{m.label}</span>)}</div></Reveal>
+        <nav className="sanjo-detail__bottom" aria-label="공연 상세 내비게이션"><Link to="/performance">← BACK TO PERFORMANCE</Link>{previousPerformance && <Link to={`/performance/${previousPerformance.id}`}><span>PREVIOUS PERFORMANCE</span><strong>{previousPerformance.title} →</strong></Link>}</nav>
+
+        {selectedArtist && <div className="performance-detail__panel-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedArtist(null); }}><aside className="performance-detail__artist-panel" role="dialog" aria-modal="true" aria-labelledby="artist-panel-title" tabIndex={-1} ref={panelRef}><button className="performance-detail__panel-close" type="button" onClick={() => setSelectedArtist(null)}>CLOSE</button><div className="performance-detail__panel-photo"><SafeImage src={assetUrl(selectedArtist.image)} alt={`${selectedArtist.name} ${selectedArtist.role} 사진`} fallbackClassName="safe-image-fallback" fallbackLabel={`${selectedArtist.role} ${selectedArtist.name}`} objectPosition="center top" /></div><p>{selectedArtist.role}</p><h2 id="artist-panel-title">{selectedArtist.name}</h2><ul>{selectedArtist.fullBio.map((bio) => <li key={bio}>{bio}</li>)}</ul><h3>PARTICIPATING WORKS</h3><ol>{selectedArtist.participatingWorks.map((work) => <li key={work}>{work}</li>)}</ol><nav><button type="button" onClick={() => setSelectedArtist(performance.collaborators[(activeArtistIndex - 1 + performance.collaborators.length) % performance.collaborators.length])}>← PREV</button><button type="button" onClick={() => setSelectedArtist(performance.collaborators[(activeArtistIndex + 1) % performance.collaborators.length])}>NEXT →</button></nav></aside></div>}
+      </article>
+    );
+  }
+
   const visibleMaterials = performance.archiveMaterials?.filter((material) => material.viewUrl || material.downloadUrl) ?? [];
   const activeWork = selectedWork ?? works[0];
-  const activeArtistIndex = selectedArtist ? performance.collaborators.findIndex((artist) => artist.id === selectedArtist.id) : -1;
   const heroPreview = performance.posterPreviewImageUrl ?? performance.posterImage;
   const heroImage = assetUrl(heroPreview ?? performance.heroImage);
   const heroAlt = heroPreview ? `${performance.title} 포스터` : `${performance.title} 공연 대표 이미지`;

@@ -110,6 +110,45 @@ const collaborators: PerformanceCollaborator[] = [
 
 export const performances: Performance[] = [
   {
+    id: 'sanjo-gil-2026-08-16',
+    title: '산조길, 둘',
+    subtitle: '한범수류 해금산조',
+    date: '2026-08-16',
+    displayDate: '2026. 8. 16. (일) 15:30',
+    venue: '해운대문화회관 고운홀',
+    performer: '조윤경',
+    featured: false,
+    heroImage: 'images/hero/sanjo-gil-02/hero-background.png',
+    archiveLabel: 'SANJO-GIL PROJECT 02',
+    listDescription: '한범수류 해금산조의 길을 잇다',
+    introduction: [],
+    artistNote: [
+      '산조는 한 사람의 음악이자, 한 시대의 음악이며, 수많은 예인들의 삶과 예술이 이어져 온 우리 음악의 소중한 유산입니다.',
+      '산조길 프로젝트의 두 번째 무대는 한범수류 해금산조를 중심에 두고, 그 음악이 품고 있는 시간의 결을 오늘의 연주로 다시 마주하고자 합니다.',
+      '한범수류 해금산조는 절제된 선율 속에서도 깊은 감정의 흐름을 지니며, 장단의 변화와 함께 해금 특유의 음색이 섬세하게 드러나는 작품입니다.',
+      '이번 공연에서는 산조에 앞서 남도 음악의 정서를 담은 육자배기와 흥타령을 함께 연주하며, 노래와 기악, 장단이 이어 온 음악적 호흡을 관객 여러분과 나누고자 합니다.',
+      '전통은 고정된 과거가 아니라, 오늘의 몸과 마음을 통해 다시 살아나는 현재의 예술입니다. 이 무대가 산조의 깊이를 가까이 느끼고, 우리 음악이 이어 온 길을 함께 걸어보는 시간이 되기를 바랍니다.',
+      '귀한 걸음으로 함께해 주신 모든 분들께 진심으로 감사드립니다.',
+    ],
+    artistSignature: '조윤경',
+    programEras: [
+      { roman: 'Ⅰ', title: '육자배기 · 흥타령', description: '남도 민요의 정서와 장단의 흐름을 해금, 가야금, 장구의 호흡으로 엮어 내는 무대', works: [
+        { number: 1, composer: '전통음악', composerYears: '', title: '육자배기 · 흥타령', year: 'PROGRAM 01', instrumentation: ['해금 · 조윤경', '가야금 · 김나영', '장구 · 이영섭'], composerNote: '육자배기와 흥타령은 남도 음악 특유의 짙은 성음과 정서를 담고 있는 대표적인 민요이다.', workNote: '육자배기는 깊고 구성진 선율을 통해 한과 흥이 교차하는 남도 음악의 정서를 드러내며, 흥타령은 보다 유연하고 생동감 있는 장단의 흐름 속에서 노래의 흥취를 이어 간다. 이번 무대에서는 해금, 가야금, 장구의 편성으로 두 곡이 지닌 선율의 결, 장단의 호흡, 악기 간의 응답을 섬세하게 살려 전통 성음의 깊이와 실내악적 울림을 함께 전한다.' },
+      ] },
+      { roman: 'Ⅱ', title: '한범수류 해금산조', description: '진양조 — 중모리 — 중중모리 — 자진모리', works: [
+        { number: 2, composer: '한범수', composerYears: '1911–1984', title: '한범수류 해금산조', year: 'PROGRAM 02', instrumentation: ['해금 · 조윤경', '장구 · 이영섭'], composerNote: '한범수는 대금, 피리, 해금 등 여러 관악기에 능했던 명인으로, 해금산조의 전승과 정립에 중요한 발자취를 남겼다.', workNote: '한범수류 해금산조는 담백하면서도 힘 있는 선율, 분명한 장단 구성, 해금의 농현과 시김새가 조화를 이루는 산조이다. 진양조의 느리고 깊은 호흡에서 시작해 중모리, 중중모리, 자진모리로 이어지며 점차 긴장과 속도를 더하고, 절제된 표현 속에 내면의 정서를 응축한다. 해금과 장구가 주고받는 긴밀한 호흡은 산조가 지닌 즉흥성과 형식미를 동시에 드러내며, 한 명인의 음악 세계가 오늘의 연주 안에서 새롭게 이어지는 순간을 만든다.' },
+      ] },
+    ],
+    collaborators: [
+      { id: 'lee-young-seop', name: '이영섭', role: '장구', image: 'images/performers/lee-young-seop.jpg', shortBio: '영남대학교 예술대학 국악전공 교수. World Music Group Vinalog 대표.', fullBio: ['영남대학교 예술대학 국악전공 교수', 'World Music Group ‘Vinalog’ 대표', '전통창작음악집단 ‘4인놀이’ 동인'], participatingWorks: ['육자배기 · 흥타령', '한범수류 해금산조'] },
+      { id: 'kim-na-young', name: '김나영', role: '가야금', image: 'images/performers/kim-na-young.jpg', shortBio: '국가무형유산 가야금산조 및 병창 이수자. 국가유산진흥원 예술단.', fullBio: ['국가무형유산 가야금산조 및 병창 이수자', '국가유산진흥원 예술단', '제10회 의정부 죽파 가야금 경연대회 일반부 대상', '제3회 영암 김창조 전국 국악대악대전 일반부 대상'], participatingWorks: ['육자배기 · 흥타령'] },
+    ],
+    archiveMaterials: [
+      { label: 'POSTER', viewLabel: 'POSTER' },
+      { label: 'LEAFLET', viewLabel: 'LEAFLET' },
+    ],
+  },
+  {
     id: 'haegeum-2026-08-02',
     title: '해금, 시대를 잇다',
     subtitle: '해금 창작곡의 변천',

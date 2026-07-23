@@ -46,7 +46,7 @@ export const homeHeroSlides: HomeHeroSlide[] = [
     time: '15:30',
     venue: '해운대문화회관 고운홀',
     theme: 'sanjo-matiere',
-    detailLink: '/performance',
+    detailLink: '/performance/sanjo-gil-2026-08-16',
     heroImage: 'images/hero/sanjo-gil-02/hero-background.png',
   },
 ];
