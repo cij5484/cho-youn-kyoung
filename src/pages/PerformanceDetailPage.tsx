@@ -93,18 +93,13 @@ export function PerformanceDetailPage() {
             <h1 id="sanjo-detail-title"><span>산조길,</span><strong>둘</strong></h1>
             <h2>{performance.subtitle}</h2>
             <dl>
-              <div><dt>DATE</dt><dd>{performance.displayDate}</dd></div>
+              <div><dt>DATE</dt><dd><strong className="sanjo-detail__date-emphasis">8. 16.</strong><span>{performance.displayDate.replace('2026. 8. 16. ', '')}</span></dd></div>
               <div><dt>VENUE</dt><dd>{performance.venue}</dd></div>
             </dl>
+            <a className="sanjo-detail__hero-cta" href="#sanjo-program-one">VIEW PERFORMANCE</a>
           </div>
           <div className="sanjo-detail__orb" aria-hidden="true" />
         </section>
-
-        <Reveal as="section" className="sanjo-detail__quick sanjo-detail__section" aria-labelledby="sanjo-quick-title">
-          <p className="sanjo-detail__label">QUICK INFORMATION</p>
-          <h2 id="sanjo-quick-title">공연 정보</h2>
-          <dl><div><dt>일시</dt><dd>{performance.displayDate}</dd></div><div><dt>장소</dt><dd>{performance.venue}</dd></div></dl>
-        </Reveal>
 
         <Reveal as="section" className="sanjo-detail__note sanjo-detail__section" aria-labelledby="sanjo-note-title">
           <p className="sanjo-detail__label">ARTIST’S NOTE</p>
@@ -132,7 +127,6 @@ export function PerformanceDetailPage() {
           <div className="sanjo-detail__artist-grid">{performance.collaborators.map((artist) => <button className="sanjo-detail__artist" type="button" key={artist.id} onClick={(event) => { lastArtistButton.current = event.currentTarget; setSelectedArtist(artist); }}><span><SafeImage src={assetUrl(artist.image)} alt={`${artist.name} ${artist.role} 사진`} fallbackClassName="safe-image-fallback" fallbackLabel={`${artist.role} ${artist.name}`} objectPosition={artist.id === 'kim-na-young' ? 'center center' : 'center top'} /></span><small>{artist.role}</small><strong>{artist.name}</strong><em>VIEW PROFILE</em></button>)}</div>
         </Reveal>
 
-        <Reveal as="section" className="sanjo-detail__info sanjo-detail__section" aria-labelledby="sanjo-info-title"><p className="sanjo-detail__label">INFORMATION</p><h2 id="sanjo-info-title">안내</h2><dl><div><dt>일시</dt><dd>{performance.displayDate}</dd></div><div><dt>장소</dt><dd>{performance.venue}</dd></div></dl></Reveal>
         <Reveal as="section" className="sanjo-detail__print sanjo-detail__section" aria-labelledby="sanjo-print-title"><p className="sanjo-detail__label">PRINT ARCHIVE</p><h2 id="sanjo-print-title">인쇄 아카이브</h2><div>{performance.archiveMaterials?.map((m) => <span key={m.label}>{m.label}</span>)}</div></Reveal>
         <nav className="sanjo-detail__bottom" aria-label="공연 상세 내비게이션"><Link to="/performance">← BACK TO PERFORMANCE</Link>{previousPerformance && <Link to={`/performance/${previousPerformance.id}`}><span>PREVIOUS PERFORMANCE</span><strong>{previousPerformance.title} →</strong></Link>}</nav>
 
