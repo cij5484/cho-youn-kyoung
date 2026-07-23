@@ -161,7 +161,7 @@ export function PerformanceDetailPage() {
 
       {selectedArchivePreview && <div className="performance-detail__archive-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedArchivePreview(null); }}><div className={`performance-detail__archive-viewer performance-detail__archive-viewer--${selectedArchivePreview.label.toLowerCase()}`} role="dialog" aria-modal="true" aria-labelledby="archive-viewer-title" tabIndex={-1} ref={archiveViewerRef}><header><p id="archive-viewer-title">{selectedArchivePreview.label}</p><button type="button" aria-label={selectedArchivePreview.closeLabel} onClick={() => setSelectedArchivePreview(null)}>CLOSE</button></header><div className="performance-detail__archive-images">{selectedArchivePreview.images.map((image) => <figure key={image.src}>{image.label && <figcaption>{image.label}</figcaption>}<SafeImage src={assetUrl(image.src)} alt={image.alt} fallbackClassName="safe-image-fallback" fallbackLabel={image.label ?? selectedArchivePreview.label} /></figure>)}</div></div></div>}
 
-      {selectedArtist && <ArtistProfilePanel artist={selectedArtist} artists={performance.collaborators} activeIndex={activeArtistIndex} panelRef={panelRef} onClose={() => setSelectedArtist(null)} onSelect={setSelectedArtist} />}
+      {selectedArtist && <ArtistProfilePanel artist={selectedArtist} artists={performance.collaborators} activeIndex={activeArtistIndex} panelRef={panelRef} onClose={() => setSelectedArtist(null)} onSelect={setSelectedArtist} tone="gold" />}
     </article>
   );
 }

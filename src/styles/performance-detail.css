@@ -421,3 +421,33 @@
     transition: none !important;
   }
 }
+
+.performance-detail__artist-panel--gold {
+  background: #d8cdb8;
+  color: #151515;
+}
+
+.performance-detail__artist-panel--navy {
+  background: #f3ede2;
+  color: #202526;
+}
+
+.performance-detail__artist-panel--navy .performance-detail__panel-close,
+.performance-detail__artist-panel--navy nav button {
+  color: #1f4f7a;
+  border-bottom-color: rgba(31, 79, 122, 0.35);
+}
+
+.performance-detail__artist-panel--navy p,
+.performance-detail__artist-panel--navy h3 {
+  color: #1f4f7a;
+}
+
+.performance-detail__artist-panel--navy li {
+  border-top-color: rgba(31, 79, 122, 0.18);
+}
+
+.performance-detail__artist-panel--navy .performance-detail__panel-photo,
+.performance-detail__artist-panel--navy .performance-detail__panel-photo .safe-image-fallback {
+  background: #d9d3c8;
+}

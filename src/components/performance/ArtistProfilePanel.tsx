@@ -10,15 +10,16 @@ type ArtistProfilePanelProps = {
   panelRef: RefObject<HTMLDivElement | null>;
   onClose: () => void;
   onSelect: (artist: PerformanceCollaborator) => void;
+  tone?: 'gold' | 'navy';
 };
 
-export function ArtistProfilePanel({ artist, artists, activeIndex, panelRef, onClose, onSelect }: ArtistProfilePanelProps) {
+export function ArtistProfilePanel({ artist, artists, activeIndex, panelRef, onClose, onSelect, tone = 'gold' }: ArtistProfilePanelProps) {
   const previousArtist = artists[(activeIndex - 1 + artists.length) % artists.length];
   const nextArtist = artists[(activeIndex + 1) % artists.length];
 
   return (
     <div className="performance-detail__panel-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <aside className="performance-detail__artist-panel" role="dialog" aria-modal="true" aria-labelledby="artist-panel-title" tabIndex={-1} ref={panelRef}>
+      <aside className={`performance-detail__artist-panel performance-detail__artist-panel--${tone}`} role="dialog" aria-modal="true" aria-labelledby="artist-panel-title" tabIndex={-1} ref={panelRef}>
         <button className="performance-detail__panel-close" type="button" onClick={onClose}>CLOSE</button>
         <div className="performance-detail__panel-photo">
           <SafeImage src={assetUrl(artist.image)} alt={`${artist.name} ${artist.role} 사진`} fallbackClassName="safe-image-fallback" fallbackLabel={`${artist.role} ${artist.name}`} objectPosition={artist.id === 'kim-na-young' ? 'center center' : 'center top'} />

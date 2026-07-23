@@ -72,7 +72,7 @@ export function SanjoGil20260816Page({ performance }: { performance: Performance
       <section className="sanjo-detail__info sanjo-detail__section" aria-labelledby="sanjo-info-title"><p className="sanjo-detail__label" id="sanjo-info-title">INFORMATION</p><dl>{['일시|2026. 8. 16. (일) 15:30','장소|해운대문화회관 고운홀','관람료|전석 10,000원','공연시간|약 60분 · 인터미션 없음','현장 발권|당일 현장 발권','자유석|전석 자유석','관람 연령|미취학 아동 관람 불가'].map((item)=>{const [k,v]=item.split('|'); return <div key={k}><dt>{k}</dt><dd>{v}</dd></div>;})}</dl></section>
       <section className="sanjo-detail__print" aria-labelledby="sanjo-print-title"><p className="sanjo-detail__label" id="sanjo-print-title">PRINT ARCHIVE</p><div>{performance.archiveMaterials?.map((m) => <span key={m.label}>{m.label}</span>)}</div></section>
       <nav className="sanjo-detail__bottom" aria-label="공연 상세 내비게이션"><PerformanceBackLink tone="navy" />{previousPerformance && <Link to={`/performance/${previousPerformance.id}`}><span>PREVIOUS PERFORMANCE</span><strong>{previousPerformance.title} →</strong></Link>}</nav>
-      {selectedArtist && <ArtistProfilePanel artist={selectedArtist} artists={performance.collaborators} activeIndex={activeArtistIndex} panelRef={panelRef} onClose={() => setSelectedArtist(null)} onSelect={setSelectedArtist} />}
+      {selectedArtist && <ArtistProfilePanel artist={selectedArtist} artists={performance.collaborators} activeIndex={activeArtistIndex} panelRef={panelRef} onClose={() => setSelectedArtist(null)} onSelect={setSelectedArtist} tone="navy" />}
     </article>
   );
 }
