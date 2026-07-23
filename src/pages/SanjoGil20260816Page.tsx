@@ -79,7 +79,7 @@ export function SanjoGil20260816Page({ performance }: { performance: Performance
             <p>VENUE</p>
             <h2>{performance.venue}</h2>
             {performance.venueAddress ? <address>{performance.venueAddress}</address> : null}
-            {performance.venueUrl ? <a href={performance.venueUrl} target="_blank" rel="noreferrer">OFFICIAL SITE <span aria-hidden="true">↗</span></a> : null}
+            {performance.venueUrl ? <a href={performance.venueUrl} target="_blank" rel="noopener noreferrer">OFFICIAL WEBSITE <span aria-hidden="true">→</span></a> : null}
           </article>
           <dl>{['일시|2026. 8. 16. (일) 15:30','관람료|전석 10,000원','공연시간|약 60분 · 인터미션 없음','현장 발권|당일 현장 발권','자유석|전석 자유석','관람 연령|미취학 아동 관람 불가'].map((item)=>{const [k,v]=item.split('|'); return <div key={k}><dt>{k}</dt><dd>{v}</dd></div>;})}</dl>
         </div>
