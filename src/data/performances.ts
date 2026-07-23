@@ -116,6 +116,8 @@ export const performances: Performance[] = [
     date: '2026-08-16',
     displayDate: '2026. 8. 16. (일) 15:30',
     venue: '해운대문화회관 고운홀',
+    venueAddress: '부산광역시 해운대구 양운로 97 해운대문화회관',
+    venueUrl: 'https://www.haeundae.go.kr/culture/index.do',
     performer: '조윤경',
     featured: false,
     heroImage: 'images/hero/sanjo-gil-02/hero-background.png',
