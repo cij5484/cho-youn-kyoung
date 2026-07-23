@@ -3,17 +3,30 @@ import { Reveal } from '../components/Reveal';
 import { SafeImage } from '../components/common/SafeImage';
 import { ArtistProfilePanel } from '../components/performance/ArtistProfilePanel';
 import { PerformanceBackLink } from '../components/performance/PerformanceBackLink';
-import { PerformanceArchive } from '../components/performance/PerformanceArchive';
-import { PerformanceAdjacentNavigation } from '../components/performance/PerformanceAdjacentNavigation';
+import { ArchiveViewer } from '../components/performance/PerformanceArchive';
+import { useArchiveViewer } from '../components/performance/useArchiveViewer';
+import { Link } from 'react-router-dom';
+import { getAdjacentPerformances } from '../utils/performanceNavigation';
 import { type Performance, type PerformanceCollaborator } from '../data/performances';
 import { assetUrl } from '../utils/assetUrl';
 import '../styles/sanjo-detail.css';
+
+
+const formatSanjoHeroDate = (performance: Performance) => {
+  const [year, month, day] = performance.date.split('-').map(Number);
+  const weekday = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Seoul', weekday: 'short' }).format(new Date(`${performance.date}T00:00:00+09:00`)).toUpperCase();
+  const time = performance.displayDate.trim().split(/\s+/).at(-1) ?? '';
+
+  return { yearLabel: `${year}.`, monthDayLabel: `${month}. ${day}.`, weekdayTimeLabel: `${weekday} ${time}` };
+};
 
 export function SanjoGil20260816Page({ performance }: { performance: Performance }) {
   const [selectedArtist, setSelectedArtist] = useState<PerformanceCollaborator | null>(null);
   const lastArtistButton = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [program01, program02] = performance.programEras;
+  const archiveViewer = useArchiveViewer();
+  const { previous } = getAdjacentPerformances(performance.id);
   const activeArtistIndex = selectedArtist ? performance.collaborators.findIndex((artist) => artist.id === selectedArtist.id) : -1;
 
   useEffect(() => {
@@ -37,6 +50,8 @@ export function SanjoGil20260816Page({ performance }: { performance: Performance
     return () => { document.body.style.overflow = previousOverflow; window.removeEventListener('keydown', onKeyDown); lastArtistButton.current?.focus(); };
   }, [selectedArtist]);
 
+  const heroDate = formatSanjoHeroDate(performance);
+
   return (
     <article className="sanjo-detail">
       <section className="sanjo-detail__hero" aria-labelledby="sanjo-detail-title">
@@ -45,7 +60,7 @@ export function SanjoGil20260816Page({ performance }: { performance: Performance
           <p className="sanjo-detail__eyebrow">SANJO-GIL PROJECT 02</p>
           <h1 id="sanjo-detail-title"><span>산조길,</span><strong>둘</strong></h1>
           <p className="sanjo-detail__subtitle">{performance.subtitle}</p>
-          <p className="sanjo-detail__date"><span>{performance.displayDate}</span></p>
+          <p className="sanjo-detail__date"><span>{heroDate.yearLabel}</span><strong>{heroDate.monthDayLabel}</strong><span>{heroDate.weekdayTimeLabel}</span></p>
           <p className="sanjo-detail__venue">
             <span>{performance.venue}</span>
             {performance.venueAddress ? <small>{performance.venueAddress}</small> : null}
@@ -84,8 +99,9 @@ export function SanjoGil20260816Page({ performance }: { performance: Performance
           <dl>{[['일시', performance.displayDate], ['관람료', performance.ticketPrice], ['공연시간', performance.runningTime], ['현장 발권', performance.ticketing], ['자유석', performance.seating], ['관람 연령', performance.ageRestriction]].map(([k, v]) => v ? <div key={k}><dt>{k}</dt><dd>{v}</dd></div> : null)}</dl>
         </div>
       </section>
-      <section className="sanjo-detail__print" aria-labelledby="sanjo-print-title"><p className="sanjo-detail__label" id="sanjo-print-title">PRINT ARCHIVE</p><PerformanceArchive performanceTitle={performance.title} materials={performance.archiveMaterials} tone="navy" /></section>
-      <PerformanceAdjacentNavigation currentId={performance.id} tone="navy" />
+      <section className="sanjo-detail__print" aria-labelledby="sanjo-print-title"><p className="sanjo-detail__label" id="sanjo-print-title">PRINT ARCHIVE</p><div className="sanjo-detail__print-materials">{performance.archiveMaterials?.map((material) => <article className="sanjo-detail__print-material" key={material.label}><h2>{material.label}</h2><div>{material.previewImages.length > 0 && <button type="button" aria-label={`${performance.title} ${material.label === 'POSTER' ? '포스터' : '리플렛'} 확대 보기`} onClick={(event) => archiveViewer.openMaterial(material, event.currentTarget)}>{material.viewLabel}</button>}{material.downloadUrl && <a href={assetUrl(material.downloadUrl)} download aria-label={`${performance.title} ${material.label === 'POSTER' ? '포스터' : '리플렛'} PDF 다운로드`}>{material.downloadLabel ?? 'DOWNLOAD PDF'}</a>}</div></article>)}</div></section>
+      <nav className="sanjo-detail__bottom" aria-label="공연 상세 내비게이션"><PerformanceBackLink tone="navy" />{previous && <Link className="sanjo-detail__bottom-link" to={`/performance/${previous.id}`}><span>PREVIOUS PERFORMANCE</span><strong>{previous.title} →</strong></Link>}</nav>
+      <ArchiveViewer activeMaterial={archiveViewer.activeMaterial} closeMaterial={archiveViewer.closeMaterial} lastTriggerRef={archiveViewer.lastTriggerRef} tone="navy" />
       {selectedArtist && <ArtistProfilePanel artist={selectedArtist} artists={performance.collaborators} activeIndex={activeArtistIndex} panelRef={panelRef} onClose={() => setSelectedArtist(null)} onSelect={setSelectedArtist} tone="navy" />}
     </article>
   );

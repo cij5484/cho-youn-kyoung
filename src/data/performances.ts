@@ -42,8 +42,6 @@ export type ArchiveMaterial = {
 
 export type HomeHeroSettings = {
   theme: 'haegeum-recital' | 'sanjo-matiere';
-  displayDate: string;
-  time: string;
 };
 
 export type Performance = {
@@ -131,7 +129,7 @@ export const performances: Performance[] = [
     ticketing: '현장 발권',
     seating: '전석 자유석',
     ageRestriction: '미취학 아동 관람 불가',
-    homeHero: { theme: 'sanjo-matiere', displayDate: '2026. 8. 16.', time: '15:30' },
+    homeHero: { theme: 'sanjo-matiere' },
     archiveLabel: 'SANJO-GIL PROJECT 02',
     listDescription: '한범수류 해금산조의 길을 잇다',
     introduction: [],
@@ -173,7 +171,7 @@ export const performances: Performance[] = [
     performer: '조윤경',
     featured: true,
     heroImage: 'images/hero/hero-background-v2.png',
-    homeHero: { theme: 'haegeum-recital', displayDate: '2026. 8. 2.', time: '16:00' },
+    homeHero: { theme: 'haegeum-recital' },
     archiveLabel: 'HAEGEUM RECITAL 2026',
     listDescription: '해금 창작곡의 변천을 기록하다',
     introduction: [
