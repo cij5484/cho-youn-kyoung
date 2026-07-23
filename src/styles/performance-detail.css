@@ -313,7 +313,9 @@
 @media (prefers-reduced-motion: reduce) {
   .performance-detail__venue-link span,
   .performance-detail__hero-actions a::after,
-  .performance-detail__hero-actions button::after {
+  .performance-detail__hero-actions button::after,
+  .performance-detail__material button::after,
+  .performance-detail__material a::after {
     transition: none !important;
   }
 }
