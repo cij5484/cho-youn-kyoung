@@ -978,3 +978,18 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
     transition: none;
   }
 }
+
+.site-header--sanjo-detail {
+  background: linear-gradient(180deg, rgba(243, 237, 226, 0.72), rgba(243, 237, 226, 0.08));
+  box-shadow: none;
+}
+.site-header--sanjo-detail .brand,
+.site-header--sanjo-detail .desktop-nav a,
+.site-header--sanjo-detail .menu-button {
+  color: #172f49;
+}
+.site-header--sanjo-detail .desktop-nav a.active,
+.site-header--sanjo-detail .desktop-nav a:hover,
+.site-header--sanjo-detail .mobile-menu a.active {
+  color: #1f4f7a;
+}
