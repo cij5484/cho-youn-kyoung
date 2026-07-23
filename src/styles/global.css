@@ -993,3 +993,87 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
 .site-header--sanjo-detail .mobile-menu a.active {
   color: #1f4f7a;
 }
+
+/* Mobile refinement: keep the Sanjo text block on the right so the existing
+   hero image can reveal a partial haegeum shape on the left. */
+@media (max-width: 760px) {
+  .home-hero-rotator {
+    touch-action: pan-y;
+  }
+
+  .sanjo-hero {
+    align-items: center;
+    justify-content: flex-end;
+    padding: calc(var(--header) + 24px) clamp(14px, 4.4vw, 20px) 54px 0;
+  }
+
+  .sanjo-hero__image {
+    object-position: 30% center;
+  }
+
+  .sanjo-hero::after {
+    inset: 0 0 0 auto;
+    width: 72%;
+    height: 100%;
+    background:
+      linear-gradient(90deg, rgba(239, 232, 220, 0), rgba(239, 232, 220, 0.78) 32%, rgba(239, 232, 220, 0.98) 100%),
+      linear-gradient(180deg, rgba(239, 232, 220, 0.18), rgba(239, 232, 220, 0) 34%, rgba(239, 232, 220, 0.48));
+  }
+
+  .sanjo-hero__content {
+    width: min(58vw, 255px);
+    max-width: 255px;
+    margin-left: auto;
+    padding: 0;
+    align-self: center;
+    justify-self: end;
+  }
+
+  .sanjo-hero__eyebrow {
+    margin-bottom: 20px;
+    font-size: clamp(0.56rem, 2.5vw, 0.66rem);
+    line-height: 1.45;
+  }
+
+  .sanjo-hero__title {
+    min-height: clamp(4.25rem, 19vw, 5.35rem);
+    font-size: clamp(2.08rem, 9.5vw, 2.82rem);
+  }
+
+  .sanjo-hero__title-accent {
+    left: clamp(1.95em, 27vw, 2.55em);
+  }
+
+  .sanjo-hero__divider {
+    height: 34px;
+    margin-block: 15px;
+  }
+
+  .sanjo-hero__subtitle {
+    margin-bottom: 20px;
+    font-size: clamp(0.96rem, 4.2vw, 1.1rem);
+  }
+
+  .sanjo-hero__artist {
+    margin-bottom: 20px;
+    font-size: clamp(0.68rem, 3vw, 0.8rem);
+    line-height: 1.5;
+  }
+
+  .sanjo-hero__date {
+    flex-wrap: wrap;
+    gap: 0.18em 0.42em;
+    margin-bottom: 7px;
+  }
+
+  .sanjo-hero__venue {
+    margin-bottom: 24px;
+    font-size: clamp(0.84rem, 3.6vw, 0.98rem);
+    line-height: 1.45;
+  }
+
+  .sanjo-hero__link {
+    font-size: 0.68rem;
+    line-height: 1.4;
+  }
+}
