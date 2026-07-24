@@ -140,6 +140,20 @@
   .sanjo-program,
   .sanjo-detail__artists,
   .sanjo-detail__archive { grid-template-columns: 1fr; }
+  .sanjo-detail__note.reveal,
+  .sanjo-program.reveal,
+  .sanjo-detail__artists.reveal,
+  .sanjo-detail__note.reveal .reveal__heading,
+  .sanjo-detail__note.reveal .reveal__content,
+  .sanjo-program.reveal .reveal__heading,
+  .sanjo-program.reveal .reveal__content,
+  .sanjo-detail__artists.reveal .reveal__heading,
+  .sanjo-detail__artists.reveal .reveal__content {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
   .sanjo-detail__hero { min-height: auto; padding-top: calc(var(--header) + 34px); background-position: 58% center; }
   .sanjo-detail__hero-meta { flex-direction: column; align-items: flex-start; width: min(100%, 620px); }
   .sanjo-detail__hero-actions { justify-content: flex-start; }
@@ -156,6 +170,14 @@
   .sanjo-detail__date strong { font-size: clamp(1.58rem, 9vw, 2.32rem); }
   .sanjo-detail__information dl { grid-template-columns: 1fr; }
   .sanjo-detail__information-item { padding-right: 0; }
+  .sanjo-detail__information dd,
+  .sanjo-detail address,
+  .sanjo-detail blockquote,
+  .sanjo-program li,
+  .sanjo-program__notes {
+    font-size: 1rem;
+    line-height: 1.78;
+  }
   .sanjo-detail__lead { padding-left: 18px; }
 }
 
