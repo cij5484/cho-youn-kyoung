@@ -2,14 +2,31 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { SafeImage } from '../components/common/SafeImage';
 import { Reveal } from '../components/Reveal';
-import { profile } from '../data/profile';
+import { type ProfilePerformance, profile } from '../data/profile';
 import { assetUrl } from '../utils/assetUrl';
 import '../styles/about.css';
+
+const getTimelineSortKey = (item: ProfilePerformance, index: number) => ({
+  primary: item.date ?? item.year,
+  index,
+});
+
+const compareTimelineItems = (a: { item: ProfilePerformance; index: number }, b: { item: ProfilePerformance; index: number }) => {
+  const aKey = getTimelineSortKey(a.item, a.index);
+  const bKey = getTimelineSortKey(b.item, b.index);
+  const dateCompare = aKey.primary.localeCompare(bKey.primary);
+  return dateCompare === 0 ? aKey.index - bKey.index : dateCompare;
+};
 
 export function AboutPage() {
   const featuredAlbum = profile.discography[0];
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const activeImage = profile.galleryImages[activeImageIndex] ?? profile.galleryImages[0];
+  const timelinePerformances = [...profile.performances]
+    .map((item, index) => ({ item, index }))
+    .sort(compareTimelineItems)
+    .map(({ item }) => item);
+
   return (
     <article className="about-page">
       <section className="about-hero" aria-labelledby="about-title">
@@ -89,11 +106,11 @@ export function AboutPage() {
             <h2 id="timeline-title">CAREER TIMELINE</h2>
           </div>
           <div className="about-timeline reveal__content">
-            {profile.performances.map((item) => {
+            {timelinePerformances.map((item) => {
               const content = (
                 <>
                   <time>{item.year}</time>
-                  <div>
+                  <div className="about-timeline__headline">
                     <h3>「{item.title}」</h3>
                     {item.description && <p>{item.description}</p>}
                   </div>

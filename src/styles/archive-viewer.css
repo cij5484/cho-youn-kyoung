@@ -19,15 +19,15 @@
 .archive-viewer--gold.archive-viewer--leaflet .archive-viewer__images figure { width:100%; }
 
 .archive-viewer__backdrop--navy { display:block; padding:clamp(18px,3vw,42px); overflow-y:auto; overflow-x:hidden; background:rgba(31,79,122,.30); }
-.archive-viewer--navy { width:min(1500px,100%); margin:0 auto; overflow:visible; padding:0 clamp(18px,3vw,42px) clamp(22px,3vw,44px); background:#f3ede2; color:#1f4f7a; }
-.archive-viewer--navy .archive-viewer__header { position:sticky; top:0; z-index:2; padding:clamp(16px,2vw,24px) 0; margin-bottom:clamp(16px,2vw,30px); border-bottom:1px solid currentColor; }
+.archive-viewer--navy { width:min(1500px,100%); margin:0 auto; padding:0 clamp(18px,3vw,42px) clamp(22px,3vw,44px); background:#f3ede2; color:#1f4f7a; }
+.archive-viewer--navy .archive-viewer__header { position:sticky; top:0; z-index:2; padding:clamp(16px,2vw,24px) 0; margin-bottom:clamp(22px,3vw,42px); border-bottom:1px solid currentColor; background:#f3ede2; }
 .archive-viewer--navy .archive-viewer__header p { margin:0; font-family:var(--serif); font-size:clamp(1.5rem,3vw,2.6rem); letter-spacing:-.04em; }
 .archive-viewer--navy .archive-viewer__images { display:grid; grid-template-columns:1fr; gap:clamp(28px,4vw,56px); align-items:start; justify-items:center; }
 .archive-viewer--navy.archive-viewer--poster { width:min(980px,100%); }
 .archive-viewer--navy.archive-viewer--poster .archive-viewer__images { grid-template-columns:minmax(0,760px); justify-content:center; }
 .archive-viewer--navy .archive-viewer__images figcaption { margin:0 0 12px; color:#1f4f7a; font-weight:900; letter-spacing:.16em; }
 .archive-viewer--navy .archive-viewer__images figure { width:100%; }
-.archive-viewer--navy.archive-viewer--poster .archive-viewer__images figure { width:min(100%,760px); }
+.archive-viewer--navy.archive-viewer--poster .archive-viewer__images figure { width:min(100%,820px); }
 .archive-viewer--navy.archive-viewer--leaflet .archive-viewer__images figure { width:min(100%,1450px); }
 .archive-viewer--navy .archive-viewer__images img { max-height:none; }
 

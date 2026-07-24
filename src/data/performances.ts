@@ -60,6 +60,7 @@ export type Performance = {
   listDescription: string;
   introduction: string[];
   artistNote: string[];
+  artistNoteLeadLines?: string[];
   artistSignature: string;
   programEras: ProgramEra[];
   collaborators: PerformanceCollaborator[];
@@ -133,8 +134,13 @@ export const performances: Performance[] = [
     archiveLabel: 'SANJO-GIL PROJECT 02',
     listDescription: '한범수류 해금산조의 길을 잇다',
     introduction: [],
+    artistNoteLeadLines: [
+      '산조는 한 사람의 음악이자,',
+      '한 시대의 음악이며,',
+      '수많은 예인들의 삶과 예술이 이어져 온',
+      '우리 음악의 소중한 유산입니다.',
+    ],
     artistNote: [
-      '산조는 한 사람의 음악이자, 한 시대의 음악이며, 수많은 예인들의 삶과 예술이 이어져 온 우리 음악의 소중한 유산입니다.',
       '산조길 프로젝트의 두 번째 무대는 한범수류 해금산조를 중심에 두고, 그 음악이 품고 있는 시간의 결을 오늘의 연주로 다시 마주하고자 합니다.',
       '한범수류 해금산조는 절제된 선율 속에서도 깊은 감정의 흐름을 지니며, 장단의 변화와 함께 해금 특유의 음색이 섬세하게 드러나는 작품입니다.',
       '이번 공연에서는 산조에 앞서 남도 음악의 정서를 담은 육자배기와 흥타령을 함께 연주하며, 노래와 기악, 장단이 이어 온 음악적 호흡을 관객 여러분과 나누고자 합니다.',
