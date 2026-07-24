@@ -693,7 +693,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
 .sanjo-hero__title-accent {
   position: absolute;
   top: 0.52em;
-  left: clamp(2.35em, 11.5vw, 3.05em);
+  left: clamp(3.05em, 15.8vw, 4.25em);
   display: block;
   width: fit-content;
   color: #1F4F7A;
@@ -948,7 +948,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   }
   .sanjo-hero__title-accent {
     top: 0.56em;
-    left: clamp(1.95em, 27vw, 2.55em);
+    left: clamp(2.45em, 38vw, 3.1em);
     font-size: 1.18em;
   }
   .sanjo-hero__divider {

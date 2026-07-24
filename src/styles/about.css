@@ -40,6 +40,10 @@
   letter-spacing: -0.075em;
 }
 
+.about-hero h1 span {
+  display: block;
+}
+
 .about-hero__role {
   margin: 0;
   font-size: clamp(1.1rem, 2vw, 2rem);
