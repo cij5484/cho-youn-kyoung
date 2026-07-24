@@ -162,7 +162,7 @@ export const performances: Performance[] = [
     ],
     collaborators: [
       { id: 'lee-young-seop', name: '이영섭', role: '장구', image: 'images/performance/2026-08-16/performers/lee-young-seop.jpg', shortBio: '영남대학교 예술대학 국악전공 교수. World Music Group Vinalog 대표.', fullBio: ['영남대학교 예술대학 국악전공 교수', 'World Music Group ‘Vinalog’ 대표', '전통창작음악집단 ‘4인놀이’ 동인'], participatingWorks: ['육자배기 · 흥타령', '한범수류 해금산조'] },
-      { id: 'kim-na-young', name: '김나영', role: '가야금', image: 'images/performance/2026-08-16/performers/kim-na-young.jpg', shortBio: '국가무형유산 가야금산조 및 병창 이수자. 국가유산진흥원 예술단.', fullBio: ['국가무형유산 가야금산조 및 병창 이수자', '국가유산진흥원 예술단', '제10회 의정부 죽파 가야금 경연대회 일반부 대상', '제3회 영암 김창조 전국 국악대악대전 일반부 대상'], participatingWorks: ['육자배기 · 흥타령'] },
+      { id: 'kim-na-young', name: '김나영', role: '가야금', image: 'images/performance/2026-08-16/performers/kim-na-young.jpg', shortBio: '국가무형유산 가야금산조 및 병창 이수자. 국가유산진흥원 예술단.', fullBio: ['국가무형유산 가야금산조 및 병창 이수자', '국가유산진흥원 예술단', '제10회 의정부 죽파 가야금 경연대회 일반부 대상(국회의장상)', '제3회 영암 김창조 전국 국악대전 일반부 대상'], participatingWorks: ['육자배기 · 흥타령'] },
       { ...yangSeungHwanProfile, image: 'images/performance/2026-08-02/performers/yang-seung-hwan.jpg', participatingWorks: ['산조길, 둘'] },
     ],
     archiveMaterials: [
