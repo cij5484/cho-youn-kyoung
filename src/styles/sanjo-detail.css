@@ -40,7 +40,7 @@
 .sanjo-detail h1 { width: min(100%, 7.8em); margin: .13em 0 .11em; color: var(--sanjo-navy); font-size: clamp(3.25rem, 7.4vw, 7.9rem); line-height: .88; }
 .sanjo-detail h1 span,
 .sanjo-detail h1 strong { display: block; font-weight: 450; }
-.sanjo-detail h1 strong { color: var(--sanjo-navy); padding-left: min(3.08em, 48vw); font-size: 1.18em; letter-spacing: -.085em; }
+.sanjo-detail h1 strong { color: var(--sanjo-navy); padding-left: min(2.56em, 48vw); font-size: 1.18em; letter-spacing: -.085em; }
 .sanjo-detail__subtitle { margin: 0 0 clamp(24px, 3.2vw, 34px); color: #364047; font-family: var(--serif); font-size: clamp(1.25rem, 2vw, 2.05rem); }
 .sanjo-detail__hero-meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px clamp(28px, 5vw, 72px); width: min(100%, 860px); padding-top: 18px; border-top: 1px solid rgba(31, 79, 122, .22); }
 .sanjo-detail__date { display: flex; align-items: baseline; flex-wrap: wrap; flex: 1 1 auto; gap: clamp(12px, 2vw, 26px); min-width: min(100%, 360px); margin: 0; font-size: clamp(.98rem, 1.2vw, 1.16rem); letter-spacing: .04em; }
