@@ -40,7 +40,7 @@
 .sanjo-detail h1 { width: min(100%, 7.8em); margin: .13em 0 .11em; color: var(--sanjo-navy); font-size: clamp(3.25rem, 7.4vw, 7.9rem); line-height: .88; }
 .sanjo-detail h1 span,
 .sanjo-detail h1 strong { display: block; font-weight: 450; }
-.sanjo-detail h1 strong { color: var(--sanjo-navy); padding-left: min(2.15em, 38vw); font-size: 1.18em; letter-spacing: -.085em; }
+.sanjo-detail h1 strong { color: var(--sanjo-navy); padding-left: min(3.08em, 48vw); font-size: 1.18em; letter-spacing: -.085em; }
 .sanjo-detail__subtitle { margin: 0 0 clamp(24px, 3.2vw, 34px); color: #364047; font-family: var(--serif); font-size: clamp(1.25rem, 2vw, 2.05rem); }
 .sanjo-detail__date { display: flex; align-items: baseline; flex-wrap: wrap; gap: clamp(12px, 2vw, 26px); width: min(100%, 620px); margin: 0; padding-top: 18px; border-top: 1px solid rgba(31, 79, 122, .22); font-size: clamp(.98rem, 1.2vw, 1.16rem); letter-spacing: .04em; }
 .sanjo-detail__date strong { color: var(--sanjo-navy); font-size: clamp(1.8rem, 3.25vw, 3.2rem); font-weight: 900; letter-spacing: -.045em; }
@@ -67,7 +67,7 @@
 .sanjo-detail__lead span { display: block; }
 .sanjo-detail blockquote { margin: 0; padding-top: 2px; font-size: clamp(.98rem, 1.08vw, 1.05rem); line-height: 1.9; color: #3b4142; }
 .sanjo-detail blockquote p { margin: 0 0 1.15em; }
-.sanjo-detail cite { display: block; margin-top: 1.4em; color: var(--sanjo-navy); font-family: var(--serif); font-size: 1.35rem; font-style: normal; }
+.sanjo-detail cite { display: block; width: min(100%, 650px); margin-top: 1.4em; margin-left: auto; color: var(--sanjo-navy); font-family: var(--serif); font-size: 1.35rem; font-style: normal; text-align: right; }
 
 @media (min-width: 1200px) {
   .sanjo-detail__note { grid-template-columns: minmax(140px, 150px) minmax(600px, 650px) minmax(0, 720px); gap: clamp(24px, 3vw, 44px); }
@@ -148,7 +148,7 @@
 
 @media (max-width: 520px) {
   .sanjo-detail h1 { font-size: clamp(2.95rem, 15.2vw, 4.3rem); }
-  .sanjo-detail h1 strong { padding-left: min(1.45em, 31vw); font-size: 1.08em; }
+  .sanjo-detail h1 strong { padding-left: min(2em, 42vw); font-size: 1.08em; }
   .sanjo-detail__date strong { font-size: clamp(1.58rem, 9vw, 2.32rem); }
   .sanjo-detail__information dl { grid-template-columns: 1fr; }
   .sanjo-detail__information-item { padding-right: 0; }

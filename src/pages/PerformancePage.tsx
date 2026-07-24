@@ -13,7 +13,7 @@ export function PerformancePage() {
       <section className="performance-archive__hero" aria-labelledby="performance-archive-title">
         <div className="performance-archive__copy">
           <p className="performance-archive__eyebrow">ARTIST ARCHIVE</p>
-          <h1 id="performance-archive-title" className="page-title-reveal">PERFORMANCES</h1>
+          <h1 id="performance-archive-title">PERFORMANCES</h1>
           <p>조윤경의 공연 기록과 예정된 무대를 시간의 흐름에 따라 모아둔 퍼포먼스 아카이브입니다.</p>
         </div>
       </section>

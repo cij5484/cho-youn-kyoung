@@ -35,7 +35,7 @@ export function AboutPage() {
       <section className="about-hero" aria-labelledby="about-title">
         <div className="about-hero__copy">
           <p className="about-kicker">ABOUT</p>
-          <h1 id="about-title" className="about-title-reveal" aria-label={profile.englishName}>{englishNameParts.map((namePart) => <span key={namePart}>{namePart}</span>)}</h1>
+          <h1 id="about-title" aria-label={profile.englishName}>{englishNameParts.map((namePart) => <span key={namePart}>{namePart}</span>)}</h1>
           <p className="about-hero__role"><span>{roleLead}</span>{roleRest && ` ${roleRest}`}</p>
           <p className="about-hero__position">{profile.currentPosition}</p>
         </div>

@@ -463,10 +463,14 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   line-height: 1.9;
 }
 
+.contact-page__content {
+  width: min(880px, 100%);
+}
+
 .contact-page__list {
   display: grid;
   gap: clamp(24px, 3.2vw, 38px);
-  width: min(880px, 100%);
+  width: 100%;
   margin: 0;
 }
 
