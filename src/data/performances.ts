@@ -211,8 +211,8 @@ export const performances: Performance[] = [
         label: 'POSTER',
         viewLabel: 'VIEW POSTER',
         previewImages: [{ src: 'images/archive/2026-08-02/2026-08-02-poster.png', alt: '해금, 시대를 잇다 공연 포스터' }],
-        downloadUrl: 'images/archive/2026-08-02/2026-08-02-poster.pdf',
-        downloadLabel: 'DOWNLOAD PDF',
+        downloadUrl: 'images/archive/2026-08-02/2026-08-02-poster.png',
+        downloadLabel: 'DOWNLOAD PNG',
       },
       {
         label: 'LEAFLET',
