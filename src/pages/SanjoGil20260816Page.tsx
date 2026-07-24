@@ -21,9 +21,8 @@ const formatSanjoHeroDate = (performance: Performance) => {
   return { yearLabel: `${year}.`, monthDayLabel: `${month}. ${day}.`, weekdayTimeLabel: `${weekday} ${time}` };
 };
 
-const quickInformationItems = (performance: Performance) => [
+const informationItems = (performance: Performance) => [
   { label: 'DATE', value: performance.displayDate },
-  { label: 'VENUE', value: performance.venue, address: performance.venueAddress, url: performance.venueUrl, wide: true },
   { label: 'RUNNING TIME', value: performance.runningTime },
   { label: 'TICKET', value: performance.ticketPrice },
   { label: 'TICKETING', value: performance.ticketing },
@@ -81,17 +80,18 @@ export function SanjoGil20260816Page({ performance }: { performance: Performance
       </section>
 
       <div className="sanjo-detail__note-info">
-        <section className="sanjo-detail__quick" aria-labelledby="sanjo-quick-title">
-          <h2 className="sanjo-detail__section-title" id="sanjo-quick-title">QUICK INFORMATION</h2>
+        <section className="sanjo-detail__information" aria-labelledby="sanjo-information-title">
+          <h2 className="sanjo-detail__section-title" id="sanjo-information-title">INFORMATION</h2>
+          <div className="sanjo-detail__venue-row">
+            <span className="sanjo-detail__venue-name">{performance.venue}</span>
+            {performance.venueAddress && <address>({performance.venueAddress})</address>}
+            {performance.venueUrl && <a className="sanjo-detail__action-link" href={performance.venueUrl} target="_blank" rel="noopener noreferrer">OFFICIAL WEBSITE</a>}
+          </div>
           <dl>
-            {quickInformationItems(performance).map((item) => item.value ? (
-              <div className={item.wide ? 'sanjo-detail__quick-item sanjo-detail__quick-item--wide' : 'sanjo-detail__quick-item'} key={item.label}>
+            {informationItems(performance).map((item) => item.value ? (
+              <div className="sanjo-detail__information-item" key={item.label}>
                 <dt>{item.label}</dt>
-                <dd>
-                  <span>{item.value}</span>
-                  {item.address ? <address>{item.address}</address> : null}
-                  {item.url ? <a href={item.url} target="_blank" rel="noopener noreferrer">OFFICIAL WEBSITE <span aria-hidden="true">↗</span></a> : null}
-                </dd>
+                <dd>{item.value}</dd>
               </div>
             ) : null)}
           </dl>
@@ -99,13 +99,13 @@ export function SanjoGil20260816Page({ performance }: { performance: Performance
 
         <Reveal as="section" className="sanjo-detail__note sanjo-detail__section" aria-labelledby="sanjo-note-title">
           <h2 className="sanjo-detail__section-title" id="sanjo-note-title">ARTIST’S NOTE</h2>
-          <p className="sanjo-detail__lead">{performance.artistNote[0]}</p>
-          <blockquote>{performance.artistNote.slice(1).map((note) => <p key={note}>{note}</p>)}<cite>{performance.artistSignature}</cite></blockquote>
+          <p className="sanjo-detail__lead">{performance.artistNoteLeadLines?.map((line) => <span key={line}>{line}</span>)}</p>
+          <blockquote>{performance.artistNote.map((note) => <p key={note}>{note}</p>)}<cite>{performance.artistSignature}</cite></blockquote>
         </Reveal>
       </div>
 
       <ProgramBand tone="light" number="01" title="PROGRAM 01" workTitle={program01.title} lines={program01.works[0].instrumentation ?? []} notes={[program01.works[0].composerNote, program01.works[0].workNote]} />
-      <ProgramBand tone="dark" number="02" title="PROGRAM 02" workTitle={program02.title} lines={[...(program02.works[0].instrumentation ?? []), program02.description]} notes={[program02.works[0].composerNote, program02.works[0].workNote]} />
+      <ProgramBand tone="dark" number="02" title="PROGRAM 02" workTitle={program02.title} lines={program02.works[0].instrumentation ?? []} sequence={program02.description} notes={[program02.works[0].composerNote, program02.works[0].workNote]} />
 
       <Reveal as="section" className="sanjo-detail__artists sanjo-detail__section" aria-labelledby="sanjo-artists-title">
         <h2 className="sanjo-detail__section-title" id="sanjo-artists-title">GUEST ARTISTS</h2>
@@ -116,7 +116,7 @@ export function SanjoGil20260816Page({ performance }: { performance: Performance
         <section className="sanjo-detail__archive sanjo-detail__section" aria-labelledby="sanjo-archive-title">
           <h2 className="sanjo-detail__section-title" id="sanjo-archive-title">ARCHIVE MATERIALS</h2>
           <div className="sanjo-detail__archive-materials">
-            {performance.archiveMaterials?.map((material) => <article className="sanjo-detail__archive-material" key={material.label}><h3>{material.label}</h3><div>{material.previewImages.length > 0 && <button type="button" aria-label={`${performance.title} ${material.label === 'POSTER' ? '포스터' : '리플렛'} 확대 보기`} onClick={(event) => archiveViewer.openMaterial(material, event.currentTarget)}>{material.viewLabel}</button>}{material.downloadUrl && <a href={assetUrl(material.downloadUrl)} download aria-label={`${performance.title} ${material.label === 'POSTER' ? '포스터' : '리플렛'} ${downloadTypeLabel(material.downloadUrl)} 다운로드`}>{material.downloadLabel ?? `DOWNLOAD ${downloadTypeLabel(material.downloadUrl)}`}</a>}</div></article>)}
+            {performance.archiveMaterials?.map((material) => <article className="sanjo-detail__archive-material" key={material.label}><h3>{material.label}</h3><div>{material.previewImages.length > 0 && <button className="sanjo-detail__action-link" type="button" aria-label={`${performance.title} ${material.label === 'POSTER' ? '포스터' : '리플렛'} 확대 보기`} onClick={(event) => archiveViewer.openMaterial(material, event.currentTarget)}>{material.viewLabel}</button>}{material.downloadUrl && <a className="sanjo-detail__action-link" href={assetUrl(material.downloadUrl)} download aria-label={`${performance.title} ${material.label === 'POSTER' ? '포스터' : '리플렛'} ${downloadTypeLabel(material.downloadUrl)} 다운로드`}>{material.downloadLabel ?? `DOWNLOAD ${downloadTypeLabel(material.downloadUrl)}`}</a>}</div></article>)}
           </div>
         </section>
         <nav className="sanjo-detail__bottom" aria-label="공연 상세 내비게이션"><PerformanceBackLink tone="navy" />{previous && <Link className="sanjo-detail__bottom-link" to={`/performance/${previous.id}`}><span>PREVIOUS PERFORMANCE</span><strong>{previous.title} →</strong></Link>}</nav>
@@ -127,6 +127,6 @@ export function SanjoGil20260816Page({ performance }: { performance: Performance
   );
 }
 
-function ProgramBand({ tone, number, title, workTitle, lines, notes }: { tone: 'light' | 'dark'; number: string; title: string; workTitle: string; lines: string[]; notes: string[] }) {
-  return <Reveal as="section" className={`sanjo-program sanjo-program--${tone}`} aria-labelledby={`sanjo-program-${number}`}><span className="sanjo-program__ghost">{number}</span><div className="sanjo-program__side"><h2 className="sanjo-detail__section-title" id={`sanjo-program-${number}`}>{title}</h2><h3>{workTitle}</h3><ul>{lines.map((item) => <li key={item}>{item}</li>)}</ul></div><div className="sanjo-program__notes">{notes.map((note) => <p key={note}>{note}</p>)}</div></Reveal>;
+function ProgramBand({ tone, number, title, workTitle, lines, sequence, notes }: { tone: 'light' | 'dark'; number: string; title: string; workTitle: string; lines: string[]; sequence?: string; notes: string[] }) {
+  return <Reveal as="section" className={`sanjo-program sanjo-program--${tone}`} aria-labelledby={`sanjo-program-${number}`}><span className="sanjo-program__ghost">{number}</span><div className="sanjo-program__side"><h2 className="sanjo-detail__section-title" id={`sanjo-program-${number}`}>{title}</h2><h3>{workTitle}</h3>{sequence && <p className="sanjo-program__sequence">{sequence}</p>}<ul>{lines.map((item) => <li key={item}>{item}</li>)}</ul></div><div className="sanjo-program__notes">{notes.map((note) => <p key={note}>{note}</p>)}</div></Reveal>;
 }

@@ -20,9 +20,11 @@ export function ArchiveViewer({ activeMaterial, closeMaterial, lastTriggerRef, t
 
   useEffect(() => {
     if (!activeMaterial) return;
-    const previousOverflow = document.body.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousDocumentOverflow = document.documentElement.style.overflow;
     const triggerToRestore = lastTriggerRef.current;
     document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
     const focusFrame = window.requestAnimationFrame(() => closeButtonRef.current?.focus());
 
     const onKeyDown = (event: KeyboardEvent) => {
@@ -39,7 +41,8 @@ export function ArchiveViewer({ activeMaterial, closeMaterial, lastTriggerRef, t
     window.addEventListener('keydown', onKeyDown);
     return () => {
       window.cancelAnimationFrame(focusFrame);
-      document.body.style.overflow = previousOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousDocumentOverflow;
       window.removeEventListener('keydown', onKeyDown);
       triggerToRestore?.focus();
     };
