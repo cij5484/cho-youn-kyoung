@@ -108,7 +108,7 @@
 .sanjo-program__notes p { margin: 0; }
 
 .sanjo-detail__artists { display: grid; grid-template-columns: minmax(150px, 220px) minmax(0, 860px); gap: clamp(28px, 5vw, 70px); background-color: var(--sanjo-ivory); background-image: linear-gradient(rgba(243, 237, 226, .48), rgba(243, 237, 226, .62)), url('/images/performance/2026-08-16/detail/guest-artists-background.png'); background-size: cover; background-position: center; }
-.sanjo-detail__artist-grid { display: grid; grid-template-columns: repeat(2, minmax(240px, 390px)); gap: clamp(24px, 4vw, 44px); }
+.sanjo-detail__artist-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(24px, 4vw, 44px); }
 .sanjo-detail__artist { position: relative; box-sizing: border-box; appearance: none; border: 0; border-bottom: 1px solid rgba(31, 79, 122, .28); background: rgba(251, 246, 236, .34); color: inherit; text-align: left; display: flex; flex-direction: column; min-height: 100%; padding: 0 0 22px; cursor: pointer; }
 .sanjo-detail__artist::before, .sanjo-detail__artist::after { content: ""; position: absolute; pointer-events: none; border-color: var(--sanjo-navy); border-style: solid; transition: transform 280ms cubic-bezier(.22,1,.36,1); }
 .sanjo-detail__artist::before { inset: 0; border-width: 1px 0; transform: scaleX(0); transform-origin: left center; }
@@ -131,6 +131,7 @@
 .sanjo-detail__artist em::after { content: none; }
 .sanjo-detail__artists.reveal .sanjo-detail__artist { opacity: .9; transform: translateY(10px); transition: opacity 520ms cubic-bezier(.22,1,.36,1), transform 520ms cubic-bezier(.22,1,.36,1); }
 .sanjo-detail__artists.reveal .sanjo-detail__artist:nth-child(2) { transition-delay: 80ms; }
+.sanjo-detail__artists.reveal .sanjo-detail__artist:nth-child(3) { transition-delay: 160ms; }
 .sanjo-detail__artists.reveal.is-visible .sanjo-detail__artist { opacity: 1; transform: none; }
 
 @keyframes sanjo-hero-veil {
@@ -160,6 +161,10 @@
 .sanjo-detail__bottom-link:focus-visible strong span::after { transform:scaleX(1); }
 .sanjo-detail__bottom-link:focus-visible strong b { transform:translateX(4px); }
 
+@media (max-width: 1100px) {
+  .sanjo-detail__artist-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 @media (max-width: 900px) {
   .sanjo-detail__note,
   .sanjo-program,
@@ -183,10 +188,28 @@
   .sanjo-detail__hero-meta { flex-direction: column; align-items: flex-start; width: min(100%, 620px); }
   .sanjo-detail__hero-actions { justify-content: flex-start; }
   .sanjo-detail__information dl { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .sanjo-detail__artist-grid { grid-template-columns: 1fr; max-width: 430px; }
+  .sanjo-detail__artist-grid { grid-template-columns: 1fr; width: min(100%, 430px); max-width: 430px; }
   .sanjo-detail__archive-materials { grid-template-columns: 1fr; margin-left: clamp(14px, 4vw, 28px); }
   .sanjo-detail__bottom { display: grid; }
   .sanjo-detail__bottom-link { text-align: left; }
+}
+
+
+@media (max-width: 768px) {
+  .sanjo-detail__hero {
+    background-image: linear-gradient(90deg, rgba(251, 246, 236, 0.88) 0%, rgba(251, 246, 236, 0.68) 42%, rgba(31, 79, 122, 0.14) 100%), url('/images/performance/2026-08-16/detail/hero-background-mobile.png');
+    background-position: center center;
+  }
+
+  .sanjo-detail__note-info {
+    background-image: linear-gradient(rgba(251, 246, 236, .52), rgba(251, 246, 236, .6)), url('/images/performance/2026-08-16/detail/note-info-background-mobile.png');
+    background-position: center top;
+  }
+
+  .sanjo-program--dark {
+    background-image: url('/images/performance/2026-08-16/detail/program-02-background-mobile.png');
+    background-position: center center;
+  }
 }
 
 @media (max-width: 520px) {

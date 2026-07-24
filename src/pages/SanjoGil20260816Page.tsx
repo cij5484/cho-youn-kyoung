@@ -128,7 +128,7 @@ export function SanjoGil20260816Page({ performance }: { performance: Performance
       <ProgramBand tone="dark" number="02" title="PROGRAM 02" workTitle={program02.title} lines={program02.works[0].instrumentation ?? []} sequence={program02.description} notes={[program02.works[0].composerNote, program02.works[0].workNote]} />
 
       <Reveal as="section" className="sanjo-detail__artists sanjo-detail__section" aria-labelledby="sanjo-artists-title">
-        <h2 className="sanjo-detail__section-title" id="sanjo-artists-title">GUEST ARTISTS</h2>
+        <h2 className="sanjo-detail__section-title" id="sanjo-artists-title">GUEST ARTISTS & HOST</h2>
         <div className="sanjo-detail__artist-grid">{performance.collaborators.map((artist) => <button className="sanjo-detail__artist" type="button" key={artist.id} onClick={(event) => { lastArtistButton.current = event.currentTarget; setSelectedArtist(artist); }}><span><SafeImage src={assetUrl(artist.image)} alt={`${artist.name} ${artist.role} 사진`} fallbackClassName="safe-image-fallback" fallbackLabel={`${artist.role} ${artist.name}`} objectPosition={artist.id === 'kim-na-young' ? 'center center' : 'center top'} /></span><small>{artist.role}</small><strong>{artist.name}</strong><em>VIEW PROFILE</em></button>)}</div>
       </Reveal>
 
