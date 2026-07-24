@@ -37,10 +37,10 @@
 .sanjo-detail h2,
 .sanjo-detail h3 { font-family: var(--serif); margin: 0; font-weight: 450; letter-spacing: -.065em; }
 
-.sanjo-detail h1 { max-width: 7.2em; margin: .13em 0 .11em; color: var(--sanjo-navy); font-size: clamp(3.25rem, 6.8vw, 6.7rem); line-height: .92; }
+.sanjo-detail h1 { width: min(100%, 7.8em); margin: .13em 0 .11em; color: var(--sanjo-navy); font-size: clamp(3.25rem, 7.4vw, 7.9rem); line-height: .88; }
 .sanjo-detail h1 span,
 .sanjo-detail h1 strong { display: block; font-weight: 450; }
-.sanjo-detail h1 strong { color: var(--sanjo-navy); padding-left: .92em; letter-spacing: -.08em; }
+.sanjo-detail h1 strong { color: var(--sanjo-navy); padding-left: min(2.15em, 38vw); font-size: 1.18em; letter-spacing: -.085em; }
 .sanjo-detail__subtitle { margin: 0 0 clamp(24px, 3.2vw, 34px); color: #364047; font-family: var(--serif); font-size: clamp(1.25rem, 2vw, 2.05rem); }
 .sanjo-detail__date { display: flex; align-items: baseline; flex-wrap: wrap; gap: clamp(12px, 2vw, 26px); width: min(100%, 620px); margin: 0; padding-top: 18px; border-top: 1px solid rgba(31, 79, 122, .22); font-size: clamp(.98rem, 1.2vw, 1.16rem); letter-spacing: .04em; }
 .sanjo-detail__date strong { color: var(--sanjo-navy); font-size: clamp(1.8rem, 3.25vw, 3.2rem); font-weight: 900; letter-spacing: -.045em; }
@@ -55,9 +55,11 @@
 .sanjo-detail dt { color: var(--sanjo-muted); font-size: .7rem; font-weight: 900; letter-spacing: .15em; }
 .sanjo-detail dd { margin: 9px 0 0; line-height: 1.65; }
 .sanjo-detail address { font-style: normal; color: #41494c; }
-.sanjo-detail__action-link { position: relative; display: inline-flex; min-height: 44px; align-items: center; width: max-content; max-width: 100%; color: var(--sanjo-navy); background: transparent; border: 0; padding: 0 0 7px; font: inherit; font-size: .74rem; font-weight: 900; letter-spacing: .14em; cursor: pointer; text-decoration: none; }
-.sanjo-detail__action-link::after { content: ""; position: absolute; left: 0; right: 0; bottom: 6px; height: 1px; background: currentColor; transform: scaleX(.34); transform-origin: left center; transition: transform 260ms cubic-bezier(.22,1,.36,1); }
+.sanjo-detail__action-link { position: relative; display: inline-flex; min-height: 44px; align-items: center; gap: .35em; width: max-content; max-width: 100%; color: var(--sanjo-navy); background: transparent; border: 0; padding: 0 0 7px; font: inherit; font-size: .74rem; font-weight: 900; letter-spacing: .14em; cursor: pointer; text-decoration: none; }
+.sanjo-detail__action-link::after { content: ""; position: absolute; left: 0; right: 0; bottom: 6px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left center; transition: transform 260ms cubic-bezier(.22,1,.36,1); }
+.sanjo-detail__action-link span { display:inline-block; transition: transform 260ms cubic-bezier(.22,1,.36,1); }
 .sanjo-detail__action-link:focus-visible::after { transform: scaleX(1); }
+.sanjo-detail__official-link:focus-visible span { transform: translate(2px, -2px); }
 
 .sanjo-detail__section { padding: clamp(58px, 7.2vw, 100px) clamp(22px, 7vw, 116px); }
 .sanjo-detail__note { display: grid; grid-template-columns: 1fr; gap: clamp(26px, 4vw, 44px); align-items: start; border-top: 1px solid rgba(31, 79, 122, .13); }
@@ -110,19 +112,26 @@
 .sanjo-detail__artist small,
 .sanjo-detail__artist em { display: block; margin-top: 14px; color: var(--sanjo-navy); font-size: .72rem; font-style: normal; font-weight: 900; letter-spacing: .14em; }
 .sanjo-detail__artist strong { display: block; margin-top: 7px; margin-bottom: 22px; font-family: var(--serif); color: var(--sanjo-navy); font-size: clamp(1.85rem, 2.55vw, 2.85rem); font-weight: 400; letter-spacing: -.055em; line-height: 1.08; }
-.sanjo-detail__artist em { margin-top: auto; text-decoration: underline; text-underline-offset: 7px; }
+.sanjo-detail__artist em { margin-top: auto; text-decoration: none; }
+.sanjo-detail__artist em::before,
+.sanjo-detail__artist em::after { content: none; }
 
 .sanjo-detail__archive-bottom { background-color: var(--sanjo-ivory-strong); background-image: linear-gradient(rgba(251, 246, 236, .52), rgba(251, 246, 236, .64)), url('/images/performance/2026-08-16/detail/archive-bottom-background.png'); background-size: cover; background-position: center bottom; }
 .sanjo-detail__archive { display: grid; grid-template-columns: 1fr; gap: clamp(28px, 5vw, 70px); align-items: start; border-top: 1px solid rgba(31, 79, 122, .16); }
-.sanjo-detail__archive-materials { display: grid; grid-template-columns: repeat(2, minmax(260px, 1fr)); gap: clamp(22px, 4vw, 52px); }
+.sanjo-detail__archive-materials { display: grid; grid-template-columns: repeat(2, minmax(260px, 1fr)); gap: clamp(22px, 4vw, 52px); margin-left: clamp(28px, 7vw, 120px); }
 .sanjo-detail__archive-material { border-top: 1px solid rgba(31, 79, 122, .38); padding: 20px 0; }
 .sanjo-detail__archive-material h3 { color: var(--sanjo-navy); font-size: clamp(1.65rem, 2.4vw, 2.55rem); }
 .sanjo-detail__archive-material div { display: flex; flex-wrap: wrap; gap: 12px 24px; margin-top: 20px; }
 
 .sanjo-detail__bottom { display: flex; justify-content: space-between; gap: 24px; align-items: center; padding: 34px clamp(22px, 7vw, 116px) 52px; border-top: 1px solid rgba(31, 79, 122, .18); }
 .sanjo-detail__bottom-link { color: var(--sanjo-navy); text-align: right; }
-.sanjo-detail__bottom-link span { display: block; color: var(--sanjo-muted); font-size: .72rem; font-weight: 900; letter-spacing: .16em; }
-.sanjo-detail__bottom-link strong { display: block; margin-top: 7px; color: var(--sanjo-navy); font-family: var(--serif); font-size: clamp(1.45rem, 2.25vw, 2.4rem); font-weight: 400; }
+.sanjo-detail__bottom-link > span { display: block; color: var(--sanjo-muted); font-size: .72rem; font-weight: 900; letter-spacing: .16em; }
+.sanjo-detail__bottom-link strong { display: inline-flex; justify-content:flex-end; align-items:baseline; gap:.22em; margin-top: 7px; color: var(--sanjo-navy); font-family: var(--serif); font-size: clamp(1.45rem, 2.25vw, 2.4rem); font-weight: 400; }
+.sanjo-detail__bottom-link strong span { position:relative; }
+.sanjo-detail__bottom-link strong span::after { content:""; position:absolute; left:0; right:0; bottom:-.08em; height:1px; background:currentColor; transform:scaleX(0); transform-origin:left center; transition:transform 260ms cubic-bezier(.22,1,.36,1); }
+.sanjo-detail__bottom-link strong b { font:inherit; transition:transform 260ms cubic-bezier(.22,1,.36,1); }
+.sanjo-detail__bottom-link:focus-visible strong span::after { transform:scaleX(1); }
+.sanjo-detail__bottom-link:focus-visible strong b { transform:translateX(4px); }
 
 @media (max-width: 900px) {
   .sanjo-detail__note,
@@ -132,14 +141,14 @@
   .sanjo-detail__hero { min-height: auto; padding-top: calc(var(--header) + 34px); background-position: 58% center; }
   .sanjo-detail__information dl { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .sanjo-detail__artist-grid { grid-template-columns: 1fr; max-width: 430px; }
-  .sanjo-detail__archive-materials { grid-template-columns: 1fr; }
+  .sanjo-detail__archive-materials { grid-template-columns: 1fr; margin-left: clamp(14px, 4vw, 28px); }
   .sanjo-detail__bottom { display: grid; }
   .sanjo-detail__bottom-link { text-align: left; }
 }
 
 @media (max-width: 520px) {
-  .sanjo-detail h1 { font-size: clamp(3.05rem, 15.4vw, 4.45rem); }
-  .sanjo-detail h1 strong { padding-left: .68em; }
+  .sanjo-detail h1 { font-size: clamp(2.95rem, 15.2vw, 4.3rem); }
+  .sanjo-detail h1 strong { padding-left: min(1.45em, 31vw); font-size: 1.08em; }
   .sanjo-detail__date strong { font-size: clamp(1.58rem, 9vw, 2.32rem); }
   .sanjo-detail__information dl { grid-template-columns: 1fr; }
   .sanjo-detail__information-item { padding-right: 0; }
@@ -151,11 +160,17 @@
   .sanjo-detail__artist .safe-image-fallback,
   .sanjo-detail__action-link::after,
   .sanjo-detail__artist::before,
-  .sanjo-detail__artist::after { transition: none; }
+  .sanjo-detail__artist::after,
+  .sanjo-detail__action-link span,
+  .sanjo-detail__bottom-link strong span::after,
+  .sanjo-detail__bottom-link strong b { transition: none; }
 }
 
 @media (hover: hover) and (pointer: fine) {
   .sanjo-detail__action-link:hover::after { transform: scaleX(1); }
+  .sanjo-detail__official-link:hover span { transform: translate(2px, -2px); }
+  .sanjo-detail__bottom-link:hover strong span::after { transform:scaleX(1); }
+  .sanjo-detail__bottom-link:hover strong b { transform:translateX(4px); }
   .sanjo-detail__artist:hover::before,
   .sanjo-detail__artist:hover::after { transform: none; }
 }

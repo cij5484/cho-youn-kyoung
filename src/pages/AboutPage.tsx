@@ -32,8 +32,8 @@ export function AboutPage() {
       <section className="about-hero" aria-labelledby="about-title">
         <div className="about-hero__copy">
           <p className="about-kicker">ABOUT</p>
-          <h1 id="about-title">{profile.englishName}</h1>
-          <p className="about-hero__role">{profile.role}</p>
+          <h1 id="about-title" className="page-title-reveal about-title-reveal"><span>CHO</span><span>YOUN</span><span>KYOUNG</span></h1>
+          <p className="about-hero__role"><span>Haegeum</span> Artist</p>
           <p className="about-hero__position">{profile.currentPosition}</p>
         </div>
         <figure className="about-hero__portrait">
