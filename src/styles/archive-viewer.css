@@ -1,29 +1,39 @@
-.archive-viewer__backdrop { position:fixed; inset:0; z-index:1000; overflow-y:auto; overflow-x:hidden; background:rgba(8,10,12,.92); }
-.archive-viewer { width:min(1600px, calc(100% - clamp(28px,4vw,84px))); margin:0 auto; padding:0 0 clamp(30px,4vw,64px); outline:none; }
-.archive-viewer__header { position:sticky; top:0; z-index:2; display:flex; align-items:center; justify-content:space-between; gap:20px; padding:clamp(16px,2vw,24px) 0 clamp(14px,2vw,22px); margin-bottom:clamp(18px,3vw,42px); background:linear-gradient(180deg, rgba(17,19,18,.98) 0%, rgba(17,19,18,.86) 70%, rgba(17,19,18,0) 100%); }
-.archive-viewer__header p { margin:0; font-size:.74rem; font-weight:900; letter-spacing:.18em; }
+.archive-viewer__backdrop { position:fixed; inset:0; z-index:1000; overflow-x:hidden; }
+.archive-viewer { outline:none; }
+.archive-viewer__header { display:flex; align-items:center; justify-content:space-between; gap:20px; }
 .archive-viewer__header button { color:inherit; background:transparent; border:0; border-bottom:1px solid currentColor; padding:0 0 8px; font:inherit; font-size:.74rem; font-weight:900; letter-spacing:.18em; cursor:pointer; }
-.archive-viewer__images { display:grid; grid-template-columns:1fr; gap:clamp(34px,5vw,72px); align-items:start; justify-items:center; }
-.archive-viewer__images figure { width:100%; margin:0; min-width:0; }
-.archive-viewer__images figcaption { margin:0 0 12px; font-size:.72rem; font-weight:900; letter-spacing:.16em; }
-.archive-viewer__images img, .archive-viewer__images .safe-image-fallback { display:block; width:100%; height:auto; max-height:none; object-fit:contain; }
-.archive-viewer--poster { width:min(980px, calc(100% - clamp(28px,4vw,84px))); }
-.archive-viewer--poster .archive-viewer__images figure { width:min(100%, 860px); }
-.archive-viewer--leaflet { width:min(1600px, calc(100% - clamp(28px,4vw,84px))); }
-.archive-viewer--leaflet .archive-viewer__images figure { width:100%; }
-.archive-viewer--gold { color:#d6ad6c; }
-.archive-viewer--gold .archive-viewer__images figcaption { color:#d6ad6c; }
-.archive-viewer__backdrop--navy { background:rgba(31,79,122,.30); }
-.archive-viewer--navy { color:#1f4f7a; }
-.archive-viewer--navy .archive-viewer__header { background:linear-gradient(180deg, rgba(243,237,226,.98) 0%, rgba(243,237,226,.90) 70%, rgba(243,237,226,0) 100%); }
-.archive-viewer--navy .archive-viewer__images figcaption { color:#1f4f7a; }
-.archive-viewer--navy .archive-viewer__images figure { padding:clamp(10px,2vw,24px); background:#f3ede2; }
+.archive-viewer__images figure { margin:0; min-width:0; }
+.archive-viewer__images img, .archive-viewer__images .safe-image-fallback { display:block; width:100%; height:auto; object-fit:contain; }
 .archive-viewer button:focus-visible { outline:3px solid currentColor; outline-offset:4px; }
 
+.archive-viewer__backdrop--gold { overflow-y:auto; background:rgba(8,10,12,.92); }
+.archive-viewer--gold { width:min(1600px, calc(100% - clamp(28px,4vw,84px))); margin:0 auto; padding:0 0 clamp(30px,4vw,64px); color:#d6ad6c; }
+.archive-viewer--gold .archive-viewer__header { position:sticky; top:0; z-index:2; padding:clamp(16px,2vw,24px) 0 clamp(14px,2vw,22px); margin-bottom:clamp(18px,3vw,42px); background:linear-gradient(180deg, rgba(17,19,18,.98) 0%, rgba(17,19,18,.86) 70%, rgba(17,19,18,0) 100%); }
+.archive-viewer--gold .archive-viewer__header p { margin:0; font-size:.74rem; font-weight:900; letter-spacing:.18em; }
+.archive-viewer--gold .archive-viewer__images { display:grid; grid-template-columns:1fr; gap:clamp(34px,5vw,72px); align-items:start; justify-items:center; }
+.archive-viewer--gold .archive-viewer__images figcaption { margin:0 0 12px; color:#d6ad6c; font-size:.72rem; font-weight:900; letter-spacing:.16em; }
+.archive-viewer--gold .archive-viewer__images img, .archive-viewer--gold .archive-viewer__images .safe-image-fallback { max-height:none; }
+.archive-viewer--gold.archive-viewer--poster { width:min(980px, calc(100% - clamp(28px,4vw,84px))); }
+.archive-viewer--gold.archive-viewer--poster .archive-viewer__images figure { width:min(100%, 860px); }
+.archive-viewer--gold.archive-viewer--leaflet { width:min(1600px, calc(100% - clamp(28px,4vw,84px))); }
+.archive-viewer--gold.archive-viewer--leaflet .archive-viewer__images figure { width:100%; }
+
+.archive-viewer__backdrop--navy { display:grid; place-items:center; padding:clamp(18px,3vw,42px); overflow-y:auto; background:rgba(31,79,122,.30); }
+.archive-viewer--navy { width:min(1600px,100%); max-height:calc(100svh - clamp(36px,6vw,84px)); overflow-y:auto; overflow-x:hidden; padding:0 clamp(18px,3vw,42px) clamp(22px,3vw,44px); background:#f3ede2; color:#1f4f7a; }
+.archive-viewer--navy .archive-viewer__header { position:sticky; top:0; z-index:2; padding:clamp(16px,2vw,24px) 0; margin-bottom:clamp(16px,2vw,30px); border-bottom:1px solid currentColor; }
+.archive-viewer--navy .archive-viewer__header p { margin:0; font-family:var(--serif); font-size:clamp(1.5rem,3vw,2.6rem); letter-spacing:-.04em; }
+.archive-viewer--navy .archive-viewer__images { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,620px),1fr)); gap:clamp(22px,3vw,42px); align-items:start; }
+.archive-viewer--navy.archive-viewer--poster .archive-viewer__images { grid-template-columns:minmax(0,760px); justify-content:center; }
+.archive-viewer--navy .archive-viewer__images figcaption { margin:0 0 12px; color:#1f4f7a; font-weight:900; letter-spacing:.16em; }
+.archive-viewer--navy .archive-viewer__images img { max-height:calc(100svh - 170px); }
+.archive-viewer--navy.archive-viewer--leaflet .archive-viewer__images img { max-height:none; }
+
 @media (max-width: 720px) {
-  .archive-viewer,
-  .archive-viewer--poster,
-  .archive-viewer--leaflet { width:calc(100% - 28px); }
+  .archive-viewer--gold,
+  .archive-viewer--gold.archive-viewer--poster,
+  .archive-viewer--gold.archive-viewer--leaflet { width:calc(100% - 28px); }
+  .archive-viewer--navy .archive-viewer__images { grid-template-columns:1fr; }
+  .archive-viewer--navy .archive-viewer__images img { max-height:none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
