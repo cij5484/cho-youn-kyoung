@@ -92,7 +92,7 @@
   font-weight: 600;
   font-style: normal;
   text-align: right;
-  text-shadow: 0 1px 3px rgba(251, 246, 236, 0.95);
+  text-shadow: 0 1px 4px rgba(251, 246, 236, 0.95);
 }
 
 @media (min-width: 1200px) {
