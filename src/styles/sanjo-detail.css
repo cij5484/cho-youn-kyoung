@@ -81,7 +81,19 @@
 .sanjo-detail__lead span { display: block; }
 .sanjo-detail blockquote { margin: 0; padding-top: 2px; font-size: clamp(.98rem, 1.08vw, 1.05rem); line-height: 1.9; color: #3b4142; }
 .sanjo-detail blockquote p { margin: 0 0 1.15em; }
-.sanjo-detail cite { display: block; width: min(100%, 650px); margin-top: 1.4em; margin-left: auto; color: var(--sanjo-navy); font-family: var(--serif); font-size: 1.35rem; font-style: normal; text-align: right; }
+.sanjo-detail cite {
+  display: block;
+  width: min(100%, 650px);
+  margin-top: 1.4em;
+  margin-left: auto;
+  color: var(--sanjo-navy);
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-style: normal;
+  text-align: right;
+  text-shadow: 0 1px 3px rgba(251, 246, 236, 0.95);
+}
 
 @media (min-width: 1200px) {
   .sanjo-detail__note { grid-template-columns: minmax(140px, 150px) minmax(600px, 650px) minmax(0, 720px); gap: clamp(24px, 3vw, 44px); }
