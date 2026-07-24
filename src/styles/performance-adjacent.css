@@ -1,0 +1,13 @@
+.performance-adjacent { display:flex; justify-content:space-between; gap:clamp(24px,5vw,60px); align-items:center; padding:clamp(42px,6vw,82px) clamp(22px,6vw,92px); }
+.performance-adjacent__links { display:flex; gap:28px; flex-wrap:wrap; justify-content:flex-end; text-align:right; }
+.performance-adjacent__performance-link { display:grid; gap:8px; color:inherit; }
+.performance-adjacent__performance-link span { font-size:.68rem; font-weight:900; letter-spacing:.18em; }
+.performance-adjacent__performance-link strong { font-family:var(--serif); font-size:clamp(1.4rem,3vw,2.3rem); font-weight:500; letter-spacing:-.04em; }
+.performance-adjacent--gold { color:#d6ad6c; background:#111312; }
+.performance-adjacent--navy { color:#1f4f7a; background:#f3ede2; }
+.performance-adjacent__performance-link:focus-visible { outline:3px solid currentColor; outline-offset:4px; }
+
+@media (max-width: 720px) {
+  .performance-adjacent,
+  .performance-adjacent__links { flex-direction:column; align-items:flex-start; text-align:left; }
+}

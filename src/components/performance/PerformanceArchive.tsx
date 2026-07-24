@@ -23,7 +23,7 @@ export function ArchiveViewer({ activeMaterial, closeMaterial, lastTriggerRef, t
     const previousOverflow = document.body.style.overflow;
     const triggerToRestore = lastTriggerRef.current;
     document.body.style.overflow = 'hidden';
-    window.requestAnimationFrame(() => closeButtonRef.current?.focus());
+    const focusFrame = window.requestAnimationFrame(() => closeButtonRef.current?.focus());
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') closeMaterial();
@@ -38,6 +38,7 @@ export function ArchiveViewer({ activeMaterial, closeMaterial, lastTriggerRef, t
 
     window.addEventListener('keydown', onKeyDown);
     return () => {
+      window.cancelAnimationFrame(focusFrame);
       document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', onKeyDown);
       triggerToRestore?.focus();
@@ -47,7 +48,7 @@ export function ArchiveViewer({ activeMaterial, closeMaterial, lastTriggerRef, t
   if (!activeMaterial || typeof document === 'undefined') return null;
 
   return createPortal(
-    <div className={`archive-viewer__backdrop archive-viewer__backdrop--${tone}`} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeMaterial(); }}>
+    <div className={`archive-viewer__backdrop archive-viewer__backdrop--${tone}`} role="presentation" onPointerDown={(event) => { if (event.target === event.currentTarget) closeMaterial(); }}>
       <div className={`archive-viewer archive-viewer--${tone} archive-viewer--${activeMaterial.label.toLowerCase()}`} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} ref={dialogRef}>
         <header className="archive-viewer__header">
           <p id={titleId}>{activeMaterial.label}</p>
