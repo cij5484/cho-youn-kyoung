@@ -26,14 +26,17 @@ export function AboutPage() {
     .map((item, index) => ({ item, index }))
     .sort(compareTimelineItems)
     .map(({ item }) => item);
+  const englishNameParts = profile.englishName.split(' ');
+  const [roleLead, ...roleRestParts] = profile.role.split(' ');
+  const roleRest = roleRestParts.join(' ');
 
   return (
     <article className="about-page">
       <section className="about-hero" aria-labelledby="about-title">
         <div className="about-hero__copy">
           <p className="about-kicker">ABOUT</p>
-          <h1 id="about-title" className="page-title-reveal about-title-reveal"><span>CHO</span><span>YOUN</span><span>KYOUNG</span></h1>
-          <p className="about-hero__role"><span>Haegeum</span> Artist</p>
+          <h1 id="about-title" className="about-title-reveal" aria-label={profile.englishName}>{englishNameParts.map((namePart) => <span key={namePart}>{namePart}</span>)}</h1>
+          <p className="about-hero__role"><span>{roleLead}</span>{roleRest && ` ${roleRest}`}</p>
           <p className="about-hero__position">{profile.currentPosition}</p>
         </div>
         <figure className="about-hero__portrait">
