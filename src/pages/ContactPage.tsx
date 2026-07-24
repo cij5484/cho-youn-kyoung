@@ -1,3 +1,4 @@
+import { Reveal } from '../components/Reveal';
 import { site } from '../data/site';
 
 const contactItems = [
@@ -27,7 +28,7 @@ const contactItems = [
 
 export function ContactPage() {
   return (
-    <section className="page-shell contact-page" aria-labelledby="contact-title">
+    <Reveal as="section" className="page-shell contact-page" aria-labelledby="contact-title">
       <div className="contact-page__intro">
         <p className="section-label">OFFICIAL CONTACT</p>
         <h1 id="contact-title" className="editorial-title">CONTACT</h1>
@@ -58,6 +59,6 @@ export function ContactPage() {
           ))}
         </dl>
       </div>
-    </section>
+    </Reveal>
   );
 }
