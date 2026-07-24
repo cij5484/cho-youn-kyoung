@@ -11,7 +11,7 @@ export const site = {
   inquiries: '공연 및 협업 문의',
   affiliation: '국립부산국악원 기악단 단원',
   siteUrl: 'https://choyounkyoung.com/',
-  shareImage: 'https://choyounkyoung.com/images/archive/2026-08-02/2026-08-02-poster.png',
+  shareImage: 'https://choyounkyoung.com/images/performance/2026-08-02/archive/2026-08-02-poster.png',
 } as const;
 
 export const navigationItems = [
