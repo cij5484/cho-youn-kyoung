@@ -29,7 +29,7 @@
   background-position: center;
 }
 
-.sanjo-detail__hero-copy { max-width: 720px; position: relative; z-index: 1; }
+.sanjo-detail__hero-copy { width: min(100%, 980px); max-width: 980px; position: relative; z-index: 1; }
 .sanjo-detail__back { margin-bottom: clamp(26px, 4.2vw, 46px); }
 .sanjo-detail__eyebrow { margin: 0; color: var(--sanjo-muted); font-size: .76rem; font-weight: 900; letter-spacing: .16em; }
 
@@ -42,7 +42,9 @@
 .sanjo-detail h1 strong { display: block; font-weight: 450; }
 .sanjo-detail h1 strong { color: var(--sanjo-navy); padding-left: min(3.08em, 48vw); font-size: 1.18em; letter-spacing: -.085em; }
 .sanjo-detail__subtitle { margin: 0 0 clamp(24px, 3.2vw, 34px); color: #364047; font-family: var(--serif); font-size: clamp(1.25rem, 2vw, 2.05rem); }
-.sanjo-detail__date { display: flex; align-items: baseline; flex-wrap: wrap; gap: clamp(12px, 2vw, 26px); width: min(100%, 620px); margin: 0; padding-top: 18px; border-top: 1px solid rgba(31, 79, 122, .22); font-size: clamp(.98rem, 1.2vw, 1.16rem); letter-spacing: .04em; }
+.sanjo-detail__hero-meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px clamp(28px, 5vw, 72px); width: min(100%, 860px); padding-top: 18px; border-top: 1px solid rgba(31, 79, 122, .22); }
+.sanjo-detail__date { display: flex; align-items: baseline; flex-wrap: wrap; flex: 1 1 auto; gap: clamp(12px, 2vw, 26px); min-width: min(100%, 360px); margin: 0; font-size: clamp(.98rem, 1.2vw, 1.16rem); letter-spacing: .04em; }
+.sanjo-detail__hero-actions { display: flex; align-items: flex-start; justify-content: flex-end; flex: 0 1 auto; flex-wrap: wrap; gap: 4px 24px; min-width: 0; }
 .sanjo-detail__date strong { color: var(--sanjo-navy); font-size: clamp(1.8rem, 3.25vw, 3.2rem); font-weight: 900; letter-spacing: -.045em; }
 
 .sanjo-detail__note-info { background-color: var(--sanjo-ivory-strong); background-image: linear-gradient(rgba(251, 246, 236, .58), rgba(251, 246, 236, .66)), url('/images/performance/2026-08-16/detail/note-info-background.png'); background-size: cover; background-position: center top; }
@@ -139,6 +141,8 @@
   .sanjo-detail__artists,
   .sanjo-detail__archive { grid-template-columns: 1fr; }
   .sanjo-detail__hero { min-height: auto; padding-top: calc(var(--header) + 34px); background-position: 58% center; }
+  .sanjo-detail__hero-meta { flex-direction: column; align-items: flex-start; width: min(100%, 620px); }
+  .sanjo-detail__hero-actions { justify-content: flex-start; }
   .sanjo-detail__information dl { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .sanjo-detail__artist-grid { grid-template-columns: 1fr; max-width: 430px; }
   .sanjo-detail__archive-materials { grid-template-columns: 1fr; margin-left: clamp(14px, 4vw, 28px); }
