@@ -47,6 +47,8 @@
   text-transform: uppercase;
 }
 
+.about-hero__role span { color: var(--gold); }
+
 .about-hero__position {
   margin: 16px 0 0;
   color: var(--muted);

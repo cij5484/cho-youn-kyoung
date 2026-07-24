@@ -85,7 +85,7 @@ export function SanjoGil20260816Page({ performance }: { performance: Performance
           <div className="sanjo-detail__venue-row">
             <span className="sanjo-detail__venue-name">{performance.venue}</span>
             {performance.venueAddress && <address>({performance.venueAddress})</address>}
-            {performance.venueUrl && <a className="sanjo-detail__action-link" href={performance.venueUrl} target="_blank" rel="noopener noreferrer">OFFICIAL WEBSITE</a>}
+            {performance.venueUrl && <a className="sanjo-detail__action-link sanjo-detail__official-link" href={performance.venueUrl} target="_blank" rel="noopener noreferrer">OFFICIAL WEBSITE <span aria-hidden="true">↗</span></a>}
           </div>
           <dl>
             {informationItems(performance).map((item) => item.value ? (
@@ -119,7 +119,7 @@ export function SanjoGil20260816Page({ performance }: { performance: Performance
             {performance.archiveMaterials?.map((material) => <article className="sanjo-detail__archive-material" key={material.label}><h3>{material.label}</h3><div>{material.previewImages.length > 0 && <button className="sanjo-detail__action-link" type="button" aria-label={`${performance.title} ${material.label === 'POSTER' ? '포스터' : '리플렛'} 확대 보기`} onClick={(event) => archiveViewer.openMaterial(material, event.currentTarget)}>{material.viewLabel}</button>}{material.downloadUrl && <a className="sanjo-detail__action-link" href={assetUrl(material.downloadUrl)} download aria-label={`${performance.title} ${material.label === 'POSTER' ? '포스터' : '리플렛'} ${downloadTypeLabel(material.downloadUrl)} 다운로드`}>{material.downloadLabel ?? `DOWNLOAD ${downloadTypeLabel(material.downloadUrl)}`}</a>}</div></article>)}
           </div>
         </section>
-        <nav className="sanjo-detail__bottom" aria-label="공연 상세 내비게이션"><PerformanceBackLink tone="navy" />{previous && <Link className="sanjo-detail__bottom-link" to={`/performance/${previous.id}`}><span>PREVIOUS PERFORMANCE</span><strong>{previous.title} →</strong></Link>}</nav>
+        <nav className="sanjo-detail__bottom" aria-label="공연 상세 내비게이션"><PerformanceBackLink tone="navy" />{previous && <Link className="sanjo-detail__bottom-link" to={`/performance/${previous.id}`}><span>PREVIOUS PERFORMANCE</span><strong><span>{previous.title}</span><b aria-hidden="true">→</b></strong></Link>}</nav>
       </div>
       <ArchiveViewer activeMaterial={archiveViewer.activeMaterial} closeMaterial={archiveViewer.closeMaterial} lastTriggerRef={archiveViewer.lastTriggerRef} tone="navy" />
       {selectedArtist && <ArtistProfilePanel artist={selectedArtist} artists={performance.collaborators} activeIndex={activeArtistIndex} panelRef={panelRef} onClose={() => setSelectedArtist(null)} onSelect={setSelectedArtist} tone="navy" />}
