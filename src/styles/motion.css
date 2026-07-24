@@ -18,6 +18,10 @@
   animation-duration: 250ms;
 }
 
+.page-transition--contact {
+  animation: none;
+}
+
 .reveal {
   opacity: 0;
   transform: translateY(18px);

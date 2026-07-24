@@ -41,6 +41,9 @@ export function SanjoGil20260816Page({ performance }: { performance: Performance
   const { previous } = getAdjacentPerformances(performance.id);
   const activeArtistIndex = selectedArtist ? performance.collaborators.findIndex((artist) => artist.id === selectedArtist.id) : -1;
   const heroDate = formatSanjoHeroDate(performance);
+  const heroArchiveMaterials = (performance.archiveMaterials ?? []).filter((material) =>
+    ['POSTER', 'LEAFLET'].includes(material.label),
+  );
 
   useEffect(() => {
     if (!selectedArtist) return;
@@ -75,7 +78,24 @@ export function SanjoGil20260816Page({ performance }: { performance: Performance
           <p className="sanjo-detail__eyebrow">SANJO-GIL PROJECT 02</p>
           <h1 id="sanjo-detail-title"><span>산조길,</span><strong>둘</strong></h1>
           <p className="sanjo-detail__subtitle">{performance.subtitle}</p>
-          <p className="sanjo-detail__date"><span>{heroDate.yearLabel}</span><strong>{heroDate.monthDayLabel}</strong><span>{heroDate.weekdayTimeLabel}</span></p>
+          <div className="sanjo-detail__hero-meta">
+            <p className="sanjo-detail__date"><span>{heroDate.yearLabel}</span><strong>{heroDate.monthDayLabel}</strong><span>{heroDate.weekdayTimeLabel}</span></p>
+            {heroArchiveMaterials.length > 0 && (
+              <div className="sanjo-detail__hero-actions" aria-label="공연 자료 보기">
+                {heroArchiveMaterials.map((material) => (
+                  <button
+                    className="sanjo-detail__action-link"
+                    type="button"
+                    key={material.label}
+                    aria-label={`${performance.title} ${material.label === 'POSTER' ? '포스터' : '리플렛'} 확대 보기`}
+                    onClick={(event) => archiveViewer.openMaterial(material, event.currentTarget)}
+                  >
+                    {material.viewLabel}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </section>
 

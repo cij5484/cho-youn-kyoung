@@ -1,4 +1,3 @@
-import { Reveal } from '../components/Reveal';
 import { site } from '../data/site';
 
 const contactItems = [
@@ -35,7 +34,7 @@ export function ContactPage() {
         <p>공연, 협업 및 공식 문의는 아래 연락처를 통해 전해 주세요.</p>
       </div>
 
-      <Reveal className="contact-page__content">
+      <div className="contact-page__content">
         <dl className="contact-page__list">
           {contactItems.map((item) => (
             <div className="contact-page__item" key={item.label}>
@@ -58,7 +57,7 @@ export function ContactPage() {
             </div>
           ))}
         </dl>
-      </Reveal>
+      </div>
     </section>
   );
 }
