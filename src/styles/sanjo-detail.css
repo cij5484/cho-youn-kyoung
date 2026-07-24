@@ -29,9 +29,21 @@
   background-position: center;
 }
 
+.sanjo-detail__hero::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: var(--sanjo-ivory-strong); opacity: 0; animation: sanjo-hero-veil 960ms cubic-bezier(.22,1,.36,1) both; }
+
 .sanjo-detail__hero-copy { width: min(100%, 980px); max-width: 980px; position: relative; z-index: 1; }
 .sanjo-detail__back { margin-bottom: clamp(26px, 4.2vw, 46px); }
 .sanjo-detail__eyebrow { margin: 0; color: var(--sanjo-muted); font-size: .76rem; font-weight: 900; letter-spacing: .16em; }
+.sanjo-detail__back,
+.sanjo-detail__eyebrow,
+.sanjo-detail h1,
+.sanjo-detail__subtitle,
+.sanjo-detail__hero-meta { animation: sanjo-hero-copy-in 680ms cubic-bezier(.22,1,.36,1) both; }
+.sanjo-detail__back { animation-delay: 90ms; }
+.sanjo-detail__eyebrow { animation-delay: 170ms; }
+.sanjo-detail h1 { animation-delay: 250ms; }
+.sanjo-detail__subtitle { animation-delay: 330ms; }
+.sanjo-detail__hero-meta { animation-delay: 420ms; }
 
 .sanjo-detail h1,
 .sanjo-detail h2,
@@ -117,6 +129,19 @@
 .sanjo-detail__artist em { margin-top: auto; text-decoration: none; }
 .sanjo-detail__artist em::before,
 .sanjo-detail__artist em::after { content: none; }
+.sanjo-detail__artists.reveal .sanjo-detail__artist { opacity: .9; transform: translateY(10px); transition: opacity 520ms cubic-bezier(.22,1,.36,1), transform 520ms cubic-bezier(.22,1,.36,1); }
+.sanjo-detail__artists.reveal .sanjo-detail__artist:nth-child(2) { transition-delay: 80ms; }
+.sanjo-detail__artists.reveal.is-visible .sanjo-detail__artist { opacity: 1; transform: none; }
+
+@keyframes sanjo-hero-veil {
+  from { opacity: .66; }
+  to { opacity: 0; }
+}
+
+@keyframes sanjo-hero-copy-in {
+  from { opacity: .88; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 .sanjo-detail__archive-bottom { background-color: var(--sanjo-ivory-strong); background-image: linear-gradient(rgba(251, 246, 236, .52), rgba(251, 246, 236, .64)), url('/images/performance/2026-08-16/detail/archive-bottom-background.png'); background-size: cover; background-position: center bottom; }
 .sanjo-detail__archive { display: grid; grid-template-columns: 1fr; gap: clamp(28px, 5vw, 70px); align-items: start; border-top: 1px solid rgba(31, 79, 122, .16); }
@@ -143,10 +168,16 @@
   .sanjo-detail__note.reveal,
   .sanjo-program.reveal,
   .sanjo-detail__artists.reveal {
+    opacity: .9;
+    transform: translateY(8px);
+    filter: none;
+    transition: opacity 520ms cubic-bezier(.22,1,.36,1), transform 520ms cubic-bezier(.22,1,.36,1);
+  }
+  .sanjo-detail__note.reveal.is-visible,
+  .sanjo-program.reveal.is-visible,
+  .sanjo-detail__artists.reveal.is-visible {
     opacity: 1;
     transform: none;
-    filter: none;
-    transition: none;
   }
   .sanjo-detail__hero { min-height: auto; padding-top: calc(var(--header) + 34px); background-position: 58% center; }
   .sanjo-detail__hero-meta { flex-direction: column; align-items: flex-start; width: min(100%, 620px); }
@@ -160,7 +191,7 @@
 
 @media (max-width: 520px) {
   .sanjo-detail h1 { font-size: clamp(2.95rem, 15.2vw, 4.3rem); }
-  .sanjo-detail h1 strong { padding-left: min(2em, 42vw); font-size: 1.08em; }
+  .sanjo-detail h1 strong { padding-left: min(2.7em, 48vw); font-size: 1.08em; }
   .sanjo-detail__date strong { font-size: clamp(1.58rem, 9vw, 2.32rem); }
   .sanjo-detail__information dl { grid-template-columns: 1fr; }
   .sanjo-detail__information-item { padding-right: 0; }
@@ -176,6 +207,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .sanjo-detail__hero::before { animation: none; transition: none; opacity: 0; }
+  .sanjo-detail__back,
+  .sanjo-detail__eyebrow,
+  .sanjo-detail h1,
+  .sanjo-detail__subtitle,
+  .sanjo-detail__hero-meta,
+  .sanjo-detail__note.reveal,
+  .sanjo-program.reveal,
+  .sanjo-detail__artists.reveal,
+  .sanjo-detail__artists.reveal .sanjo-detail__artist,
   .sanjo-detail__artist img,
   .sanjo-detail__artist .safe-image-fallback,
   .sanjo-detail__action-link::after,
@@ -183,7 +224,7 @@
   .sanjo-detail__artist::after,
   .sanjo-detail__action-link span,
   .sanjo-detail__bottom-link strong span::after,
-  .sanjo-detail__bottom-link strong b { transition: none; }
+  .sanjo-detail__bottom-link strong b { animation: none; transition: none; transform: none; opacity: 1; filter: none; }
 }
 
 @media (hover: hover) and (pointer: fine) {
