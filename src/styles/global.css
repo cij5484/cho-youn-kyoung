@@ -6,7 +6,6 @@ html {
   color: var(--text);
   font-family: var(--sans);
   overflow-x: clip;
-  scrollbar-gutter: stable;
 }
 body {
   margin: 0;
