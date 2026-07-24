@@ -1,19 +1,18 @@
 .archive-viewer__backdrop {
   position: fixed;
-  top: var(--header);
-  right: 0;
-  bottom: 0;
-  left: 0;
+  inset: 0;
   z-index: 1000;
-  height: calc(100dvh - var(--header));
+  width: 100%;
+  height: 100dvh;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
 .archive-viewer {
-  width: min(1600px, calc(100% - clamp(28px, 4vw, 84px)));
+  box-sizing: border-box;
+  width: min(1600px, 100%);
   margin: 0 auto;
-  padding: 0 0 clamp(30px, 4vw, 64px);
+  padding: 0 clamp(28px, 4vw, 84px) clamp(30px, 4vw, 64px);
   outline: none;
 }
 
@@ -80,7 +79,7 @@
 }
 
 .archive-viewer--poster {
-  width: min(980px, calc(100% - clamp(28px, 4vw, 84px)));
+  width: min(980px, 100%);
 }
 
 .archive-viewer--poster .archive-viewer__images figure {
@@ -97,7 +96,7 @@
 }
 
 .archive-viewer__backdrop--gold {
-  background: rgba(8, 10, 12, .92);
+  background: #080a0c;
 }
 
 .archive-viewer--gold {
@@ -132,7 +131,9 @@
   .archive-viewer,
   .archive-viewer--poster,
   .archive-viewer--leaflet {
-    width: calc(100% - 28px);
+    width: 100%;
+    padding-right: 14px;
+    padding-left: 14px;
   }
 }
 
