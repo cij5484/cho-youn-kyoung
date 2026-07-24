@@ -527,7 +527,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
 
   .page-shell .editorial-title {
     max-width: 100%;
-    font-size: clamp(4.1rem, 18vw, 5.35rem);
+    font-size: clamp(3.6rem, 18vw, 5.35rem);
     line-height: 0.86;
     letter-spacing: -0.08em;
     white-space: nowrap;

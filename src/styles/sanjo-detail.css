@@ -142,13 +142,7 @@
   .sanjo-detail__archive { grid-template-columns: 1fr; }
   .sanjo-detail__note.reveal,
   .sanjo-program.reveal,
-  .sanjo-detail__artists.reveal,
-  .sanjo-detail__note.reveal .reveal__heading,
-  .sanjo-detail__note.reveal .reveal__content,
-  .sanjo-program.reveal .reveal__heading,
-  .sanjo-program.reveal .reveal__content,
-  .sanjo-detail__artists.reveal .reveal__heading,
-  .sanjo-detail__artists.reveal .reveal__content {
+  .sanjo-detail__artists.reveal {
     opacity: 1;
     transform: none;
     filter: none;
