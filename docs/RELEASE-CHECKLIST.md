@@ -20,6 +20,8 @@
 
 ## 파일
 
+- [ ] 사용 중인 Hero, Viewer/PDF, 프로필·갤러리, 출연자 사진, favicon이 `public/assets/` 표준 경로를 사용하고 `public/images/`에는 런타임 자산이 없음
+- [ ] 이동한 바이너리의 전후 SHA-256 동일 및 Git rename 인식
 - [ ] 경로와 파일명
 - [ ] 포스터 PNG
 - [ ] 포스터 PDF

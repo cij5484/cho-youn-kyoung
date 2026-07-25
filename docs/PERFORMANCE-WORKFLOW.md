@@ -35,32 +35,27 @@ haegeum-2026-08-02
 권장 폴더 구조입니다.
 
 ```txt
-public/images/performance/{YYYY-MM-DD}/
-  home/
-  detail/
-  archive/
-  performers/
+public/assets/performances/{performance-id}/
+  web/
+  viewer/
+  downloads/
 ```
+
+모든 출연자 사진은 `public/assets/people/{person-id}/portrait.jpg`, 조윤경의 대표·갤러리 사진은
+각각 `public/assets/artist/profile/`, `public/assets/artist/gallery/`에 둡니다. 앨범은 실제 자산이
+생긴 뒤 `public/assets/albums/{album-id}/` 구조를 적용하며 빈 폴더를 미리 만들지 않습니다.
 
 권장 파일명 표준입니다.
 
 ```txt
-home/hero-background.png
-detail/hero-background.png
-detail/hero-background-mobile.png
-detail/note-info-background.png
-detail/note-info-background-mobile.png
-detail/program-01-background.png
-detail/program-02-background.png
-detail/program-02-background-mobile.png
-detail/guest-artists-background.png
-detail/archive-bottom-background.png
-archive/{date}-poster.png
-archive/{date}-poster.pdf
-archive/{date}-leaflet-outer.png
-archive/{date}-leaflet-inner.png
-archive/{date}-leaflet.pdf
-performers/{person-id}.jpg
+web/home-hero-desktop.png
+web/detail-hero-desktop.png
+web/detail-hero-mobile.png
+viewer/poster.png
+viewer/leaflet-outer.png
+viewer/leaflet-inner.png
+downloads/poster.pdf
+downloads/leaflet.pdf
 ```
 
 ## D. 업로드 순서

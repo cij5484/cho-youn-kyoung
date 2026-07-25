@@ -68,9 +68,9 @@ In GitHub, set **Settings → Pages → Build and deployment → Source** to **G
 ## Hero image replacement
 
 - Approved design reference mockup files are not committed to the repository.
-- The site references `public/images/hero/hero-watercolor.png` for the Hero artwork.
+- The HOME Hero uses the performance-specific path configured in `src/data/performances.ts`; for the 2026-08-02 performance this is `public/assets/performances/haegeum-2026-08-02/web/home-hero-desktop.png`.
 
-The actual artwork should be uploaded separately by the site owner at `public/images/hero/hero-watercolor.png`. Until that file exists, the Hero falls back to a charcoal ink-wash style CSS background. To use a different filename later, update the `heroImage` field in `src/data/performances.ts`.
+Replace an existing Hero only at its configured performance asset path and keep the filename stable unless the matching data reference is updated in the same change.
 
 ## Add a new performance
 
@@ -85,11 +85,11 @@ Add an object to `performances` in `src/data/performances.ts`:
   displayDate: 'YYYY. M. D. (요일) HH:mm',
   venue: '공연장',
   featured: false,
-  heroImage: '/images/hero/hero-watercolor.png',
+  heroImage: 'assets/performances/{performance-id}/web/home-hero-desktop.png',
 }
 ```
 
-The performance list and detail route are generated from this data.
+In this documentation example, `{performance-id}` is a placeholder; replace it with the new performance object’s actual `id`. The performance list and detail route are generated from this data.
 
 ## Add a new album
 

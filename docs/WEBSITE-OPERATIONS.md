@@ -60,7 +60,7 @@
 
 | 날짜 | 제목 | ID | 경로 | 테마 성격 | 주요 자료 구조 |
 | --- | --- | --- | --- | --- | --- |
-| 2026-08-02 | 해금, 시대를 잇다 | `haegeum-2026-08-02` | `/performance/haegeum-2026-08-02` | 해금 창작곡 변천을 기록하는 리사이틀형 테마 | `public/images/performance/2026-08-02/home/`, `archive/`, `performers/` |
-| 2026-08-16 | 산조길, 둘 | `sanjo-gil-2026-08-16` | `/performance/sanjo-gil-2026-08-16` | 산조길 프로젝트의 마티에르형 공연 상세 테마 | `public/images/performance/2026-08-16/home/`, `detail/`, `archive/`, `performers/` |
+| 2026-08-02 | 해금, 시대를 잇다 | `haegeum-2026-08-02` | `/performance/haegeum-2026-08-02` | 해금 창작곡 변천을 기록하는 리사이틀형 테마 | `public/assets/performances/haegeum-2026-08-02/` |
+| 2026-08-16 | 산조길, 둘 | `sanjo-gil-2026-08-16` | `/performance/sanjo-gil-2026-08-16` | 산조길 프로젝트의 마티에르형 공연 상세 테마 | `public/assets/performances/sanjo-gil-2026-08-16/` |
 
 자세한 공연 등록 절차는 [PERFORMANCE-WORKFLOW.md](./PERFORMANCE-WORKFLOW.md), 파일 규격은 [ASSET-SPECIFICATIONS.md](./ASSET-SPECIFICATIONS.md)를 따릅니다.

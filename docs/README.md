@@ -23,7 +23,7 @@
 | [ALBUM-WORKFLOW.md](./ALBUM-WORKFLOW.md) | 앨범 등록 준비 자료, 데이터 입력, 미확정 앨범 UI 관리 |
 | [ASSET-SPECIFICATIONS.md](./ASSET-SPECIFICATIONS.md) | 포스터·리플렛·웹 배경·출연자 사진의 실제 규격과 권장 규칙 |
 | [ASSET-INVENTORY.md](./ASSET-INVENTORY.md) | 현재 저장소 자산 전수 목록과 참조 현황 |
-| [ASSET-MIGRATION-MAP.md](./ASSET-MIGRATION-MAP.md) | 향후 표준 구조로 이전하기 위한 경로 대응표와 실행 계획 |
+| [ASSET-MIGRATION-MAP.md](./ASSET-MIGRATION-MAP.md) | `public/assets/` 표준 구조로 이전한 경로 대응표와 보류 항목 |
 | [RELEASE-CHECKLIST.md](./RELEASE-CHECKLIST.md) | PR 전후 콘텐츠·파일·화면·기능·개발 검수 체크리스트 |
 
 ## 운영 원칙
@@ -33,3 +33,4 @@
 3. 향후 구조, 파일명, 데이터 필드, 배포 방식이 바뀌면 관련 문서를 같은 PR에서 갱신합니다.
 4. 원본 자료와 홈페이지 문구가 다르면 임의로 고치지 말고 원본, 공식 명칭, 사용자 확인을 거칩니다.
 5. Markdown 문서 작업 PR은 `.md` 외 파일 변경과 바이너리 변경이 0건이어야 합니다.
+6. 사용 중인 공연·프로필·공용 인물 자산은 `public/assets/`를 기준으로 하며, 앨범 폴더는 실제 자산이 생길 때만 만듭니다.
