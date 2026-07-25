@@ -33,11 +33,11 @@ public/assets/
 
 | 번호 | 현재 경로 | 제안 경로 | 처리 제안 | 분류 | 근거 | 영향받는 코드·문서 | 위험도 | 사용자 판단 필요 |
 | ---: | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | `2026-08-16-leaflet-inner.png` | `—` | 판단 보류 | 공연/Viewer | 런타임 미참조 루트 산재본; public 사본/유사본 및 공개 URL 확인 선행 | 직접 참조 없음 | 높음 | 보류 |
-| 2 | `2026-08-16-leaflet-outer.png` | `—` | 판단 보류 | 공연/Viewer | 런타임 미참조 루트 산재본; public 사본/유사본 및 공개 URL 확인 선행 | 직접 참조 없음 | 높음 | 보류 |
-| 3 | `2026-08-16-leaflet.pdf` | `—` | 판단 보류 | 공연/다운로드 | 런타임 미참조 루트 산재본; public 사본/유사본 및 공개 URL 확인 선행 | 직접 참조 없음 | 높음 | 보류 |
-| 4 | `2026-08-16-poster.pdf` | `—` | 판단 보류 | 공연/다운로드 | 런타임 미참조 루트 산재본; public 사본/유사본 및 공개 URL 확인 선행 | 직접 참조 없음 | 높음 | 보류 |
-| 5 | `2026-08-16-poster.png` | `—` | 판단 보류 | 공연/Viewer | 런타임 미참조 루트 산재본; public 사본/유사본 및 공개 URL 확인 선행 | 직접 참조 없음 | 높음 | 보류 |
+| 1 | `2026-08-16-leaflet-inner.png` | `—` | 사용자 확인 필요(미삭제) | 공연/Viewer | public과 44,872px 차이; [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) | 직접 참조 없음 | 높음 | 예 |
+| 2 | `2026-08-16-leaflet-outer.png` | `—` | 사용자 확인 필요(미삭제) | 공연/Viewer | public과 15,213px 차이; [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) | 직접 참조 없음 | 높음 | 예 |
+| 3 | `2026-08-16-leaflet.pdf` | `—` | 사용자 확인 필요(미삭제) | 공연/다운로드 | 같은 순서 페이지에 실제 렌더 차이; [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) | 직접 참조 없음 | 높음 | 예 |
+| 4 | `2026-08-16-poster.pdf` | `—` | 삭제 권고(미삭제) | 공연/다운로드 | public 사용본과 바이트 완전 동일; [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) | 직접 참조 없음 | 중간 | 아니오 |
+| 5 | `2026-08-16-poster.png` | `—` | 삭제 권고(미삭제) | 공연/Viewer | public 사용본과 바이트 완전 동일; [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) | 직접 참조 없음 | 중간 | 아니오 |
 | 6 | `public/favicon.svg` | `public/assets/brand/icons/favicon.svg` | 이동 완료 | 공용/아이콘 | 현재 역할과 데이터 ID에 맞춘 표준 경로 | `index.html:16` | 낮음 | 아니오 |
 | 8 | `public/images/performance/2026-08-02/archive/2026-08-02-leaflet-inner.png` | `public/assets/performances/haegeum-2026-08-02/viewer/leaflet-inner.png` | 이동 완료 | 공연/Viewer | 현재 역할과 데이터 ID에 맞춘 표준 경로 | `src/data/performances.ts:231` | 높음 | 아니오 |
 | 9 | `public/images/performance/2026-08-02/archive/2026-08-02-leaflet-outer.png` | `public/assets/performances/haegeum-2026-08-02/viewer/leaflet-outer.png` | 이동 완료 | 공연/Viewer | 현재 역할과 데이터 ID에 맞춘 표준 경로 | `src/data/performances.ts:231` | 높음 | 아니오 |
@@ -99,8 +99,8 @@ TSX는 경로를 직접 소유하지 않고 데이터/CSS를 소비한다. `Safe
 
 | 파일 | 미사용 근거 | 동적 검색 | 중복 | 공개 URL 가능성 | 위험도 | 사용자 판단 |
 | --- | --- | --- | --- | --- | --- | --- |
-| 루트 `2026-08-16-poster.pdf/png` | public 밖, 런타임 미참조 | glob/조합 없음 | public 파일과 SHA 동일 | 저장소 raw URL 가능 | 높음 | 필요 |
-| 루트 `2026-08-16-leaflet.pdf/inner/outer.png` | public 밖, 런타임 미참조 | glob/조합 없음 | 규격/역할 유사, SHA 다름 | 저장소 raw URL 가능 | 높음 | 필요 및 육안 대조 |
+| 루트 `2026-08-16-poster.pdf/png` | public 밖, 런타임 미참조 | glob/조합 없음 | public 파일과 바이트 완전 동일 | 저장소 raw URL 가능 | 중간 | 삭제 권고(이번 PR 미삭제) |
+| 루트 `2026-08-16-leaflet.pdf/inner/outer.png` | public 밖, 런타임 미참조 | glob/조합 없음 | [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md)에서 실제 차이 확인 | 저장소 raw URL 가능 | 높음 | 사용자 육안 확인 전 삭제 금지 |
 | `profile-gallery-08.jpg`, `09.jpg` | `profile.ts` 미등록 및 저장소 전체 런타임 참조 0건 | 자동 glob 없음 | 서로 SHA 동일 | 사용자 승인 | 없음 | 삭제 완료 |
 | `hero-watercolor.png` | 현재 공연 Hero 데이터 및 런타임 참조 없음 | 자동 glob 없음 | 없음 | 사용자 승인 | 없음 | 삭제 완료 |
 

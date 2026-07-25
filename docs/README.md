@@ -24,6 +24,7 @@
 | [ASSET-SPECIFICATIONS.md](./ASSET-SPECIFICATIONS.md) | 포스터·리플렛·웹 배경·출연자 사진의 실제 규격과 권장 규칙 |
 | [ASSET-INVENTORY.md](./ASSET-INVENTORY.md) | 현재 저장소 자산 전수 목록과 참조 현황 |
 | [ASSET-MIGRATION-MAP.md](./ASSET-MIGRATION-MAP.md) | `public/assets/` 표준 구조로 이전한 경로 대응표와 보류 항목 |
+| [ASSET-DUPLICATE-COMPARISON.md](./ASSET-DUPLICATE-COMPARISON.md) | 루트의 2026-08-16 자료 5개와 현재 사용본의 해시·픽셀·PDF 렌더 정밀 비교 |
 | [RELEASE-CHECKLIST.md](./RELEASE-CHECKLIST.md) | PR 전후 콘텐츠·파일·화면·기능·개발 검수 체크리스트 |
 
 ## 운영 원칙
