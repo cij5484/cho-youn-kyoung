@@ -17,7 +17,7 @@
 | 앨범 자산 | 0개 (`albums.ts`의 1개 앨범은 자산 경로 미지정) |
 | 사람/프로필 자산 | 14개 (출연자 6, 조윤경 프로필/갤러리 8; 공연 수와 중복 집계 가능) |
 | 공용 자산 | 1개 (favicon) |
-| 사용 중 | 35개 |
+| 사용 중 | 36개 |
 | 공용 재사용 중 | 1개 |
 | 미사용 추정 | 0개 |
 | 판단 보류 | 5개 |
@@ -29,6 +29,9 @@
 
 ## B. 전체 자산 목록
 
+- **이전 완료:** 36개. 현재 사용 중인 Hero, Viewer/PDF, 프로필·갤러리, 출연자 사진, favicon은 모두 `public/assets/`를 사용한다.
+- **`public/images/` 잔존:** 런타임 자산 0개 (`public/images/hero/.gitkeep`만 존재).
+
 | 번호 | 현재 경로 | 형식 | 크기 | 픽셀/PDF 규격 | 비율/페이지 | SHA-256 | Git blob SHA | 분류 | 사용 상태 | 참조 횟수 | 참조 위치 | 비고 |
 | ---: | --- | --- | ---: | --- | --- | --- | --- | --- | --- | ---: | --- | --- |
 | 1 | `2026-08-16-leaflet-inner.png` | image/png | 3.31 MiB (3,475,316 B) | 2048×957px | 2.140:1 | `9b2d5509a4833a33b36dc04e28faffb29a89a8bb5b584cc3ed230fec0e9a1852` | `8cf7b9db5ff8fb97f7fa83d17848f358ed63b67a` | 공연/Viewer | 판단 보류 | 0 | 직접 참조 없음 | 루트 산재; public 동명/유사본 존재; last a663227 2026-07-24 |
@@ -36,17 +39,17 @@
 | 3 | `2026-08-16-leaflet.pdf` | application/pdf | 13.75 MiB (14,416,464 B) | 1576.14×742.86pt | 2p | `13db2921384e03c2cd7b6f4cda8bc5bb310b9078ec5e230c23fb1f9934b84e98` | `e8d738932ff0c751d137ec8166b68989359b21f9` | 공연/다운로드 | 판단 보류 | 0 | 직접 참조 없음 | 루트 산재; public 동명/유사본 존재; last a663227 2026-07-24 |
 | 4 | `2026-08-16-poster.pdf` | application/pdf | 11.95 MiB (12,532,715 B) | 1190.64×1683.84pt | 1p | `62c152f0c41f0434bc3e6983a3c60ff668506030b33992bdb4e4968c56cbe7ed` | `30ce3c897802d0e5595fdf25531433bfd9c87dc3` | 공연/다운로드 | 판단 보류 | 0 | 직접 참조 없음 | 루트 산재; public 동명/유사본 존재; last a663227 2026-07-24 |
 | 5 | `2026-08-16-poster.png` | image/png | 5.19 MiB (5,443,288 B) | 1440×2036px | 0.707:1 | `93b67f5a98b8461aefbd15cba9dff603374f4e99bac1c696b2aeab6f8f418206` | `d497db846d590c09e8d5a385a6757fed7f340f9c` | 공연/Viewer | 판단 보류 | 0 | 직접 참조 없음 | 루트 산재; public 동명/유사본 존재; last a663227 2026-07-24 |
-| 6 | `public/favicon.svg` | image/svg+xml | 0.00 MiB (293 B) | SVG viewBox 64×64 | 1.000:1 | `967817c239264ae3b826ea53e353cc76f8e312904570d39dab27e6eef9242f08` | `87dbbfbe128944c65a1a66bb468a879c1e0ac10e` | 공용/아이콘 | 사용 중 | 1 | `index.html:16` | last 58a2d90 2026-07-22 |
+| 6 | `public/assets/brand/icons/favicon.svg` | image/svg+xml | 0.00 MiB (293 B) | SVG viewBox 64×64 | 1.000:1 | `967817c239264ae3b826ea53e353cc76f8e312904570d39dab27e6eef9242f08` | `87dbbfbe128944c65a1a66bb468a879c1e0ac10e` | 공용/아이콘 | 사용 중 | 1 | `index.html:16` | last 58a2d90 2026-07-22 |
 | 8 | `public/assets/performances/haegeum-2026-08-02/viewer/leaflet-inner.png` | image/png | 1.98 MiB (2,074,191 B) | 6520×3048px | 2.139:1 | `bb688d1f05ca8610c30a9e5013a1d8a37579478ce98fc9023cba6f4d74ab82c1` | `97551a86056701ca567111f35e90c31fa4224372` | 공연/Viewer | 사용 중 | 1 | `src/data/performances.ts:231` | last e9c2cec 2026-07-24 |
 | 9 | `public/assets/performances/haegeum-2026-08-02/viewer/leaflet-outer.png` | image/png | 10.05 MiB (10,538,212 B) | 6520×3048px | 2.139:1 | `390504fca49c38a1ce6922c89b402d53482335c7170e1467b59de5ec90ac3799` | `57c72d603d1f4ef9f93689a74390e69e7acb9ce5` | 공연/Viewer | 사용 중 | 1 | `src/data/performances.ts:231` | last e9c2cec 2026-07-24 |
 | 10 | `public/assets/performances/haegeum-2026-08-02/downloads/leaflet.pdf` | application/pdf | 16.72 MiB (17,534,571 B) | 1576.14×742.86pt | 2p | `13f457784995f960f9805b8f95273ede2aeae94045dae0c6a8a3b03264510d3b` | `8bb14595d7ce9f8e1925030de17c8339fe30c3a2` | 공연/다운로드 | 사용 중 | 1 | `src/data/performances.ts:232` | last e9c2cec 2026-07-24 |
 | 11 | `public/assets/performances/haegeum-2026-08-02/downloads/poster.pdf` | application/pdf | 19.90 MiB (20,871,197 B) | 1190.64×1683.84pt | 1p | `fe1fe62ebea67b02fcbff5439268b2b3219711af6009359133b473f7c6eeb0d9` | `6dcf8a7a6e53a0ec80ec05be03d52cee35889af5` | 공연/다운로드 | 사용 중 | 1 | `src/data/performances.ts:225` | last e9c2cec 2026-07-24 |
 | 12 | `public/assets/performances/haegeum-2026-08-02/viewer/poster.png` | image/png | 3.95 MiB (4,146,144 B) | 1414×2000px | 0.707:1 | `beb5b6edf5c1a97a9e653d8d34b5c9ca3739351e780b3cbda289e2b61a6c1464` | `2a1a7e111d5d20647b109ddaf30112e55d8c2468` | 공연/Viewer | 사용 중 | 3 | `index.html:11`<br>`src/data/performances.ts:224`<br>`src/data/site.ts:14` | last e9c2cec 2026-07-24 |
 | 13 | `public/assets/performances/haegeum-2026-08-02/web/home-hero-desktop.png` | image/png | 2.30 MiB (2,409,711 B) | 1717×916px | 1.874:1 | `edf14e2fabd05ebbcdd4593394edca74d1f74091afa751bd481f201910af1551` | `5323dfa3939102a1103710134482b23c99a3c452` | 공연/HOME | 사용 중 | 1 | `src/data/performances.ts:184` | last e9c2cec 2026-07-24 |
-| 14 | `public/images/performance/2026-08-02/performers/eo-yoon-seok.jpg` | image/jpeg | 0.04 MiB (40,955 B) | 602×903px | 0.667:1 | `32f2b492731e5bfd418098ffee85ef05a467a3c725c44f12b55dc2b4b1a6f2ae` | `02b44008f9a54224b95a09728cc5355eff1bf7aa` | 사람/프로필 | 사용 중 | 1 | `src/data/performances.ts:107` | last e9c2cec 2026-07-24 |
-| 15 | `public/images/performance/2026-08-02/performers/jin-min-jin.jpg` | image/jpeg | 0.05 MiB (52,063 B) | 602×903px | 0.667:1 | `5f1184c17b989bacf90b8a46948d694f4e647172771ba4d3f3099748e28571c5` | `444727fb3d63f96d5e67473b9a1a0cc51187ec5c` | 사람/프로필 | 사용 중 | 1 | `src/data/performances.ts:98` | last e9c2cec 2026-07-24 |
+| 14 | `public/assets/people/eo-yoon-seok/portrait.jpg` | image/jpeg | 0.04 MiB (40,955 B) | 602×903px | 0.667:1 | `32f2b492731e5bfd418098ffee85ef05a467a3c725c44f12b55dc2b4b1a6f2ae` | `02b44008f9a54224b95a09728cc5355eff1bf7aa` | 사람/프로필 | 사용 중 | 1 | `src/data/performances.ts:107` | last e9c2cec 2026-07-24 |
+| 15 | `public/assets/people/jin-min-jin/portrait.jpg` | image/jpeg | 0.05 MiB (52,063 B) | 602×903px | 0.667:1 | `5f1184c17b989bacf90b8a46948d694f4e647172771ba4d3f3099748e28571c5` | `444727fb3d63f96d5e67473b9a1a0cc51187ec5c` | 사람/프로필 | 사용 중 | 1 | `src/data/performances.ts:98` | last e9c2cec 2026-07-24 |
 | 16 | `public/assets/people/yang-seung-hwan/portrait.jpg` | image/jpeg | 20.56 MiB (21,556,652 B) | 4437×6656px | 0.667:1 | `b9dcd9233492a1b9e354dfce71c509f272c317dd58b88c0bf60d5b688a83b29a` | `76a4a9558fd4415de4a54ec6a21958a308a5ecea` | 사람/프로필 | 공용 재사용 중 | 2 | `src/data/performances.ts:114`<br>`src/data/performances.ts:166` | 두 공연에서 같은 사진 재사용; 20.56 MiB; last e9c2cec 2026-07-24 |
-| 17 | `public/images/performance/2026-08-02/performers/yoon-seung-hwan.jpg` | image/jpeg | 0.05 MiB (57,039 B) | 602×903px | 0.667:1 | `765d1d19f632b8a379c1443e6d2ba53eed2a34e06a7a1766d5ddcf83f414ae68` | `86def0cf826e0642e41bfc28b98626d87965b9c1` | 사람/프로필 | 사용 중 | 1 | `src/data/performances.ts:89` | last e9c2cec 2026-07-24 |
+| 17 | `public/assets/people/yoon-seung-hwan/portrait.jpg` | image/jpeg | 0.05 MiB (57,039 B) | 602×903px | 0.667:1 | `765d1d19f632b8a379c1443e6d2ba53eed2a34e06a7a1766d5ddcf83f414ae68` | `86def0cf826e0642e41bfc28b98626d87965b9c1` | 사람/프로필 | 사용 중 | 1 | `src/data/performances.ts:89` | last e9c2cec 2026-07-24 |
 | 18 | `public/assets/performances/sanjo-gil-2026-08-16/viewer/leaflet-inner.png` | image/png | 3.32 MiB (3,479,528 B) | 2048×957px | 2.140:1 | `14db74685547503257cb11777abbc096c7e65e000647a4bae5ec6f00cacc8956` | `555442ca80181107930d629c7161dba207d4651b` | 공연/Viewer | 사용 중 | 1 | `src/data/performances.ts:170` | last 3cbf5c3 2026-07-24 |
 | 19 | `public/assets/performances/sanjo-gil-2026-08-16/viewer/leaflet-outer.png` | image/png | 2.70 MiB (2,831,207 B) | 2048×957px | 2.140:1 | `7abef305a60c4eb478555b920799203ded21ad22176dfb98788d7f95f0c1f1de` | `5c455776d90304424fd464ff163fd38c4716e4df` | 공연/Viewer | 사용 중 | 1 | `src/data/performances.ts:170` | last 3cbf5c3 2026-07-24 |
 | 20 | `public/assets/performances/sanjo-gil-2026-08-16/downloads/leaflet.pdf` | application/pdf | 13.76 MiB (14,431,063 B) | 1576.14×742.86pt | 2p | `3daccdb33d4ba52bcf4a1621eb7d155cf229d023535bd011c8bb509e87d5cfef` | `02fd572b86c862dec875c91be1bfa71583b45bbf` | 공연/다운로드 | 사용 중 | 1 | `src/data/performances.ts:170` | last 3cbf5c3 2026-07-24 |
@@ -61,7 +64,7 @@
 | 29 | `public/assets/performances/sanjo-gil-2026-08-16/web/program-01-desktop.png` | image/png | 2.34 MiB (2,453,035 B) | 2560×650px | 3.938:1 | `d8c7727155ef0d13516912b52a45a30bc924683df8fb82473bfe079502eed848` | `9f6b1f0248c5a1ecfaf758a263eec9b2828d7f05` | 공연/DETAIL | 사용 중 | 1 | `src/styles/sanjo-detail.css:105` | last d1d588e 2026-07-24 |
 | 30 | `public/assets/performances/sanjo-gil-2026-08-16/web/program-02-mobile.png` | image/png | 2.50 MiB (2,623,573 B) | 941×1672px | 0.563:1 | `86a340012a46bf3cee443363fbf8daa30bc48d70c99b65036f82f8551de65c79` | `81b8d04df447388cd272d487975926352839347d` | 공연/DETAIL | 사용 중 | 1 | `src/styles/sanjo-detail.css:222` | last bc2b5fd 2026-07-24 |
 | 31 | `public/assets/performances/sanjo-gil-2026-08-16/web/program-02-desktop.png` | image/png | 2.85 MiB (2,992,735 B) | 2560×650px | 3.938:1 | `201a7004dc002a1a88ebe092164936e7228934bd43fb1e2fe01b2147bed9c30f` | `bcf40e10599a89756eea550f67aa6190905ff074` | 공연/DETAIL | 사용 중 | 1 | `src/styles/sanjo-detail.css:107` | last d1d588e 2026-07-24 |
-| 32 | `public/images/performance/2026-08-16/home/hero-background.png` | image/png | 2.56 MiB (2,680,457 B) | 1672×941px | 1.777:1 | `6af189a07939b94de32ede7097d28fcab908ee26ac7e543ec4e1b8295f57f172` | `ae5bc95157efb44d1e328ae4374e404f4f9da4d2` | 공연/HOME | 사용 중 | 1 | `src/data/performances.ts:131` | last e9c2cec 2026-07-24 |
+| 32 | `public/assets/performances/sanjo-gil-2026-08-16/web/home-hero-desktop.png` | image/png | 2.56 MiB (2,680,457 B) | 1672×941px | 1.777:1 | `6af189a07939b94de32ede7097d28fcab908ee26ac7e543ec4e1b8295f57f172` | `ae5bc95157efb44d1e328ae4374e404f4f9da4d2` | 공연/HOME | 사용 중 | 1 | `src/data/performances.ts:131` | last e9c2cec 2026-07-24 |
 | 33 | `public/assets/people/kim-na-young/portrait.jpg` | image/jpeg | 0.11 MiB (112,883 B) | 602×903px | 0.667:1 | `7a25750472c493549044a397de537be861ff6be5afa1b95014244740381b8051` | `945ec1b5c8e199476ab9e14ccbd3f738edb8d1e8` | 사람/프로필 | 사용 중 | 1 | `src/data/performances.ts:165` | last e9c2cec 2026-07-24 |
 | 34 | `public/assets/people/lee-young-seop/portrait.jpg` | image/jpeg | 0.06 MiB (64,134 B) | 602×901px | 0.668:1 | `1cda658d8a91a5ed664c8dd3d483ee9037610a3704993b3dc51a08a0cb70c6a4` | `96f879fd0dcd74ddeb056477cc9d81b9a7720352` | 사람/프로필 | 사용 중 | 1 | `src/data/performances.ts:164` | last e9c2cec 2026-07-24 |
 | 35 | `public/assets/artist/profile/portrait.jpg` | image/jpeg | 6.80 MiB (7,134,655 B) | 3889×5834px | 0.667:1 | `6f7a6e8354271fab5c0b792c556f42337ab69c7bfe3d061584cf6fc919587fb5` | `839869f11bf7b7c36fa1567d51a539a72e4aa23e` | 사람/프로필 | 사용 중 | 3 | `src/data/profile.ts:25`<br>`src/data/profile.ts:28`<br>`src/data/profile.ts:29` | 7.14 MiB 대형 프로필; last 7f6e882 2026-07-22 |
@@ -75,7 +78,7 @@
 
 ## C. 공연별 목록
 
-### `haegeum-2026-08-02` (현재 날짜 폴더 `2026-08-02`)
+### `haegeum-2026-08-02`
 
 - **HOME:** #13.
 - **DETAIL:** 전용 이미지 없음(일반 상세 UI/CSS 사용).
@@ -84,7 +87,7 @@
 - **PERFORMERS:** #14–#17.
 - **THUMBNAILS:** 전용 파일 없음; 포스터/Hero를 별도 썸네일 없이 소비한다.
 
-### `sanjo-gil-2026-08-16` (현재 날짜 폴더 `2026-08-16`)
+### `sanjo-gil-2026-08-16`
 
 - **HOME:** #32.
 - **DETAIL:** #23–#31(데스크톱 6, 모바일 3).
@@ -100,7 +103,7 @@
 | --- | --- | --- | --- |
 | `cho-youn-kyoung` | `public/assets/artist/profile/portrait.jpg`, `public/assets/artist/gallery/profile-gallery-01.jpg`–`07.jpg` | ABOUT; 데이터 등록은 대표+01–07 | 대표와 01–07은 전용 프로필 세트. 미등록 중복 파일 08/09는 승인에 따라 삭제 완료 |
 | `yang-seung-hwan` | `public/assets/people/yang-seung-hwan/portrait.jpg` | 두 공연 상세 | 동일 파일을 두 공연이 직접 재사용; 공용 `people/` 후보 1개 |
-| `yoon-seung-hwan`, `jin-min-jin`, `eo-yoon-seok` | 각 `2026-08-02/performers/*.jpg` | `haegeum-2026-08-02` | 현재는 공연 전용; 다른 공연 재사용 증거 없음 |
+| `yoon-seung-hwan`, `jin-min-jin`, `eo-yoon-seok` | 각 `public/assets/people/{person-id}/portrait.jpg` | `haegeum-2026-08-02` | 사람별 표준 경로로 이동 완료 |
 | `kim-na-young`, `lee-young-seop` | 각 `public/assets/people/{person-id}/portrait.jpg` | `sanjo-gil-2026-08-16` | 사람별 공용 경로로 이동 완료 |
 
 ## E. 깨진 참조
@@ -113,7 +116,7 @@
 
 | 파일 | 상태 | 근거와 동적 참조 가능성 |
 | --- | --- | --- |
-| 루트 `2026-08-16-*` 5개 (#1–#5) | 미사용 추정 | Vite `public/` 밖이고 런타임 직접 참조 없음. 문자열의 suffix가 public 경로와 같아 단순 검색은 오탐 가능. 과거 공개 URL/수동 배포는 확인 불가 |
+| 루트 `2026-08-16-*` 5개 (#1–#5) | 판단 보류 | Vite `public/` 밖이고 런타임 직접 참조 없음. 문자열의 suffix가 public 경로와 같아 단순 검색은 오탐 가능. 과거 공개 URL/수동 배포는 확인 불가 |
 | `profile-gallery-08.jpg`, `09.jpg` | 삭제 완료 | `profile.ts` 배열은 01–07까지만 순회하고 자동 탐색/glob이 없으며, 삭제 전 두 파일의 SHA-256 동일성과 런타임 참조 0건 확인 |
 
 ## G. 중복 파일
@@ -133,7 +136,7 @@
 | 현재 경로 | 문제 유형 | 영향/판정 |
 | --- | --- | --- |
 | 루트 `2026-08-16-*` | 공연별 폴더 밖 산재, public 사본과 중복/유사 | 미사용 추정이나 외부 보존 의도 확인 필요 |
-| 기존 공연 날짜 폴더 | 일부 공연 전용 출연자와 8/16 HOME Hero가 남음 | 승인된 이동 범위 밖 파일은 그대로 보류 |
+| `public/images/` | 런타임 자산 없음 | `.gitkeep`만 남아 있으며 사용 중 자산은 모두 `public/assets/`로 이전 완료 |
 | 기존 `archive/` | 이전 전 Viewer PNG와 다운로드 PDF가 한 폴더 | 사용 중 자료는 `viewer/`와 `downloads/`로 분리 완료 |
 | `*-background.png` | 인쇄/웹 역할 | 모두 웹 CSS/Hero용으로 확인; 인쇄용 PDF가 CSS 배경인 사례 없음 |
 | `public/assets/people/yang-seung-hwan/portrait.jpg` | 공용화 완료; 대형(20.56 MiB) | 두 공연 재사용, 최적화는 별도 승인/별도 PR 필요 |

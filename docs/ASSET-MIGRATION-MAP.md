@@ -2,7 +2,7 @@
 
 - **조사 날짜:** 2026-07-25
 - **기준 main commit SHA:** `908f821906bfe96d8d7061ee4f1809781cfed57c` (PR #48 병합 커밋)
-- 이 문서는 사용 중 자산 31개의 실제 이동과 승인된 미사용 자산 3개의 삭제 결과를 기록한다.
+- 이 문서는 사용 중 자산 36개의 실제 이동과 승인된 미사용 자산 3개의 삭제 결과를 기록한다.
 - 루트에 산재한 2026-08-16 자료 5개와 그 밖의 보류 자산은 이동·삭제하지 않았다.
 
 ## A. 권장 최종 구조
@@ -33,11 +33,11 @@ public/assets/
 
 | 번호 | 현재 경로 | 제안 경로 | 처리 제안 | 분류 | 근거 | 영향받는 코드·문서 | 위험도 | 사용자 판단 필요 |
 | ---: | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | `2026-08-16-leaflet-inner.png` | `—` | 삭제 검토 | 공연/Viewer | 런타임 미참조 루트 산재본; public 사본/유사본 및 공개 URL 확인 선행 | 직접 참조 없음 | 높음 | 예 |
-| 2 | `2026-08-16-leaflet-outer.png` | `—` | 삭제 검토 | 공연/Viewer | 런타임 미참조 루트 산재본; public 사본/유사본 및 공개 URL 확인 선행 | 직접 참조 없음 | 높음 | 예 |
-| 3 | `2026-08-16-leaflet.pdf` | `—` | 삭제 검토 | 공연/다운로드 | 런타임 미참조 루트 산재본; public 사본/유사본 및 공개 URL 확인 선행 | 직접 참조 없음 | 높음 | 예 |
-| 4 | `2026-08-16-poster.pdf` | `—` | 삭제 검토 | 공연/다운로드 | 런타임 미참조 루트 산재본; public 사본/유사본 및 공개 URL 확인 선행 | 직접 참조 없음 | 높음 | 예 |
-| 5 | `2026-08-16-poster.png` | `—` | 삭제 검토 | 공연/Viewer | 런타임 미참조 루트 산재본; public 사본/유사본 및 공개 URL 확인 선행 | 직접 참조 없음 | 높음 | 예 |
+| 1 | `2026-08-16-leaflet-inner.png` | `—` | 판단 보류 | 공연/Viewer | 런타임 미참조 루트 산재본; public 사본/유사본 및 공개 URL 확인 선행 | 직접 참조 없음 | 높음 | 보류 |
+| 2 | `2026-08-16-leaflet-outer.png` | `—` | 판단 보류 | 공연/Viewer | 런타임 미참조 루트 산재본; public 사본/유사본 및 공개 URL 확인 선행 | 직접 참조 없음 | 높음 | 보류 |
+| 3 | `2026-08-16-leaflet.pdf` | `—` | 판단 보류 | 공연/다운로드 | 런타임 미참조 루트 산재본; public 사본/유사본 및 공개 URL 확인 선행 | 직접 참조 없음 | 높음 | 보류 |
+| 4 | `2026-08-16-poster.pdf` | `—` | 판단 보류 | 공연/다운로드 | 런타임 미참조 루트 산재본; public 사본/유사본 및 공개 URL 확인 선행 | 직접 참조 없음 | 높음 | 보류 |
+| 5 | `2026-08-16-poster.png` | `—` | 판단 보류 | 공연/Viewer | 런타임 미참조 루트 산재본; public 사본/유사본 및 공개 URL 확인 선행 | 직접 참조 없음 | 높음 | 보류 |
 | 6 | `public/favicon.svg` | `public/assets/brand/icons/favicon.svg` | 이동 완료 | 공용/아이콘 | 현재 역할과 데이터 ID에 맞춘 표준 경로 | `index.html:16` | 낮음 | 아니오 |
 | 8 | `public/images/performance/2026-08-02/archive/2026-08-02-leaflet-inner.png` | `public/assets/performances/haegeum-2026-08-02/viewer/leaflet-inner.png` | 이동 완료 | 공연/Viewer | 현재 역할과 데이터 ID에 맞춘 표준 경로 | `src/data/performances.ts:231` | 높음 | 아니오 |
 | 9 | `public/images/performance/2026-08-02/archive/2026-08-02-leaflet-outer.png` | `public/assets/performances/haegeum-2026-08-02/viewer/leaflet-outer.png` | 이동 완료 | 공연/Viewer | 현재 역할과 데이터 ID에 맞춘 표준 경로 | `src/data/performances.ts:231` | 높음 | 아니오 |
@@ -75,9 +75,9 @@ public/assets/
 | 41 | `public/images/profile/gallery/profile-gallery-06.jpg` | `public/assets/artist/gallery/profile-gallery-06.jpg` | 이동 완료 | 사람/프로필 | 현재 역할과 데이터 ID에 맞춘 표준 경로 | `src/data/profile.ts:76`<br>`src/data/profile.ts:77` | 중간 | 아니오 |
 | 42 | `public/images/profile/gallery/profile-gallery-07.jpg` | `public/assets/artist/gallery/profile-gallery-07.jpg` | 이동 완료 | 사람/프로필 | 현재 역할과 데이터 ID에 맞춘 표준 경로 | `src/data/profile.ts:84`<br>`src/data/profile.ts:85` | 중간 | 아니오 |
 
-## D. 코드 경로 수정 예상 목록
+## D. 코드 경로 수정 완료 목록
 
-| 파일 | 현재 참조 | 제안 참조 | 관련 자산 | 주의사항 |
+| 파일 | 이전 참조 | 현재 참조 | 관련 자산 | 주의사항 |
 | --- | --- | --- | --- | --- |
 | `src/data/performances.ts` | `images/performance/{date}/...` | `assets/performances/{performance-id}/...`, `assets/people/...` | Hero, Viewer, PDF, 출연자 | `assetUrl()`과 `BASE_URL` 유지; 양승환은 두 공연 동시 갱신 |
 | `src/data/profile.ts` | `images/profile/...` | `assets/artist/profile/...`, `assets/artist/gallery/...` | 대표/갤러리 | 배열의 `src`와 `thumbnail`을 모두 변경 완료; 08/09는 미등록·동일 SHA 확인 후 삭제 |
@@ -89,13 +89,13 @@ public/assets/
 
 TSX는 경로를 직접 소유하지 않고 데이터/CSS를 소비한다. `SafeImage`, Archive Viewer, HOME rotator의 fallback과 `import.meta.env.BASE_URL` 동작을 회귀 검증해야 한다.
 
-## E. 공용 인물 사진 제안
+## E. 공용 인물 사진 결과
 
-- **추천 1개:** `yang-seung-hwan.jpg`는 두 공연이 같은 파일을 재사용하므로 `people/yang-seung-hwan/portrait.jpg` 대표 후보이다. 현재 파일(4437×6656, 20.56 MiB)을 내용 변경 없이 먼저 이동할지, 별도 최적화 PR을 할지는 사용자 승인 사항이다.
-- 나머지 출연자 5명은 한 공연에서만 확인되어 우선 사람별 경로로 이동하되 “공용 재사용”으로 확정하지 않는다.
+- `yang-seung-hwan.jpg`는 두 공연이 같은 파일을 재사용하므로 `people/yang-seung-hwan/portrait.jpg`로 내용 변경 없이 이동했다. 파일 최적화는 별도 승인 사항이다.
+- 나머지 출연자 5명도 `people/{person-id}/portrait.jpg` 표준 경로로 이동했다.
 - 조윤경 대표 사진은 `artist/profile/portrait.jpg`, ABOUT 갤러리 01–07은 `artist/gallery/`로 이동했다. `artist/press/`는 향후 공식 보도용 자료에만 사용하며 08/09는 승인에 따라 삭제했다.
 
-## F. 삭제 검토 목록
+## F. 판단 보류 및 삭제 결과
 
 | 파일 | 미사용 근거 | 동적 검색 | 중복 | 공개 URL 가능성 | 위험도 | 사용자 판단 |
 | --- | --- | --- | --- | --- | --- | --- |

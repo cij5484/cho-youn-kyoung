@@ -41,7 +41,7 @@ public/assets/performances/{performance-id}/
   downloads/
 ```
 
-공용 출연자 사진은 `public/assets/people/{person-id}/portrait.jpg`, 조윤경의 대표·갤러리 사진은
+모든 출연자 사진은 `public/assets/people/{person-id}/portrait.jpg`, 조윤경의 대표·갤러리 사진은
 각각 `public/assets/artist/profile/`, `public/assets/artist/gallery/`에 둡니다. 앨범은 실제 자산이
 생긴 뒤 `public/assets/albums/{album-id}/` 구조를 적용하며 빈 폴더를 미리 만들지 않습니다.
 

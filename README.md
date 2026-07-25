@@ -85,11 +85,11 @@ Add an object to `performances` in `src/data/performances.ts`:
   displayDate: 'YYYY. M. D. (요일) HH:mm',
   venue: '공연장',
   featured: false,
-  heroImage: 'assets/performances/haegeum-2026-08-02/web/home-hero-desktop.png',
+  heroImage: 'assets/performances/{performance-id}/web/home-hero-desktop.png',
 }
 ```
 
-The performance list and detail route are generated from this data.
+In this documentation example, `{performance-id}` is a placeholder; replace it with the new performance object’s actual `id`. The performance list and detail route are generated from this data.
 
 ## Add a new album
 

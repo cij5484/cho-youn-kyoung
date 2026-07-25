@@ -83,7 +83,7 @@
 | 종류 | 경로 | 형식 | 픽셀 크기 | 비율 | 용량 |
 | --- | --- | --- | --- | --- | --- |
 | HOME Hero | `public/assets/performances/haegeum-2026-08-02/web/home-hero-desktop.png` | PNG | 1717×916px | 1.874:1 | 2.30 MB |
-| HOME Hero | `public/images/performance/2026-08-16/home/hero-background.png` | PNG | 1672×941px | 1.777:1 | 2.56 MB |
+| HOME Hero | `public/assets/performances/sanjo-gil-2026-08-16/web/home-hero-desktop.png` | PNG | 1672×941px | 1.777:1 | 2.56 MB |
 | 상세 Hero | `public/assets/performances/sanjo-gil-2026-08-16/web/detail-hero-desktop.png` | PNG | 2560×1200px | 2.133:1 | 4.60 MB |
 | 모바일 Hero | `public/assets/performances/sanjo-gil-2026-08-16/web/detail-hero-mobile.png` | PNG | 941×1672px | 0.563:1 | 2.53 MB |
 | Note/Information | `public/assets/performances/sanjo-gil-2026-08-16/web/note-info-desktop.png` | PNG | 2560×1400px | 1.829:1 | 4.24 MB |
@@ -100,10 +100,10 @@
 
 | 경로 | 형식 | 픽셀 크기 | 비율 | 용량 |
 | --- | --- | --- | --- | --- |
-| `public/images/performance/2026-08-02/performers/eo-yoon-seok.jpg` | JPEG | 602×903px | 0.667:1 | 0.04 MB |
-| `public/images/performance/2026-08-02/performers/jin-min-jin.jpg` | JPEG | 602×903px | 0.667:1 | 0.05 MB |
+| `public/assets/people/eo-yoon-seok/portrait.jpg` | JPEG | 602×903px | 0.667:1 | 0.04 MB |
+| `public/assets/people/jin-min-jin/portrait.jpg` | JPEG | 602×903px | 0.667:1 | 0.05 MB |
 | `public/assets/people/yang-seung-hwan/portrait.jpg` | JPEG | 4437×6656px | 0.667:1 | 20.56 MB |
-| `public/images/performance/2026-08-02/performers/yoon-seung-hwan.jpg` | JPEG | 602×903px | 0.667:1 | 0.05 MB |
+| `public/assets/people/yoon-seung-hwan/portrait.jpg` | JPEG | 602×903px | 0.667:1 | 0.05 MB |
 | `public/assets/people/kim-na-young/portrait.jpg` | JPEG | 602×903px | 0.667:1 | 0.11 MB |
 | `public/assets/people/lee-young-seop/portrait.jpg` | JPEG | 602×901px | 0.668:1 | 0.06 MB |
 

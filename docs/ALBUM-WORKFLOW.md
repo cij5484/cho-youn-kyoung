@@ -24,7 +24,7 @@
 ## 권장 폴더 구조
 
 ```txt
-public/images/albums/{album-id}/
+public/assets/albums/{album-id}/
   cover/
   booklet/
   artists/
