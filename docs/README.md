@@ -22,6 +22,8 @@
 | [PERFORMANCE-WORKFLOW.md](./PERFORMANCE-WORKFLOW.md) | 새 공연 등록 단계, 공연 데이터, 공연별 테마 작업 순서 |
 | [ALBUM-WORKFLOW.md](./ALBUM-WORKFLOW.md) | 앨범 등록 준비 자료, 데이터 입력, 미확정 앨범 UI 관리 |
 | [ASSET-SPECIFICATIONS.md](./ASSET-SPECIFICATIONS.md) | 포스터·리플렛·웹 배경·출연자 사진의 실제 규격과 권장 규칙 |
+| [ASSET-INVENTORY.md](./ASSET-INVENTORY.md) | 현재 저장소 자산 전수 목록과 참조 현황 |
+| [ASSET-MIGRATION-MAP.md](./ASSET-MIGRATION-MAP.md) | 향후 표준 구조로 이전하기 위한 경로 대응표와 실행 계획 |
 | [RELEASE-CHECKLIST.md](./RELEASE-CHECKLIST.md) | PR 전후 콘텐츠·파일·화면·기능·개발 검수 체크리스트 |
 
 ## 운영 원칙
