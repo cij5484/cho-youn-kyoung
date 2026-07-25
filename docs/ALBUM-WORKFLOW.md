@@ -31,7 +31,7 @@ public/images/albums/{album-id}/
   detail/
 ```
 
-공연과 앨범의 이미지 폴더를 섞지 않습니다. 공연 자료는 `public/images/performance/`, 앨범 자료는 `public/images/albums/` 아래에 둡니다.
+공연과 앨범의 이미지 폴더를 섞지 않습니다. 공연 자료는 `public/assets/performances/`, 앨범 자료는 `public/assets/albums/` 아래에 둡니다.
 
 ## 원본 자료 검수
 

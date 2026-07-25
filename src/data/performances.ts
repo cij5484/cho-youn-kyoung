@@ -111,7 +111,7 @@ const collaborators: PerformanceCollaborator[] = [
   },
   {
     ...yangSeungHwanProfile,
-    image: 'images/performance/2026-08-02/performers/yang-seung-hwan.jpg',
+    image: 'assets/people/yang-seung-hwan/portrait.jpg',
     participatingWorks: ['해금, 시대를 잇다'],
   },
 ];
@@ -161,13 +161,13 @@ export const performances: Performance[] = [
       ] },
     ],
     collaborators: [
-      { id: 'lee-young-seop', name: '이영섭', role: '장구', image: 'images/performance/2026-08-16/performers/lee-young-seop.jpg', shortBio: '영남대학교 예술대학 국악전공 교수. World Music Group Vinalog 대표.', fullBio: ['영남대학교 예술대학 국악전공 교수', 'World Music Group ‘Vinalog’ 대표', '전통창작음악집단 ‘4인놀이’ 동인'], participatingWorks: ['육자배기 · 흥타령', '한범수류 해금산조'] },
-      { id: 'kim-na-young', name: '김나영', role: '가야금', image: 'images/performance/2026-08-16/performers/kim-na-young.jpg', shortBio: '국가무형유산 가야금산조 및 병창 이수자. 국가유산진흥원 예술단.', fullBio: ['국가무형유산 가야금산조 및 병창 이수자', '국가유산진흥원 예술단', '제10회 의정부 죽파 가야금 경연대회 일반부 대상(국회의장상)', '제3회 영암 김창조 전국 국악대전 일반부 대상'], participatingWorks: ['육자배기 · 흥타령'] },
-      { ...yangSeungHwanProfile, image: 'images/performance/2026-08-02/performers/yang-seung-hwan.jpg', participatingWorks: ['산조길, 둘'] },
+      { id: 'lee-young-seop', name: '이영섭', role: '장구', image: 'assets/people/lee-young-seop/portrait.jpg', shortBio: '영남대학교 예술대학 국악전공 교수. World Music Group Vinalog 대표.', fullBio: ['영남대학교 예술대학 국악전공 교수', 'World Music Group ‘Vinalog’ 대표', '전통창작음악집단 ‘4인놀이’ 동인'], participatingWorks: ['육자배기 · 흥타령', '한범수류 해금산조'] },
+      { id: 'kim-na-young', name: '김나영', role: '가야금', image: 'assets/people/kim-na-young/portrait.jpg', shortBio: '국가무형유산 가야금산조 및 병창 이수자. 국가유산진흥원 예술단.', fullBio: ['국가무형유산 가야금산조 및 병창 이수자', '국가유산진흥원 예술단', '제10회 의정부 죽파 가야금 경연대회 일반부 대상(국회의장상)', '제3회 영암 김창조 전국 국악대전 일반부 대상'], participatingWorks: ['육자배기 · 흥타령'] },
+      { ...yangSeungHwanProfile, image: 'assets/people/yang-seung-hwan/portrait.jpg', participatingWorks: ['산조길, 둘'] },
     ],
     archiveMaterials: [
-      { label: 'POSTER', viewLabel: 'VIEW POSTER', previewImages: [{ src: 'images/performance/2026-08-16/archive/2026-08-16-poster.png', alt: '산조길, 둘 공연 포스터' }], downloadUrl: 'images/performance/2026-08-16/archive/2026-08-16-poster.pdf', downloadLabel: 'DOWNLOAD PDF' },
-      { label: 'LEAFLET', viewLabel: 'VIEW LEAFLET', previewImages: [{ src: 'images/performance/2026-08-16/archive/2026-08-16-leaflet-outer.png', alt: '산조길, 둘 리플렛 바깥면', label: 'OUTER' }, { src: 'images/performance/2026-08-16/archive/2026-08-16-leaflet-inner.png', alt: '산조길, 둘 리플렛 안쪽면', label: 'INNER' }], downloadUrl: 'images/performance/2026-08-16/archive/2026-08-16-leaflet.pdf', downloadLabel: 'DOWNLOAD PDF' },
+      { label: 'POSTER', viewLabel: 'VIEW POSTER', previewImages: [{ src: 'assets/performances/sanjo-gil-2026-08-16/viewer/poster.png', alt: '산조길, 둘 공연 포스터' }], downloadUrl: 'assets/performances/sanjo-gil-2026-08-16/downloads/poster.pdf', downloadLabel: 'DOWNLOAD PDF' },
+      { label: 'LEAFLET', viewLabel: 'VIEW LEAFLET', previewImages: [{ src: 'assets/performances/sanjo-gil-2026-08-16/viewer/leaflet-outer.png', alt: '산조길, 둘 리플렛 바깥면', label: 'OUTER' }, { src: 'assets/performances/sanjo-gil-2026-08-16/viewer/leaflet-inner.png', alt: '산조길, 둘 리플렛 안쪽면', label: 'INNER' }], downloadUrl: 'assets/performances/sanjo-gil-2026-08-16/downloads/leaflet.pdf', downloadLabel: 'DOWNLOAD PDF' },
     ],
   },
   {
@@ -181,7 +181,7 @@ export const performances: Performance[] = [
     venueUrl: 'https://www.chilgokctf.or.kr/ctf/main.do',
     performer: '조윤경',
     featured: true,
-    heroImage: 'images/performance/2026-08-02/home/hero-background.png',
+    heroImage: 'assets/performances/haegeum-2026-08-02/web/home-hero-desktop.png',
     homeHero: { theme: 'haegeum-recital' },
     archiveLabel: 'HAEGEUM RECITAL 2026',
     listDescription: '해금 창작곡의 변천을 기록하다',
@@ -221,15 +221,15 @@ export const performances: Performance[] = [
       {
         label: 'POSTER',
         viewLabel: 'VIEW POSTER',
-        previewImages: [{ src: 'images/performance/2026-08-02/archive/2026-08-02-poster.png', alt: '해금, 시대를 잇다 공연 포스터' }],
-        downloadUrl: 'images/performance/2026-08-02/archive/2026-08-02-poster.pdf',
+        previewImages: [{ src: 'assets/performances/haegeum-2026-08-02/viewer/poster.png', alt: '해금, 시대를 잇다 공연 포스터' }],
+        downloadUrl: 'assets/performances/haegeum-2026-08-02/downloads/poster.pdf',
         downloadLabel: 'DOWNLOAD PDF',
       },
       {
         label: 'LEAFLET',
         viewLabel: 'VIEW LEAFLET',
-        previewImages: [{ src: 'images/performance/2026-08-02/archive/2026-08-02-leaflet-outer.png', alt: '해금, 시대를 잇다 리플렛 바깥면', label: 'OUTER' }, { src: 'images/performance/2026-08-02/archive/2026-08-02-leaflet-inner.png', alt: '해금, 시대를 잇다 리플렛 안쪽면', label: 'INNER' }],
-        downloadUrl: 'images/performance/2026-08-02/archive/2026-08-02-leaflet.pdf',
+        previewImages: [{ src: 'assets/performances/haegeum-2026-08-02/viewer/leaflet-outer.png', alt: '해금, 시대를 잇다 리플렛 바깥면', label: 'OUTER' }, { src: 'assets/performances/haegeum-2026-08-02/viewer/leaflet-inner.png', alt: '해금, 시대를 잇다 리플렛 안쪽면', label: 'INNER' }],
+        downloadUrl: 'assets/performances/haegeum-2026-08-02/downloads/leaflet.pdf',
         downloadLabel: 'DOWNLOAD PDF',
       },
     ],

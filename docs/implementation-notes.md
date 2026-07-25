@@ -10,9 +10,9 @@ This first implementation establishes a static React, Vite, and TypeScript site 
 
 ## Images and HOME Hero
 - Approved hero mockup and binary artwork files are intentionally not committed.
-- The HOME Hero now references `public/images/hero/hero-background-v2.png` for the future owner-uploaded full-screen background artwork.
-- To replace the Hero background, upload the final image to `public/images/hero/hero-background-v2.png`; the HOME Hero will pick it up automatically through `src/data/performances.ts`.
-- If `hero-background-v2.png` is missing, the Hero keeps the same layered structure and displays a charcoal/black CSS fallback background without a broken image indicator.
+- The HOME Hero now references `public/assets/performances/haegeum-2026-08-02/web/home-hero-desktop.png` for the future owner-uploaded full-screen background artwork.
+- To replace the Hero background, upload the final image to `public/assets/performances/haegeum-2026-08-02/web/home-hero-desktop.png`; the HOME Hero will pick it up automatically through `src/data/performances.ts`.
+- If the configured performance Hero is missing, the Hero keeps the same layered structure and displays a charcoal/black CSS fallback background without a broken image indicator.
 - The Hero is split into background, dark overlay, ink reveal overlay, and text content layers so a future ink/watercolor texture PNG or SVG can be added without changing the page structure.
 - A lightweight CSS ink-reveal animation is applied on first render, using gradients, blur, transform, and clip-path. It respects `prefers-reduced-motion` and uses a shorter, lighter animation on mobile.
 
