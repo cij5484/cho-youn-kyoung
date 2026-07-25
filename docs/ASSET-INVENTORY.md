@@ -1,7 +1,7 @@
 # 자산 전수 목록 (Asset Inventory)
 
 - **조사 날짜:** 2026-07-25
-- **기준 main commit SHA:** `908f821906bfe96d8d7061ee4f1809781cfed57c` (PR #48 병합 커밋)
+- **기준 main commit SHA:** `a0d38ef13d6f06055afdc2613ecf262708e8b2d0` (PR #49 병합 커밋)
 - **조사한 총 자산 수:** **41개** (`git ls-files` 기준)
 - **형식별 개수:** PNG 20, JPEG 14, PDF 6, SVG 1 (WebP/GIF/AVIF 0)
 - **전체 자산 용량:** **197,453,165 bytes (188.31 MiB)**
@@ -20,7 +20,7 @@
 | 사용 중 | 36개 |
 | 공용 재사용 중 | 1개 |
 | 미사용 추정 | 0개 |
-| 판단 보류 | 5개 |
+| 판단 보류 | 3개 (리플렛 루트본; 사용자 육안 확인 필요) |
 | 깨진 런타임 참조 | 0개 |
 | 완전 중복 | 2그룹 / 4개 파일 |
 | 유사 중복 의심 | 1그룹 / 6개 파일(2026-08-16 루트/public 리플렛 세트; 해시는 다름) |
@@ -34,11 +34,11 @@
 
 | 번호 | 현재 경로 | 형식 | 크기 | 픽셀/PDF 규격 | 비율/페이지 | SHA-256 | Git blob SHA | 분류 | 사용 상태 | 참조 횟수 | 참조 위치 | 비고 |
 | ---: | --- | --- | ---: | --- | --- | --- | --- | --- | --- | ---: | --- | --- |
-| 1 | `2026-08-16-leaflet-inner.png` | image/png | 3.31 MiB (3,475,316 B) | 2048×957px | 2.140:1 | `9b2d5509a4833a33b36dc04e28faffb29a89a8bb5b584cc3ed230fec0e9a1852` | `8cf7b9db5ff8fb97f7fa83d17848f358ed63b67a` | 공연/Viewer | 판단 보류 | 0 | 직접 참조 없음 | 루트 산재; public 동명/유사본 존재; last a663227 2026-07-24 |
-| 2 | `2026-08-16-leaflet-outer.png` | image/png | 2.70 MiB (2,831,083 B) | 2048×957px | 2.140:1 | `60e790e08492b9aefb54e68df0e3080447871b4cfb18fde951e9b5e847470382` | `a8ea203d7ddc7482ccd4cbbb8895cfbe43281e52` | 공연/Viewer | 판단 보류 | 0 | 직접 참조 없음 | 루트 산재; public 동명/유사본 존재; last a663227 2026-07-24 |
-| 3 | `2026-08-16-leaflet.pdf` | application/pdf | 13.75 MiB (14,416,464 B) | 1576.14×742.86pt | 2p | `13db2921384e03c2cd7b6f4cda8bc5bb310b9078ec5e230c23fb1f9934b84e98` | `e8d738932ff0c751d137ec8166b68989359b21f9` | 공연/다운로드 | 판단 보류 | 0 | 직접 참조 없음 | 루트 산재; public 동명/유사본 존재; last a663227 2026-07-24 |
-| 4 | `2026-08-16-poster.pdf` | application/pdf | 11.95 MiB (12,532,715 B) | 1190.64×1683.84pt | 1p | `62c152f0c41f0434bc3e6983a3c60ff668506030b33992bdb4e4968c56cbe7ed` | `30ce3c897802d0e5595fdf25531433bfd9c87dc3` | 공연/다운로드 | 판단 보류 | 0 | 직접 참조 없음 | 루트 산재; public 동명/유사본 존재; last a663227 2026-07-24 |
-| 5 | `2026-08-16-poster.png` | image/png | 5.19 MiB (5,443,288 B) | 1440×2036px | 0.707:1 | `93b67f5a98b8461aefbd15cba9dff603374f4e99bac1c696b2aeab6f8f418206` | `d497db846d590c09e8d5a385a6757fed7f340f9c` | 공연/Viewer | 판단 보류 | 0 | 직접 참조 없음 | 루트 산재; public 동명/유사본 존재; last a663227 2026-07-24 |
+| 1 | `2026-08-16-leaflet-inner.png` | image/png | 3.31 MiB (3,475,316 B) | 2048×957px | 2.140:1 | `9b2d5509a4833a33b36dc04e28faffb29a89a8bb5b584cc3ed230fec0e9a1852` | `8cf7b9db5ff8fb97f7fa83d17848f358ed63b67a` | 공연/Viewer | 사용자 확인 필요 | 0 | 직접 참조 없음 | public과 44,872px(2.289463%) 차이; [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) |
+| 2 | `2026-08-16-leaflet-outer.png` | image/png | 2.70 MiB (2,831,083 B) | 2048×957px | 2.140:1 | `60e790e08492b9aefb54e68df0e3080447871b4cfb18fde951e9b5e847470382` | `a8ea203d7ddc7482ccd4cbbb8895cfbe43281e52` | 공연/Viewer | 사용자 확인 필요 | 0 | 직접 참조 없음 | public과 15,213px(0.776199%) 차이; [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) |
+| 3 | `2026-08-16-leaflet.pdf` | application/pdf | 13.75 MiB (14,416,464 B) | 1576.14×742.86pt | 2p | `13db2921384e03c2cd7b6f4cda8bc5bb310b9078ec5e230c23fb1f9934b84e98` | `e8d738932ff0c751d137ec8166b68989359b21f9` | 공연/다운로드 | 사용자 확인 필요 | 0 | 직접 참조 없음 | 200dpi 렌더에서 p1 1.033750%, p2 3.349451% 차이; [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) |
+| 4 | `2026-08-16-poster.pdf` | application/pdf | 11.95 MiB (12,532,715 B) | 1190.64×1683.84pt | 1p | `62c152f0c41f0434bc3e6983a3c60ff668506030b33992bdb4e4968c56cbe7ed` | `30ce3c897802d0e5595fdf25531433bfd9c87dc3` | 공연/다운로드 | 삭제 권고 | 0 | 직접 참조 없음 | public과 완전 동일; [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) |
+| 5 | `2026-08-16-poster.png` | image/png | 5.19 MiB (5,443,288 B) | 1440×2036px | 0.707:1 | `93b67f5a98b8461aefbd15cba9dff603374f4e99bac1c696b2aeab6f8f418206` | `d497db846d590c09e8d5a385a6757fed7f340f9c` | 공연/Viewer | 삭제 권고 | 0 | 직접 참조 없음 | public과 완전 동일; [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) |
 | 6 | `public/assets/brand/icons/favicon.svg` | image/svg+xml | 0.00 MiB (293 B) | SVG viewBox 64×64 | 1.000:1 | `967817c239264ae3b826ea53e353cc76f8e312904570d39dab27e6eef9242f08` | `87dbbfbe128944c65a1a66bb468a879c1e0ac10e` | 공용/아이콘 | 사용 중 | 1 | `index.html:16` | last 58a2d90 2026-07-22 |
 | 8 | `public/assets/performances/haegeum-2026-08-02/viewer/leaflet-inner.png` | image/png | 1.98 MiB (2,074,191 B) | 6520×3048px | 2.139:1 | `bb688d1f05ca8610c30a9e5013a1d8a37579478ce98fc9023cba6f4d74ab82c1` | `97551a86056701ca567111f35e90c31fa4224372` | 공연/Viewer | 사용 중 | 1 | `src/data/performances.ts:231` | last e9c2cec 2026-07-24 |
 | 9 | `public/assets/performances/haegeum-2026-08-02/viewer/leaflet-outer.png` | image/png | 10.05 MiB (10,538,212 B) | 6520×3048px | 2.139:1 | `390504fca49c38a1ce6922c89b402d53482335c7170e1467b59de5ec90ac3799` | `57c72d603d1f4ef9f93689a74390e69e7acb9ce5` | 공연/Viewer | 사용 중 | 1 | `src/data/performances.ts:231` | last e9c2cec 2026-07-24 |
@@ -116,7 +116,8 @@
 
 | 파일 | 상태 | 근거와 동적 참조 가능성 |
 | --- | --- | --- |
-| 루트 `2026-08-16-*` 5개 (#1–#5) | 판단 보류 | Vite `public/` 밖이고 런타임 직접 참조 없음. 문자열의 suffix가 public 경로와 같아 단순 검색은 오탐 가능. 과거 공개 URL/수동 배포는 확인 불가 |
+| 루트 poster PNG/PDF (#4–#5) | 삭제 권고(미삭제) | public 사용본과 바이트 완전 동일, 런타임 직접 참조 없음. 외부 raw URL 사용은 확인 불가; [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) |
+| 루트 leaflet PNG/PDF (#1–#3) | 사용자 확인 필요(미삭제) | 실제 픽셀·렌더 차이와 런타임 직접 참조 0건 확인. 승인본 판단 전 보존; [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) |
 | `profile-gallery-08.jpg`, `09.jpg` | 삭제 완료 | `profile.ts` 배열은 01–07까지만 순회하고 자동 탐색/glob이 없으며, 삭제 전 두 파일의 SHA-256 동일성과 런타임 참조 0건 확인 |
 
 ## G. 중복 파일
