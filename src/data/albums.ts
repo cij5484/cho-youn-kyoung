@@ -61,6 +61,7 @@ export type Album = {
   id: string;
   title: string;
   year: string;
+  releaseDate?: string;
   description: string;
   coverImage?: string;
   detailsPath?: string;

@@ -25,13 +25,27 @@
 
 ```txt
 public/assets/albums/{album-id}/
-  cover/
-  booklet/
-  artists/
-  detail/
+├─ web/
+│  ├─ cover.png
+│  └─ detail-hero-desktop.png
+├─ viewer/
+│  ├─ booklet-01.png
+│  ├─ booklet-02.png
+│  └─ ...
+├─ downloads/
+│  └─ booklet.pdf
+└─ thumbnails/
+   └─ media-{number}.jpg
 ```
 
 공연과 앨범의 이미지 폴더를 섞지 않습니다. 공연 자료는 `public/assets/performances/`, 앨범 자료는 `public/assets/albums/` 아래에 둡니다.
+
+- `web/cover.png`는 커버가 있을 때 사용합니다. `detail-hero-desktop.png`, 부클릿 Viewer 이미지와 PDF, 미디어 썸네일은 실제 필요한 경우에만 만듭니다.
+- 실제 자산이 생기기 전에는 빈 폴더를 만들지 않습니다.
+- Affinity 원본, TIFF, 인쇄 마스터, 편집 원본은 GitHub에 넣지 않습니다.
+- Viewer 이미지는 `viewer/`, 다운로드 PDF는 `downloads/`에 두어 서로 분리합니다.
+- 공용 인물 사진은 `public/assets/people/{person-id}/portrait.jpg`를 우선 사용하고, 앨범 전용 이미지는 필요한 경우에만 앨범 폴더에 둡니다.
+- 파일명은 영문 소문자 kebab-case를 사용합니다. `final`, `최종`, `new`, `수정`, `(1)` 같은 버전명은 사용하지 않으며 버전 관리는 Git 기록으로 합니다.
 
 ## 원본 자료 검수
 
@@ -43,19 +57,41 @@ public/assets/albums/{album-id}/
 
 ## `src/data/albums.ts` 입력
 
-현재 저장소에서 확인된 타입은 다음 필드입니다.
+현재 `Album` 타입의 필드는 다음과 같습니다.
 
-| 필드 | 현재 용도 | 예시 |
+| 필드 | 필수 여부 | 용도 |
 | --- | --- | --- |
-| `id` | 앨범 식별자 | `han-beom-su-haegeum-sanjo-2020` |
-| `title` | 앨범명 | `조윤경 해금산조－한범수류` |
-| `year` | 발매 연도 | `2020` |
-| `description` | 짧은 소개 | `한범수류 해금산조의 결을 담은...` |
-| `coverImage` | 커버 이미지 경로 | 미확정 |
-| `detailsPath` | 상세 경로 | 미확정 |
-| `featured` | 대표 앨범 여부 | `true` |
+| `id` | 필수 | 앨범을 식별하는 영문 소문자 kebab-case ID |
+| `title` | 필수 | 공식 앨범명 |
+| `year` | 필수 | 확인된 발매 연도 문자열 |
+| `description` | 필수 | 목록 등에 사용하는 짧은 앨범 소개 |
+| `coverImage` | 선택 | 웹용 커버 이미지의 public 상대경로 |
+| `detailsPath` | 선택 | 상세 화면이 실제로 생겼을 때 사용하는 경로 |
+| `featured` | 선택 | 대표 앨범 노출 여부 |
+| `releaseDate` | 선택 | 확인된 전체 발매일. 향후 `YYYY-MM-DD` 형식을 사용 |
+| `tracks` | 선택 | 트랙 번호·제목과 트랙별 선택 정보를 담는 `AlbumTrack[]` |
+| `participants` | 선택 | 앨범 참여자와 역할을 담는 `AlbumParticipant[]` |
+| `credits` | 선택 | 앨범 전체 제작 크레딧을 담는 `AlbumCredit[]` |
+| `booklet` | 선택 | Viewer 미리보기 이미지와 선택적 PDF 다운로드 정보 |
+| `streamingLinks` | 선택 | 공식 스트리밍·음원 플랫폼 링크 목록 |
+| `media` | 선택 | 관련 영상·이미지·기사 목록 |
+| `downloads` | 선택 | 부클릿 외에 실제 제공하는 다운로드 목록 |
 
-트랙 목록, 부클릿 Viewer, 플랫폼 링크, 저작권·유통 정보 필드는 현재 UI와 타입에서 **미확정**입니다. 필요하면 타입·컴포넌트·문서를 같은 PR에서 함께 설계합니다.
+### 추가 타입
+
+| 타입 | 용도 |
+| --- | --- |
+| `AlbumTrackCredit` | 한 트랙 안에서 역할과 이름을 연결하는 트랙별 크레딧 |
+| `AlbumTrack` | 트랙 번호와 제목, 선택적 부제·재생 시간·트랙 크레딧 |
+| `AlbumParticipant` | 참여자 이름·역할과 선택적 ID·이미지·설명 |
+| `AlbumCredit` | 역할별 이름 목록과 선택적 섹션으로 구성한 앨범 전체 크레딧 |
+| `AlbumBookletImage` | 부클릿 Viewer 이미지 경로·대체 텍스트와 선택적 라벨 |
+| `AlbumBooklet` | 부클릿 미리보기 이미지 목록과 선택적 PDF URL·다운로드 라벨 |
+| `AlbumStreamingLink` | 플랫폼 이름·공식 URL과 선택적 표시 라벨. 플랫폼은 고정 enum으로 제한하지 않음 |
+| `AlbumMediaItem` | `video`, `image`, `article` 관련 자료와 선택적 URL·썸네일·설명 |
+| `AlbumDownload` | 다운로드 라벨·URL과 선택적 파일 형식 |
+
+트랙 크레딧(`AlbumTrackCredit`)과 앨범 전체 크레딧(`AlbumCredit`)은 범위가 다르므로 구분해 입력합니다. 확인되지 않은 정보는 데이터에 추가하지 않고, 빈 배열도 억지로 넣지 않습니다. 값이 없는 선택 필드는 생략하며 향후 UI에서는 데이터가 있을 때만 해당 섹션을 표시합니다. 이번 PR에서는 앨범 상세 UI, 라우트, 버튼을 만들지 않습니다.
 
 ## 검수
 
