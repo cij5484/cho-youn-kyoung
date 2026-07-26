@@ -4,12 +4,16 @@ import { navigationItems, site } from '../../data/site';
 import { MobileMenu } from './MobileMenu';
 
 export function Header() {
-  const [openPath, setOpenPath] = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const firstMenuLinkRef = useRef<HTMLAnchorElement | null>(null);
   const location = useLocation();
-  const isOpen = openPath === location.pathname;
   const isSanjoDetail = location.pathname === '/performance/sanjo-gil-2026-08-16';
+
+  useEffect(() => {
+    const closeMenu = window.setTimeout(() => setIsOpen(false), 0);
+    return () => window.clearTimeout(closeMenu);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -18,7 +22,7 @@ export function Header() {
     firstMenuLinkRef.current?.focus();
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
-      setOpenPath(null);
+      setIsOpen(false);
       menuButtonRef.current?.focus();
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -30,12 +34,12 @@ export function Header() {
 
   const toggleMenu = () => {
     if (isOpen) menuButtonRef.current?.focus();
-    setOpenPath(isOpen ? null : location.pathname);
+    setIsOpen((value) => !value);
   };
 
   return (
     <header className={`site-header${isSanjoDetail ? ' site-header--sanjo-detail' : ''}`}>
-      <NavLink className="brand" to="/" onClick={() => setOpenPath(null)}>{site.artistName}</NavLink>
+      <NavLink className="brand" to="/" onClick={() => setIsOpen(false)}>{site.artistName}</NavLink>
       <nav className="desktop-nav" aria-label="Primary navigation">
         {navigationItems.map((item) => <NavLink key={item.path} to={item.path}>{item.label}</NavLink>)}
       </nav>
@@ -43,7 +47,7 @@ export function Header() {
         <span aria-hidden="true" />
         <span aria-hidden="true" />
       </button>
-      <MobileMenu isOpen={isOpen} onNavigate={() => setOpenPath(null)} firstLinkRef={firstMenuLinkRef} />
+      <MobileMenu isOpen={isOpen} onNavigate={() => setIsOpen(false)} firstLinkRef={firstMenuLinkRef} />
     </header>
   );
 }
