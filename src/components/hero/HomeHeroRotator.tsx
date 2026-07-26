@@ -38,11 +38,13 @@ const renderSlide = (slide: HomeHeroSlide, isActive: boolean) => {
 export function HomeHeroRotator() {
   const slides = useMemo(() => getHomeHeroSlidesForDate(homeHeroSlides), []);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const timerRef = useRef<number | null>(null);
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
   const prefersReducedMotion = usePrefersReducedMotion();
-  const canRotate = slides.length > 1 && !prefersReducedMotion;
+  const isAutoplayPaused = isPaused || prefersReducedMotion;
+  const canRotate = slides.length > 1 && !prefersReducedMotion && !isPaused;
   const activeTheme = slides[activeIndex]?.theme;
 
   useEffect(() => {
@@ -166,19 +168,29 @@ export function HomeHeroRotator() {
         })}
       </div>
       {slides.length > 1 ? (
-        <div className="home-hero-dots" aria-label="홈 공연 Hero 선택">
-          {slides.map((slide, index) => (
-            <button
-              type="button"
-              className={`home-hero-dots__button${index === activeIndex ? ' is-active' : ''}`}
-              key={slide.id}
-              aria-label={dotLabels[index] ?? `${index + 1}번째 공연 보기`}
-              aria-current={index === activeIndex ? 'true' : undefined}
-              onClick={() => goToSlide(index)}
-            >
-              <span />
-            </button>
-          ))}
+        <div className="home-hero-controls">
+          <div className="home-hero-dots" aria-label="홈 공연 Hero 선택">
+            {slides.map((slide, index) => (
+              <button
+                type="button"
+                className={`home-hero-dots__button${index === activeIndex ? ' is-active' : ''}`}
+                key={slide.id}
+                aria-label={dotLabels[index] ?? `${index + 1}번째 공연 보기`}
+                aria-current={index === activeIndex ? 'true' : undefined}
+                onClick={() => goToSlide(index)}
+              >
+                <span />
+              </button>
+            ))}
+          </div>
+          <button
+            className="home-hero-autoplay"
+            type="button"
+            aria-label={isAutoplayPaused ? '자동 전환 재생' : '자동 전환 일시정지'}
+            onClick={() => setIsPaused((paused) => prefersReducedMotion || !paused)}
+          >
+            {isAutoplayPaused ? 'PLAY' : 'PAUSE'}
+          </button>
         </div>
       ) : null}
     </div>
