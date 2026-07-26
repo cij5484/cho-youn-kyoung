@@ -575,14 +575,36 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   pointer-events: auto;
   z-index: 1;
 }
-.home-hero-dots {
+.home-hero-controls {
   position: absolute;
   z-index: 8;
   left: 50%;
   bottom: clamp(22px, 4vh, 42px);
   display: flex;
+  align-items: center;
   gap: 8px;
   transform: translateX(-50%);
+}
+.home-hero-dots {
+  display: flex;
+  gap: 8px;
+}
+.home-hero-autoplay {
+  border: 0;
+  border-left: 1px solid currentColor;
+  padding: 2px 0 2px 12px;
+  background: transparent;
+  color: rgba(241, 237, 229, 0.72);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+}
+.home-hero-autoplay:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 4px;
+}
+.home-hero-rotator[data-theme="sanjo-matiere"] .home-hero-autoplay {
+  color: rgba(18, 31, 51, 0.72);
 }
 .home-hero-dots__button {
   display: grid;
@@ -912,7 +934,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   .home-hero-rotator .home-hero {
     min-height: 100svh;
   }
-  .home-hero-dots {
+  .home-hero-controls {
     bottom: 14px;
   }
   .sanjo-hero {
