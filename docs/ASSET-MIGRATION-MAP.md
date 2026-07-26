@@ -3,7 +3,7 @@
 - **조사 날짜:** 2026-07-25
 - **기준 main commit SHA:** `908f821906bfe96d8d7061ee4f1809781cfed57c` (PR #48 병합 커밋)
 - 이 문서는 사용 중 자산 36개의 실제 이동과 승인된 미사용 자산 3개의 삭제 결과를 기록한다.
-- 루트에 산재한 2026-08-16 자료 5개와 그 밖의 보류 자산은 이동·삭제하지 않았다.
+- 사용자가 `public/assets/` 세트를 최종본으로 확인한 뒤 루트의 2026-08-16 중복 자료 5개를 삭제했다. 추가 사용자 판단이 필요한 자산은 없다.
 
 ## A. 권장 최종 구조
 
@@ -33,11 +33,11 @@ public/assets/
 
 | 번호 | 현재 경로 | 제안 경로 | 처리 제안 | 분류 | 근거 | 영향받는 코드·문서 | 위험도 | 사용자 판단 필요 |
 | ---: | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | `2026-08-16-leaflet-inner.png` | `—` | 사용자 확인 필요(미삭제) | 공연/Viewer | public과 44,872px 차이; [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) | 직접 참조 없음 | 높음 | 예 |
-| 2 | `2026-08-16-leaflet-outer.png` | `—` | 사용자 확인 필요(미삭제) | 공연/Viewer | public과 15,213px 차이; [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) | 직접 참조 없음 | 높음 | 예 |
-| 3 | `2026-08-16-leaflet.pdf` | `—` | 사용자 확인 필요(미삭제) | 공연/다운로드 | 같은 순서 페이지에 실제 렌더 차이; [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) | 직접 참조 없음 | 높음 | 예 |
-| 4 | `2026-08-16-poster.pdf` | `—` | 삭제 권고(미삭제) | 공연/다운로드 | public 사용본과 바이트 완전 동일; [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) | 직접 참조 없음 | 중간 | 아니오 |
-| 5 | `2026-08-16-poster.png` | `—` | 삭제 권고(미삭제) | 공연/Viewer | public 사용본과 바이트 완전 동일; [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) | 직접 참조 없음 | 중간 | 아니오 |
+| 1 | `2026-08-16-leaflet-inner.png` | 표준 `public/assets/` 파일 유지 | 사용자 최종본 확인·루트본 삭제 완료 | 공연/Viewer | [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) 후 public본 승인 | 직접 참조 없음 | 없음 | 아니오 |
+| 2 | `2026-08-16-leaflet-outer.png` | 표준 `public/assets/` 파일 유지 | 사용자 최종본 확인·루트본 삭제 완료 | 공연/Viewer | [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) 후 public본 승인 | 직접 참조 없음 | 없음 | 아니오 |
+| 3 | `2026-08-16-leaflet.pdf` | 표준 `public/assets/` 파일 유지 | 사용자 최종본 확인·루트본 삭제 완료 | 공연/다운로드 | [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md) 후 public본 승인 | 직접 참조 없음 | 없음 | 아니오 |
+| 4 | `2026-08-16-poster.pdf` | 표준 `public/assets/` 파일 유지 | 사용자 최종본 확인·루트본 삭제 완료 | 공연/다운로드 | public 사용본과 바이트 완전 동일 | 직접 참조 없음 | 없음 | 아니오 |
+| 5 | `2026-08-16-poster.png` | 표준 `public/assets/` 파일 유지 | 사용자 최종본 확인·루트본 삭제 완료 | 공연/Viewer | public 사용본과 바이트 완전 동일 | 직접 참조 없음 | 없음 | 아니오 |
 | 6 | `public/favicon.svg` | `public/assets/brand/icons/favicon.svg` | 이동 완료 | 공용/아이콘 | 현재 역할과 데이터 ID에 맞춘 표준 경로 | `index.html:16` | 낮음 | 아니오 |
 | 8 | `public/images/performance/2026-08-02/archive/2026-08-02-leaflet-inner.png` | `public/assets/performances/haegeum-2026-08-02/viewer/leaflet-inner.png` | 이동 완료 | 공연/Viewer | 현재 역할과 데이터 ID에 맞춘 표준 경로 | `src/data/performances.ts:231` | 높음 | 아니오 |
 | 9 | `public/images/performance/2026-08-02/archive/2026-08-02-leaflet-outer.png` | `public/assets/performances/haegeum-2026-08-02/viewer/leaflet-outer.png` | 이동 완료 | 공연/Viewer | 현재 역할과 데이터 ID에 맞춘 표준 경로 | `src/data/performances.ts:231` | 높음 | 아니오 |
@@ -95,12 +95,12 @@ TSX는 경로를 직접 소유하지 않고 데이터/CSS를 소비한다. `Safe
 - 나머지 출연자 5명도 `people/{person-id}/portrait.jpg` 표준 경로로 이동했다.
 - 조윤경 대표 사진은 `artist/profile/portrait.jpg`, ABOUT 갤러리 01–07은 `artist/gallery/`로 이동했다. `artist/press/`는 향후 공식 보도용 자료에만 사용하며 08/09는 승인에 따라 삭제했다.
 
-## F. 판단 보류 및 삭제 결과
+## F. 최종 삭제 결과
 
 | 파일 | 미사용 근거 | 동적 검색 | 중복 | 공개 URL 가능성 | 위험도 | 사용자 판단 |
 | --- | --- | --- | --- | --- | --- | --- |
-| 루트 `2026-08-16-poster.pdf/png` | public 밖, 런타임 미참조 | glob/조합 없음 | public 파일과 바이트 완전 동일 | 저장소 raw URL 가능 | 중간 | 삭제 권고(이번 PR 미삭제) |
-| 루트 `2026-08-16-leaflet.pdf/inner/outer.png` | public 밖, 런타임 미참조 | glob/조합 없음 | [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md)에서 실제 차이 확인 | 저장소 raw URL 가능 | 높음 | 사용자 육안 확인 전 삭제 금지 |
+| 루트 `2026-08-16-poster.pdf/png` | public 밖, 런타임 미참조 | glob/조합 없음 | public 파일과 바이트 완전 동일 | 사용자가 public본 승인 | 없음 | 루트본 삭제 완료 |
+| 루트 `2026-08-16-leaflet.pdf/inner/outer.png` | public 밖, 런타임 미참조 | glob/조합 없음 | [정밀 비교](./ASSET-DUPLICATE-COMPARISON.md)에 차이 기록 | 사용자가 public본 승인 | 없음 | 루트본 삭제 완료 |
 | `profile-gallery-08.jpg`, `09.jpg` | `profile.ts` 미등록 및 저장소 전체 런타임 참조 0건 | 자동 glob 없음 | 서로 SHA 동일 | 사용자 승인 | 없음 | 삭제 완료 |
 | `hero-watercolor.png` | 현재 공연 Hero 데이터 및 런타임 참조 없음 | 자동 glob 없음 | 없음 | 사용자 승인 | 없음 | 삭제 완료 |
 
@@ -131,4 +131,4 @@ TSX는 경로를 직접 소유하지 않고 데이터/CSS를 소비한다. `Safe
 - [x] SEO/manifest/favicon 및 기존 공개 URL 영향 확인
 - [x] 문서 갱신, lint/build, 배포 URL 확인
 
-**이번 PR에서 보류한 항목:** 루트의 2026-08-16 자료 5개와 그 밖의 미사용 추정 자산. 앨범 경로는 실제 파일이 생길 때 적용한다.
+**현재 보류 항목:** 없음. 앨범 경로는 실제 파일이 생길 때 적용한다.
