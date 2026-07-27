@@ -5,7 +5,7 @@ This first implementation establishes a static React, Vite, and TypeScript site 
 
 ## Routing and deployment
 - The app uses `HashRouter` so GitHub Pages refreshes do not require server rewrite rules.
-- Vite `base` is `/cho-youn-kyoung/` for `https://cij5484.github.io/cho-youn-kyoung/`.
+- Vite `base` is `/` for `https://choyounkyoung.com/`.
 - `.github/workflows/deploy-pages.yml` runs `npm install --no-audit --no-fund`, `npm run lint`, and `npm run build` for pull requests and pushes. It uploads `dist` and deploys through GitHub Pages only for `main` pushes.
 
 ## Images and HOME Hero
