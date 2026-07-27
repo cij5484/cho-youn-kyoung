@@ -17,6 +17,7 @@ export const site = {
 export const navigationItems = [
   { label: 'HOME', path: '/' },
   { label: 'PERFORMANCE', path: '/performance' },
+  { label: 'MEDIA', path: '/media' },
   { label: 'ABOUT', path: '/about' },
   { label: 'CONTACT', path: '/contact' },
 ] as const;

@@ -1,7 +1,7 @@
 # 홈페이지 운영 문서
 
-- 마지막 확인 날짜: 2026-07-24
-- 기준 commit SHA: `8a574e10b82f`
+- 마지막 확인 날짜: 2026-07-27
+- 기준 main SHA: `01b57156d81e`
 - 저장소: `cij5484/cho-youn-kyoung`
 
 이 `docs/` 폴더는 조윤경 홈페이지 운영의 공식 기준서(Source of Truth)입니다. 새 공연·앨범·자료 교체 작업을 시작하기 전에는 반드시 관련 문서를 먼저 읽고, 저장소의 실제 파일과 함께 확인합니다.
@@ -21,6 +21,7 @@
 | [WEBSITE-OPERATIONS.md](./WEBSITE-OPERATIONS.md) | 홈페이지 구조, 라우팅, 데이터 파일, 운영 원칙 |
 | [PERFORMANCE-WORKFLOW.md](./PERFORMANCE-WORKFLOW.md) | 새 공연 등록 단계, 공연 데이터, 공연별 테마 작업 순서 |
 | [ALBUM-WORKFLOW.md](./ALBUM-WORKFLOW.md) | 앨범 등록 준비 자료, 데이터 입력, 미확정 앨범 UI 관리 |
+| [MEDIA-WORKFLOW.md](./MEDIA-WORKFLOW.md) | MEDIA 영상·앨범·특별 기록 등록 및 검수 절차 |
 | [ASSET-SPECIFICATIONS.md](./ASSET-SPECIFICATIONS.md) | 포스터·리플렛·웹 배경·출연자 사진의 실제 규격과 권장 규칙 |
 | [ASSET-INVENTORY.md](./ASSET-INVENTORY.md) | 현재 저장소 자산 전수 목록과 참조 현황 |
 | [ASSET-MIGRATION-MAP.md](./ASSET-MIGRATION-MAP.md) | `public/assets/` 표준 구조로 이전한 경로 대응표와 최종 처리 결과 |

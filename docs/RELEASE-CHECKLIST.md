@@ -1,7 +1,7 @@
 # 릴리스 체크리스트
 
-- 마지막 확인 날짜: 2026-07-26
-- 작업 기준 main SHA: `8dee663139066731d5828231e162d6bc52c09c53`
+- 마지막 확인 날짜: 2026-07-27
+- 작업 기준 main SHA: `01b57156d81e`
 
 ## 콘텐츠
 
@@ -54,6 +54,9 @@
 - [ ] reduced-motion에서 HOME 자동 전환 중지
 - [ ] 모바일 메뉴 ESC·경로 변경 자동 닫기·스크롤 잠금·포커스 복원
 - [ ] reduced motion
+- [ ] MEDIA PC·태블릿 및 390px·360px·320px 독립 1열 반응형
+- [ ] MEDIA 가로 스크롤 없음과 긴 제목 줄바꿈
+- [ ] MEDIA 키보드 접근, focus-visible, 최소 터치 영역과 reduced motion
 
 ## 기능
 
@@ -71,6 +74,14 @@
 - [ ] 존재하지 않는 경로의 404 안내와 HOME·PERFORMANCE 링크
 - [ ] HOME 자동 전환 PAUSE/PLAY와 수동 점·스와이프
 - [ ] 공연 상세 아래쪽 출연자 카드 이미지 lazy loading
+- [ ] `#/media` 직접 접근과 PC·모바일 메뉴 MEDIA 활성 상태
+- [ ] 모바일 메뉴에서 MEDIA 이동 후 자동 닫힘
+- [ ] YouTube preview에서 재생 전 iframe 미생성, 재생 후 해당 iframe만 생성
+- [ ] `youtube-nocookie.com` privacy-enhanced embed와 고유 iframe title
+- [ ] 일반 영상 및 VR·360° 영상 재생
+- [ ] 앨범 전체 재생목록 외부 링크
+- [ ] YouTube 썸네일 및 앨범 커버 fallback
+- [ ] MEDIA 외부 링크의 새 탭 및 보안 속성
 
 ## 개발
 
