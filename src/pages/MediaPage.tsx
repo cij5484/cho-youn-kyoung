@@ -4,7 +4,6 @@ import { SafeImage } from '../components/common/SafeImage';
 import { YouTubePreview } from '../components/media/YouTubePreview';
 import { albums } from '../data/albums';
 import { mediaItems, mediaPageCopy, mediaSections, type MediaItem } from '../data/media';
-import { site } from '../data/site';
 import { assetUrl } from '../utils/assetUrl';
 import '../styles/media.css';
 
@@ -39,23 +38,15 @@ function Discography() {
       {albums.map((album) => {
         const streamingLink = album.streamingLinks?.[0];
         return (
-          <article className="media-album" key={album.id}>
-            <div className="media-album__cover">
-              {album.coverImage ? (
+          <article className={`media-album${album.coverImage ? '' : ' media-album--text-only'}`} key={album.id}>
+            {album.coverImage && (
+              <div className="media-album__cover">
                 <SafeImage
                   src={assetUrl(album.coverImage)}
                   alt={`${album.title} 앨범 커버`}
-                  fallbackClassName="media-album__fallback"
-                  fallbackLabel={`${album.title}, ${album.year}`}
                 />
-              ) : (
-                <div className="media-album__fallback" aria-label={`${album.title} 앨범 커버 준비 중`}>
-                  <span>{site.artistName}</span>
-                  <strong>{album.title}</strong>
-                  <time dateTime={album.year}>{album.year}</time>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
             <div className="media-album__copy">
               <time dateTime={album.year}>{album.year}</time>
               <h3>{album.title}</h3>

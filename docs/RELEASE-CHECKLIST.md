@@ -86,7 +86,7 @@
 - [ ] `youtube-nocookie.com` privacy-enhanced embed와 고유 iframe title
 - [ ] 일반 영상 및 VR·360° 영상 재생
 - [ ] 앨범 전체 재생목록 외부 링크
-- [ ] YouTube 썸네일 및 앨범 커버 fallback
+- [ ] YouTube 썸네일 fallback 및 앨범 `coverImage` 유무에 따른 커버·텍스트 단일 열 표시
 - [ ] MEDIA 외부 링크의 새 탭 및 보안 속성
 
 ## 개발
