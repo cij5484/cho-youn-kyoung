@@ -60,6 +60,12 @@
 
 ## 기능
 
+- [ ] `/sitemap.xml` HTTP 200 확인
+- [ ] `/robots.txt` HTTP 200 확인
+- [ ] `sitemap.xml`이 XML 문서로 반환되는지 확인
+- [ ] `robots.txt`가 일반 텍스트로 반환되는지 확인
+- [ ] `sitemap.xml`의 `loc`가 `https://choyounkyoung.com/` 하나만 포함하는지 확인
+- [ ] `robots.txt`의 `Sitemap` 주소가 공식 도메인과 일치하는지 확인
 - [ ] 공연 목록 정렬
 - [ ] ABOUT 정렬
 - [ ] 이전·다음 공연
