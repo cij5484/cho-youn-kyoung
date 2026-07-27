@@ -76,10 +76,10 @@
 .media-page .media-card__description, .media-page .media-album__copy > p { margin: 0; color: var(--muted); line-height: 1.8; overflow-wrap: anywhere; word-break: keep-all; }
 .media-page .media-card__subtitle { margin: 8px 0; color: var(--gold); font-family: var(--serif); font-size: 1.06rem; overflow-wrap: anywhere; }
 .media-page .media-card__award { margin: 8px 0; color: var(--text); }
-.media-page .media-action { display: inline-flex; min-height: 44px; align-items: center; gap: 22px; margin-top: 26px; padding: 0 2px 8px; border-bottom: 1px solid rgba(189, 146, 80, 0.55); color: var(--gold); font-size: 0.72rem; font-weight: 900; letter-spacing: 0.12em; white-space: nowrap; }
+.media-page .media-action { display: inline-flex; min-height: 44px; align-items: center; gap: 22px; margin-top: 26px; padding: 0 2px 8px; border-bottom: 1px solid transparent; color: var(--gold); font-size: 0.72rem; font-weight: 900; letter-spacing: 0.12em; white-space: nowrap; transition: border-color 210ms ease; }
 .media-page .media-action span { transition: transform 210ms ease; }
 .media-page .media-action:hover span, .media-page .media-action:focus-visible span { transform: translate(3px, -3px); }
-.media-page .media-action:focus-visible { outline: 2px solid var(--gold); outline-offset: 5px; }
+.media-page .media-action:focus-visible { border-bottom-color: rgba(189, 146, 80, 0.55); outline: 2px solid var(--gold); outline-offset: 5px; }
 
 .media-page .media-card--featured { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(250px, 0.65fr); gap: clamp(28px, 4vw, 60px); align-items: center; }
 .media-page .media-card--featured .media-card__copy { padding-top: 0; }
@@ -99,6 +99,7 @@
 .media-page .media-album__cover > img { width: 100%; height: 100%; object-fit: cover; }
 
 @media (hover: hover) and (pointer: fine) {
+  .media-page .media-action:hover { border-bottom-color: rgba(189, 146, 80, 0.55); }
   .media-page .media-card--selected:hover { transform: translateY(-4px); border-color: rgba(189, 146, 80, 0.62); }
 }
 
