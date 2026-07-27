@@ -82,5 +82,12 @@ export const albums: Album[] = [
     year: '2020',
     description: '한범수류 해금산조의 결을 담은 조윤경의 산조 음반.',
     featured: true,
+    streamingLinks: [
+      {
+        platform: 'YouTube',
+        label: 'LISTEN TO ALBUM',
+        url: 'https://www.youtube.com/playlist?list=OLAK5uy_mfH8N47u4oTAamG6EjtwWWneiN-O2rAv8',
+      },
+    ],
   },
 ];

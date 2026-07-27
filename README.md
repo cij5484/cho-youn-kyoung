@@ -8,6 +8,7 @@ The official website is <https://choyounkyoung.com/>.
 
 - HOME presents the currently eligible performance Hero slides.
 - PERFORMANCE lists performances and links to their detail pages.
+- MEDIA presents selected performance videos, discography links, and special archive records.
 - ABOUT contains the artist profile, gallery, performance history, and available album summary.
 - CONTACT provides the official contact channels.
 
