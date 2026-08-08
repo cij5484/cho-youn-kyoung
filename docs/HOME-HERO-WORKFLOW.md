@@ -42,3 +42,15 @@ HOME Hero는 현재 가장 가까운 주요 활동을 안정적으로 소개하�
 ## 고유 Hero 보존 원칙
 
 RECENT WORKS는 작품을 선택하는 계층일 뿐 각 작품의 디자인을 대체하지 않는다. 기존 Hero 컴포넌트, 배경, 타이포그래피, 상세 버튼과 등장 애니메이션을 유지하고, 선택 시 해당 컴포넌트를 그대로 활성화한다. 새 Work도 공통 카드 UI와 고유 Hero Scene을 분리한다.
+
+## HOME Creative Credit
+
+- HOME Hero에만 왼쪽 하단 세로형 Creative Credit을 둔다. 다른 페이지의 footer나 전역 watermark로 사용하지 않는다.
+- 기본 서명은 `Soul`, 공식 문구는 `CREATIVE DIRECTION & DESIGN — Soul.P`, 개인 이스터에그 문구는 `사랑하는 소울과 하울의 아빠`이다.
+- fine pointer 환경에서는 hover 또는 keyboard focus로 공식 문구를 연다. 공식 문구의 약 700ms reveal이 끝난 뒤 약 3초 동안 hover/focus가 계속된 경우에만 개인 문구를 낮은 대비로 표시하며, 영역을 벗어나면 timer와 열린 상태를 정리한다.
+- touch 환경은 `CLOSED → CREDIT → PERSONAL`의 2단 tap을 사용한다. 첫 tap은 공식 문구까지만 열고, 열린 `Soul.P`를 다시 tap할 때만 개인 문구를 전환한다. 열린 상태에서 외부를 tap하면 전체를 닫는다.
+- `Soul`은 하나의 DOM anchor로 유지하고 prefix와 `.P`의 reveal에 따라 최종 위치로 이동시킨다. 중복된 `Soul`의 opacity crossfade는 사용하지 않는다.
+- 현재 `html[data-home-hero-theme]`에 맞춰 dark Hero에서는 muted ivory, `sanjo-matiere`에서는 muted navy/gray로 명시적으로 전환한다. 개인 문구는 두 theme 모두 공식 문구보다 낮은 대비를 유지한다.
+- 초기 버튼은 keyboard focus가 가능하고 Enter/Space, ESC, `aria-expanded`를 지원한다. 개인 문구에는 불필요한 live announcement를 사용하지 않는다.
+- `prefers-reduced-motion`에서는 reveal과 anchor 이동을 사실상 즉시 전환하지만 desktop dwell과 mobile 2단 tap 조건은 유지한다.
+- 실제 hit area는 작은 왼쪽 가장자리 영역으로 제한한다. RECENT WORKS보다 낮은 stacking layer를 유지하고 해당 panel의 swipe, tap, focus 및 `activeIndex`/`previewIndex`/`interactionIndex`를 방해하지 않는다.

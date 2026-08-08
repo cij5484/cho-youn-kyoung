@@ -7,6 +7,7 @@ import {
 } from '../../data/homeHeroSlides';
 import { HomeHero } from './HomeHero';
 import { SanjoMatiereHero } from './SanjoMatiereHero';
+import { HomeCreativeCredit } from './HomeCreativeCredit';
 import { RecentWorks } from './recent-works/RecentWorks';
 
 const renderSlide = (slide: HomeHeroSlide, isActive: boolean) => {
@@ -47,6 +48,7 @@ export function HomeHeroRotator() {
           );
         })}
       </div>
+      <HomeCreativeCredit />
       <RecentWorks works={works} activeIndex={activeIndex} onSelect={setActiveIndex} />
     </div>
   );

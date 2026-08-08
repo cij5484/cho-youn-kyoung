@@ -96,6 +96,13 @@
 
 권장 원칙: desktop과 mobile을 구분하고, `background-size: cover` 사용 시 중요한 요소를 중앙 안전영역에 둡니다. 글자가 올라가는 영역은 시각적 여백을 확보합니다. 모바일은 세로 비율을 사용합니다. 현재 모바일 이미지 3장은 941×1672px로 약 9:16 비율임을 확인했습니다. 단, 이것을 고정 픽셀 규격으로 단정하지 않습니다.
 
+### HOME Hero 초광폭 표시 원칙
+
+- 일반 desktop에서는 기존 composition을 유지하기 위해 `cover`를 사용할 수 있다.
+- 원본보다 현저히 넓은 viewport에서는 픽셀 너비가 아니라 viewport aspect ratio로 별도 대응한다. 현재 1672×941px 산조길 HOME Hero는 `min-aspect-ratio: 2/1`인 desktop에서 세로 전체를 보존하도록 left-center 정렬의 `contain` 성격으로 표시하고, 오른쪽 여백은 기존 beige CSS background와 gradient가 이어받는다.
+- 원본 이미지를 viewport에 맞춰 비율이 달라지도록 stretch하지 않으며, 중요한 composition을 잘라내지 않기 위해 기존 자산과 CSS background extension을 함께 사용할 수 있다.
+- 현재는 별도 ultrawide binary가 없으므로 기존 desktop 자산과 CSS로 대응한다. 향후 전용 ultrawide 자산을 제공받으면 실제 경로와 확인된 규격을 이 문서에 추가한다.
+
 ## F. 출연자 사진 실제 규격과 권장 원칙
 
 | 경로 | 형식 | 픽셀 크기 | 비율 | 용량 |
