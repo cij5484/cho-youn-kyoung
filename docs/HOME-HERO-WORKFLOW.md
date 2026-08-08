@@ -43,15 +43,22 @@ HOME Hero는 현재 가장 가까운 주요 활동을 안정적으로 소개하�
 
 RECENT WORKS는 작품을 선택하는 계층일 뿐 각 작품의 디자인을 대체하지 않는다. 기존 Hero 컴포넌트, 배경, 타이포그래피, 상세 버튼과 등장 애니메이션을 유지하고, 선택 시 해당 컴포넌트를 그대로 활성화한다. 새 Work도 공통 카드 UI와 고유 Hero Scene을 분리한다.
 
-## HOME Creative Credit
+## HOME Creative Credit와 모바일 Hero 배치
 
-- HOME Hero에만 왼쪽 하단 세로형 Creative Credit을 둔다. 다른 페이지의 footer나 전역 watermark로 사용하지 않는다.
+- HOME Hero에만 세로형 Creative Credit을 둔다. Desktop에서는 왼쪽 하단을 유지하고, 모든 HOME Hero의 Mobile에서는 safe area를 고려한 오른쪽 하단에 통일한다. 다른 페이지의 footer나 전역 watermark로 사용하지 않는다.
 - 기본 서명은 `Soul`, 공식 문구는 `CREATIVE DIRECTION & DESIGN — Soul.P`, 개인 이스터에그 문구는 `사랑하는 소울과 하울의 아빠`이다.
 - fine pointer 환경에서는 hover 또는 keyboard focus로 공식 문구를 연다. 공식 문구의 1.3초 reveal이 끝난 뒤 약 3초 동안 hover/focus가 계속된 경우(총 4.3초)에만 개인 문구를 표시하며, 영역을 벗어나면 timer와 열린 상태를 정리한다.
 - touch 환경은 `CLOSED → CREDIT → PERSONAL`의 2단 tap을 사용한다. 첫 tap은 공식 문구까지만 열고, 열린 `Soul.P`를 다시 tap할 때만 개인 문구를 전환한다. 열린 상태에서 외부를 tap하면 전체를 닫는다.
 - `Soul`은 하나의 DOM anchor로 유지하고 prefix와 `.P`의 reveal에 따라 최종 위치로 이동시킨다. 중복된 `Soul`의 opacity crossfade는 사용하지 않는다.
+- Mobile에서도 기존 `rotate(-90deg)` 방향과 reveal animation을 그대로 유지한다. 오른쪽 배치는 위치 좌표만 전환하며 글자 방향을 뒤집거나 `writing-mode`로 재작성하지 않는다.
 - 현재 `html[data-home-hero-theme]`에 맞춰 dark Hero에서는 읽을 수 있는 대비의 muted ivory, `sanjo-matiere`에서는 읽을 수 있는 muted navy/gray로 명시적으로 전환한다. 개인 문구도 발견 후 읽을 수 있는 대비를 확보하되 두 theme 모두 공식 문구보다 작은 크기와 낮은 대비를 유지한다.
 - 초기 버튼은 keyboard focus가 가능하고 Enter/Space, ESC, `aria-expanded`를 지원한다. 개인 문구에는 불필요한 live announcement를 사용하지 않는다.
 - 펼쳐진 credit block만 위로 이동해 viewport bottom에서 24px(모바일은 safe area 추가)의 breathing room을 확보하고, 닫힌 `Soul`은 기존 edge signature 위치에 유지한다. 위치 이동은 1.3초 reveal과 같은 easing으로 연결한다.
 - `prefers-reduced-motion`에서는 reveal과 anchor 및 위치 이동을 사실상 즉시 전환하지만 desktop dwell과 mobile 2단 tap 조건은 유지한다.
-- 모바일의 회전된 anchor는 보이는 `Soul`을 중심으로 실제 52×52px touch target과 `touch-action: manipulation`을 확보한다. hit area는 작은 왼쪽 가장자리 영역으로 제한하며 RECENT WORKS보다 낮은 stacking layer를 유지하고 해당 panel의 swipe, tap, focus 및 `activeIndex`/`previewIndex`/`interactionIndex`를 방해하지 않는다.
+- 모바일의 회전된 anchor는 보이는 `Soul`을 중심으로 실제 52×52px touch target과 `touch-action: manipulation`을 확보한다. hit area는 작은 오른쪽 가장자리 영역으로 제한하며 RECENT WORKS보다 낮은 stacking layer를 유지하고 해당 panel의 swipe, tap, focus 및 `activeIndex`/`previewIndex`/`interactionIndex`를 방해하지 않는다.
+
+## Mobile Hero별 세로 배치
+
+- `haegeum-recital`은 공연 정보 전체를 하나의 `.hero-content` block으로 유지하면서 eyebrow가 viewport 상단 약 25%에서 시작하도록 flex 정렬과 유동적인 top padding을 사용한다. 낮은 화면에서는 header 아래 최소 여백을 보장하고 큰 화면에서는 이동량을 제한한다.
+- `sanjo-matiere`의 공연 정보와 오른쪽 text composition은 기존 Mobile 위치를 유지한다. 두 theme에 공통으로 적용되는 Mobile 변경은 Creative Credit의 오른쪽 하단 배치뿐이다.
+- 공연 정보, Creative Credit, RECENT WORKS의 stacking과 hit area를 분리하여 RECENT WORKS trigger, panel, horizontal swipe, card tap 및 scroll snap을 방해하지 않는다.

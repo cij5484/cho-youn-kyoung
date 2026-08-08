@@ -1102,12 +1102,20 @@ html[data-home-hero-theme="sanjo-matiere"] .home-creative-credit {
   .home-hero-rotator .home-hero {
     min-height: 100svh;
   }
+  .home-hero-rotator[data-theme="haegeum-recital"] .home-hero {
+    align-items: flex-start;
+  }
+  .home-hero-rotator[data-theme="haegeum-recital"] .hero-content {
+    padding-top: clamp(calc(var(--header) + 34px), 25svh, 233px);
+  }
   .recent-works {
     bottom: 8px;
     width: 100%;
   }
   .home-creative-credit {
     z-index: 6;
+    right: max(2px, env(safe-area-inset-right));
+    left: auto;
     width: 52px;
     height: min(315px, calc(100svh - var(--header) - 12px));
   }
