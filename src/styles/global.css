@@ -577,7 +577,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
 }
 .home-creative-credit {
   --credit-color: rgba(241, 237, 229, 0.82);
-  --credit-personal-color: rgba(205, 201, 193, 0.62);
+  --credit-personal-color: rgba(205, 201, 193, 0.70);
   position: absolute;
   z-index: 6;
   left: max(2px, env(safe-area-inset-left));
@@ -658,7 +658,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
 .home-creative-credit__personal {
   align-self: center;
   color: var(--credit-personal-color);
-  font-size: 0.56rem;
+  font-size: 0.60rem;
   font-weight: 400;
   letter-spacing: 0.13em;
   opacity: 0;
@@ -671,7 +671,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
 }
 html[data-home-hero-theme="sanjo-matiere"] .home-creative-credit {
   --credit-color: rgba(31, 47, 65, 0.8);
-  --credit-personal-color: rgba(40, 48, 57, 0.60);
+  --credit-personal-color: rgba(40, 48, 57, 0.70);
 }
 .recent-works {
   position: absolute;
