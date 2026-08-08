@@ -12,7 +12,7 @@ export function SanjoMatiereHero({ slide, isActive }: SanjoMatiereHeroProps) {
   const heroImageSrc = slide.heroImage ? `${import.meta.env.BASE_URL}${slide.heroImage.replace(/^\//, '')}` : '';
 
   return (
-    <section className="home-hero sanjo-hero" aria-labelledby="sanjo-hero-title">
+    <section className="home-hero sanjo-hero" aria-labelledby={`${slide.id}-hero-title`}>
       <div className="sanjo-hero__background" aria-hidden="true" />
       {hasHeroImage ? (
         <img
@@ -26,7 +26,7 @@ export function SanjoMatiereHero({ slide, isActive }: SanjoMatiereHeroProps) {
       ) : null}
       <div className="sanjo-hero__content" key={isActive ? `${slide.id}-active` : slide.id}>
         <p className="sanjo-hero__eyebrow">{slide.eyebrow}</p>
-        <h1 className="sanjo-hero__title" id="sanjo-hero-title">
+        <h1 className="sanjo-hero__title" id={`${slide.id}-hero-title`}>
           <span className="sanjo-hero__title-primary">산조길,</span>
           <span className="sanjo-hero__title-accent">둘</span>
         </h1>

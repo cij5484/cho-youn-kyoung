@@ -94,6 +94,8 @@ downloads/leaflet.pdf
 | `archiveMaterials` | Viewer PNG와 다운로드 PDF | `POSTER`, `LEAFLET` |
 | `homeHero` | 홈 히어로 테마 | `{ theme: 'sanjo-matiere' }` |
 
+HOME과 RECENT WORKS 노출에는 `homeHero`, `heroImage`, POSTER `archiveMaterials`가 모두 필요합니다. 카드 이미지는 기존 `viewer/poster.png`를 재사용하며 공연 데이터를 별도 HOME 파일에 복사하지 않습니다. 등록 및 기본 대표 Work 선정은 [HOME-HERO-WORKFLOW.md](./HOME-HERO-WORKFLOW.md)를 따릅니다.
+
 ## F. 출연자·사회자
 
 - 공통 프로필은 재사용 가능합니다.
