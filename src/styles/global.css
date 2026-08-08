@@ -577,7 +577,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
 }
 .home-creative-credit {
   --credit-color: rgba(241, 237, 229, 0.82);
-  --credit-personal-color: rgba(205, 201, 193, 0.54);
+  --credit-personal-color: rgba(205, 201, 193, 0.62);
   position: absolute;
   z-index: 6;
   left: max(2px, env(safe-area-inset-left));
@@ -671,7 +671,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
 }
 html[data-home-hero-theme="sanjo-matiere"] .home-creative-credit {
   --credit-color: rgba(31, 47, 65, 0.8);
-  --credit-personal-color: rgba(40, 48, 57, 0.52);
+  --credit-personal-color: rgba(40, 48, 57, 0.60);
 }
 .recent-works {
   position: absolute;
