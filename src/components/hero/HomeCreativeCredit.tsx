@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 
-const PERSONAL_DELAY_MS = 3700;
+const CREDIT_REVEAL_MS = 1300;
+const PERSONAL_DWELL_MS = 3000;
+const PERSONAL_DELAY_MS = CREDIT_REVEAL_MS + PERSONAL_DWELL_MS;
 
 export function HomeCreativeCredit() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -32,7 +34,7 @@ export function HomeCreativeCredit() {
     cancelDwell();
     setIsExpanded(true);
     setIsPersonalVisible(false);
-    // The 700ms credit reveal completes before the three-second dwell begins.
+    // Let the credit settle before counting the three-second personal-message dwell.
     dwellTimerRef.current = window.setTimeout(() => {
       setIsPersonalVisible(true);
       dwellTimerRef.current = null;

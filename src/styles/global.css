@@ -576,8 +576,8 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   z-index: 1;
 }
 .home-creative-credit {
-  --credit-color: rgba(241, 237, 229, 0.56);
-  --credit-personal-color: rgba(166, 162, 154, 0.3);
+  --credit-color: rgba(241, 237, 229, 0.82);
+  --credit-personal-color: rgba(205, 201, 193, 0.54);
   position: absolute;
   z-index: 6;
   left: max(2px, env(safe-area-inset-left));
@@ -595,15 +595,19 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   gap: 5px;
   transform: rotate(-90deg) translateY(100%);
   transform-origin: left bottom;
+  transition: bottom 1300ms cubic-bezier(0.22, 1, 0.36, 1);
   white-space: nowrap;
+}
+.home-creative-credit.is-expanded .home-creative-credit__rotated {
+  bottom: 24px;
 }
 .home-creative-credit__line {
   display: inline-flex;
   align-items: center;
   height: 44px;
-  font-size: 0.56rem;
-  font-weight: 500;
-  letter-spacing: 0.16em;
+  font-size: 0.66rem;
+  font-weight: 550;
+  letter-spacing: 0.13em;
 }
 .home-creative-credit__prefix {
   display: inline-grid;
@@ -611,7 +615,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   overflow: hidden;
   opacity: 0;
   transform: translateX(3px);
-  transition: max-width 700ms cubic-bezier(0.22, 1, 0.36, 1), opacity 380ms ease 80ms, transform 560ms ease;
+  transition: max-width 1300ms cubic-bezier(0.22, 1, 0.36, 1), opacity 900ms ease 120ms, transform 1150ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .home-creative-credit__prefix > span {
   width: max-content;
@@ -632,6 +636,8 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   font: inherit;
   letter-spacing: inherit;
   cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
   white-space: nowrap;
 }
 .home-creative-credit__anchor:focus-visible {
@@ -643,7 +649,7 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
   max-width: 0;
   overflow: hidden;
   opacity: 0;
-  transition: max-width 420ms ease 260ms, opacity 320ms ease 300ms;
+  transition: max-width 900ms cubic-bezier(0.22, 1, 0.36, 1) 300ms, opacity 700ms ease 420ms;
 }
 .home-creative-credit.is-expanded .home-creative-credit__suffix {
   max-width: 18px;
@@ -652,20 +658,20 @@ html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
 .home-creative-credit__personal {
   align-self: center;
   color: var(--credit-personal-color);
-  font-size: 0.41rem;
+  font-size: 0.51rem;
   font-weight: 400;
   letter-spacing: 0.13em;
   opacity: 0;
   transform: translateX(-3px);
-  transition: opacity 1000ms ease, transform 1000ms ease;
+  transition: opacity 1400ms ease, transform 1400ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .home-creative-credit.is-personal-visible .home-creative-credit__personal {
   opacity: 1;
   transform: translateX(0);
 }
 html[data-home-hero-theme="sanjo-matiere"] .home-creative-credit {
-  --credit-color: rgba(31, 47, 65, 0.58);
-  --credit-personal-color: rgba(47, 51, 52, 0.28);
+  --credit-color: rgba(31, 47, 65, 0.8);
+  --credit-personal-color: rgba(40, 48, 57, 0.52);
 }
 .recent-works {
   position: absolute;
@@ -1102,11 +1108,24 @@ html[data-home-hero-theme="sanjo-matiere"] .home-creative-credit {
   }
   .home-creative-credit {
     z-index: 6;
+    width: 52px;
     height: min(315px, calc(100svh - var(--header) - 12px));
   }
+  .home-creative-credit.is-expanded .home-creative-credit__rotated {
+    bottom: calc(24px + env(safe-area-inset-bottom));
+  }
   .home-creative-credit__line {
-    font-size: 0.52rem;
-    letter-spacing: 0.12em;
+    height: 52px;
+    font-size: 0.63rem;
+    letter-spacing: 0.1em;
+  }
+  .home-creative-credit__anchor {
+    min-width: 52px;
+    min-height: 52px;
+  }
+  .home-creative-credit__personal {
+    font-size: 0.49rem;
+    letter-spacing: 0.1em;
   }
   .home-creative-credit.is-expanded .home-creative-credit__prefix {
     max-width: 205px;
@@ -1233,7 +1252,8 @@ html[data-home-hero-theme="sanjo-matiere"] .home-creative-credit {
   }
   .home-creative-credit__prefix,
   .home-creative-credit__suffix,
-  .home-creative-credit__personal {
+  .home-creative-credit__personal,
+  .home-creative-credit__rotated {
     transition-duration: 1ms;
   }
   .home-hero .text-link::after,
