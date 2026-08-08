@@ -19,6 +19,7 @@
 | 문서 | 역할 |
 | --- | --- |
 | [WEBSITE-OPERATIONS.md](./WEBSITE-OPERATIONS.md) | 홈페이지 구조, 라우팅, 데이터 파일, 운영 원칙 |
+| [HOME-HERO-WORKFLOW.md](./HOME-HERO-WORKFLOW.md) | HOME 대표 Work 선정, RECENT WORKS 데이터 연결·인터랙션·접근성 |
 | [PERFORMANCE-WORKFLOW.md](./PERFORMANCE-WORKFLOW.md) | 새 공연 등록 단계, 공연 데이터, 공연별 테마 작업 순서 |
 | [ALBUM-WORKFLOW.md](./ALBUM-WORKFLOW.md) | 앨범 등록 준비 자료, 데이터 입력, 미확정 앨범 UI 관리 |
 | [MEDIA-WORKFLOW.md](./MEDIA-WORKFLOW.md) | MEDIA 영상·앨범·특별 기록 등록 및 검수 절차 |

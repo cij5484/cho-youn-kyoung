@@ -26,7 +26,7 @@
 
 | 경로 | 역할 |
 | --- | --- |
-| `/` | HOME. 대표 공연과 홈 히어로를 보여준다. |
+| `/` | HOME. 현재 대표 Work와 공연·앨범 확장이 가능한 RECENT WORKS를 보여준다. |
 | `/performance` | PERFORMANCE. 공연 목록을 최신 공연 우선으로 보여준다. |
 | `/performance/:id` | 공연 상세. 공연별 콘텐츠와 테마를 보여준다. |
 | `/media` | MEDIA. 공연 영상, 음반과 특별한 음악 기록을 보여준다. |
@@ -42,6 +42,7 @@
 | `src/data/profile.ts` | 프로필, ABOUT 정보, 공연 이력 |
 | `src/data/site.ts` | 사이트 공통 이름·연락·메타 정보 |
 | `src/data/albums.ts` | 앨범 데이터 |
+| `src/data/homeHeroSlides.ts` | 공연·앨범 Source of Truth를 변경하지 않고 HOME 노출 모델로 조합하는 adapter |
 | `src/data/media.ts` | MEDIA의 공연 영상과 특별 기록 데이터 및 섹션 분류. 앨범 데이터는 저장하지 않는다. |
 
 ## 운영 원칙
@@ -56,7 +57,7 @@
 - 임의 인물, 약력, 문의처, 티켓 정보, QR 코드를 만들지 않습니다.
 - 바이너리 파일은 사용자가 직접 업로드하고 Codex는 코드 연결만 담당합니다.
 - 같은 인물 사진은 기존 경로를 재사용할 수 있습니다.
-- HOME Hero가 둘 이상이면 자동 전환 PAUSE/PLAY 제어를 제공하며, reduced-motion에서는 자동 전환을 시작하지 않습니다.
+- HOME Hero는 자동 순환하지 않으며, 현재 대표 Work를 유지하고 사용자가 RECENT WORKS에서 다른 고유 Hero Scene을 선택합니다. 자세한 운영 원칙은 [HOME-HERO-WORKFLOW.md](./HOME-HERO-WORKFLOW.md)를 따릅니다.
 - 모바일 메뉴는 열린 뒤 첫 링크에 포커스하고, ESC·경로 변경 시 닫으며, 열려 있는 동안 배경 스크롤을 잠급니다. ESC 또는 메뉴 버튼으로 닫으면 메뉴 버튼에 포커스를 복원합니다.
 - 내비게이션은 HOME → PERFORMANCE → MEDIA → ABOUT → CONTACT 순서입니다.
 - 앨범과 재생 링크는 `albums.ts`, 영상과 특별 기록은 `media.ts`에서 관리하며 같은 앨범을 두 파일에 중복하지 않습니다.
