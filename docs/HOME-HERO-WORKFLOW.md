@@ -33,8 +33,8 @@ HOME Hero는 현재 가장 가까운 주요 활동을 안정적으로 소개하�
 
 ## 인터랙션과 접근성
 
-- Desktop: label hover 또는 keyboard focus로 겹친 카드가 fan-out되고, 클릭·Enter·Space로 Hero를 선택한다.
-- Mobile: label tap으로 하단 가로 목록을 열고, native swipe/drag와 center scroll snap으로 탐색한 뒤 카드를 tap한다. Hero 전체 swipe는 사용하지 않아 카드 제스처와 충돌하지 않는다.
+- Desktop: 아무 카드도 탐색하지 않을 때 실제 Hero인 `activeIndex`를 강조한다. 카드 hover 또는 keyboard focus 중에는 별도 interaction index의 카드만 위로 꺼낸 듯 확대·상승하고, 기존 active 카드는 일반 상태로 돌아간다.
+- Mobile: label tap으로 하단 가로 목록을 열고, native swipe/drag와 center scroll snap으로 탐색한다. 중앙에 가장 가까운 `previewIndex`만 시각적으로 강조하며 swipe만으로 `activeIndex`나 Hero를 변경하지 않는다. 카드를 tap한 경우에만 Hero를 선택한다.
 - 좌우 방향키, Home, End로 카드 포커스를 이동하고 ESC로 목록을 닫는다. 현재 카드는 `aria-selected`로 전달한다.
 - 비활성 Hero는 `aria-hidden`과 `inert`로 포커스 및 접근성 트리에서 제외한다.
 - `prefers-reduced-motion`에서는 fan, 큰 이동, crossfade transition을 제거하되 모든 선택 기능은 유지한다.

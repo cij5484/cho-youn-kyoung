@@ -5,14 +5,25 @@
 
 ## 1. 목적과 경로
 
-MEDIA는 공연 영상, 음반, 특별한 음악 기록을 한곳에서 소개하는 페이지이며 HashRouter의 `/media`(공개 URL `#/media`)에서 제공됩니다.
+MEDIA는 공연 영상, 음반, 언론 보도, 특별한 음악 기록을 한곳에서 소개하는 페이지이며 HashRouter의 `/media`(공개 URL `#/media`)에서 제공됩니다.
 
 ## 2. 데이터 파일의 역할
 
 - `src/data/media.ts`: 영상·음원·외부 기록의 표시 정보와 `featured` / `selected` / `special` 분류를 관리합니다. 영상 추가는 이 배열에 객체를 추가하는 것으로 완료합니다.
 - `src/data/albums.ts`: 앨범 설명, 커버, 재생 링크를 관리합니다. MEDIA 페이지는 이 배열을 직접 순회하므로 앨범을 `media.ts`에 중복 입력하지 않습니다.
+- `src/data/press.ts`: PRESS & ARTICLES의 독립 Source of Truth입니다. `PressArticle`은 `id`, `outlet`, `publishedDate`, `title`, `url`과 선택 필드 `shortDescription`, `category`, `label`을 가집니다. UI는 날짜를 기준으로 자동 최신순 정렬된 export를 사용합니다.
 
-## 3. 공연 영상 추가
+## 3. PRESS & ARTICLES 운영
+
+PRESS는 기사 원문을 복제하는 영역이 아니라 확인된 제목·매체·날짜·짧은 소개와 원문 링크를 제공하는 편집형 목록입니다. ID는 영문 소문자 kebab-case로 고유하게 작성하고, 날짜는 `YYYY-MM-DD`, URL은 원문의 canonical HTTPS 주소를 사용합니다.
+
+새 기사는 매체명, 기사 제목, 발행일, URL을 공식 원문에서 검증한 뒤 `pressArticles`에 객체 하나만 추가합니다. 배열 위치와 관계없이 최신순으로 표시됩니다. 가짜·placeholder 기사는 금지하며 확인된 기사가 0건이어도 빈 상태 UI가 안전하게 표시됩니다. 링크는 새 탭과 `rel="noopener noreferrer"`를 사용하고 기사 전문을 저장하지 않습니다.
+
+기본 운영에는 이미지가 필요하지 않습니다. 사용 허가된 대표 이미지, 공식 보도자료 PDF 등 실제 자산이 필요한 경우에만 `public/assets/press/{press-id}/`를 만들며 빈 폴더는 생성하지 않습니다.
+
+MEDIA Hero의 editorial index와 본문은 `media.ts`의 단일 `mediaSections` 정의를 공유합니다. 항목은 button으로 해당 section ID에 programmatic `scrollIntoView`를 실행해 HashRouter URL을 변경하지 않습니다. 고정 Header는 `scroll-margin-top`으로 보정하고, 일반 환경은 smooth, reduced-motion 환경은 auto scroll을 사용합니다. PRESS 역시 기존 serif/sans, gold, rule, spacing, motion-link 디자인 언어를 유지합니다.
+
+## 4. 공연 영상 추가
 
 1. 공식 제목, 기관명, 설명, 공개 상태와 영상 ID를 확인합니다.
 2. 공유 URL을 정규화하고 `mediaItems`에 고유한 `id`로 객체를 추가합니다.
