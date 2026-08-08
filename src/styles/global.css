@@ -1109,8 +1109,13 @@ html[data-home-hero-theme="sanjo-matiere"] .home-creative-credit {
     padding-top: clamp(calc(var(--header) + 34px), 25svh, 233px);
   }
   .recent-works {
-    bottom: 8px;
-    width: 100%;
+  bottom: 8px;
+  width: 100%;
+  pointer-events: none;
+  }
+
+  .recent-works__trigger {
+    pointer-events: auto;
   }
   .home-creative-credit {
     z-index: 6;
