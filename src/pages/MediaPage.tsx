@@ -4,6 +4,7 @@ import { SafeImage } from '../components/common/SafeImage';
 import { YouTubePreview } from '../components/media/YouTubePreview';
 import { albums } from '../data/albums';
 import { mediaItems, mediaPageCopy, mediaSections, type MediaItem } from '../data/media';
+import { pressArticlesNewestFirst } from '../data/press';
 import { assetUrl } from '../utils/assetUrl';
 import '../styles/media.css';
 
@@ -64,8 +65,21 @@ function Discography() {
   );
 }
 
+function PressArticles() {
+  if (pressArticlesNewestFirst.length === 0) return <p className="media-press__empty">검증된 언론 자료를 준비하고 있습니다.</p>;
+  return <div className="media-press">{pressArticlesNewestFirst.map((article) => (
+    <article className="media-press__article" key={article.id}>
+      <div className="media-press__meta"><span>{article.category ?? 'PRESS'} · {article.outlet}</span><time dateTime={article.publishedDate}>{article.publishedDate.replaceAll('-', '. ')}</time></div>
+      <h3>{article.title}</h3>
+      {article.shortDescription && <p>{article.shortDescription}</p>}
+      <a className="media-action motion-link" href={article.url} target="_blank" rel="noopener noreferrer">{article.label ?? 'READ ARTICLE'}<span aria-hidden="true">↗</span></a>
+    </article>
+  ))}</div>;
+}
+
 function SectionContent({ sectionId }: { sectionId: (typeof mediaSections)[number]['id'] }): ReactNode {
   if (sectionId === 'discography') return <Discography />;
+  if (sectionId === 'press') return <PressArticles />;
   const items = mediaItems.filter((item) => item.section === sectionId);
   return (
     <div className={`media-items media-items--${sectionId}`}>
@@ -75,6 +89,12 @@ function SectionContent({ sectionId }: { sectionId: (typeof mediaSections)[numbe
 }
 
 export function MediaPage() {
+  const scrollToSection = (sectionId: (typeof mediaSections)[number]['id']) => {
+    document.getElementById(`media-${sectionId}`)?.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      block: 'start',
+    });
+  };
   useEffect(() => {
     const previousTitle = document.title;
     const description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
@@ -96,13 +116,16 @@ export function MediaPage() {
           <span className="media-hero__rule" aria-hidden="true" />
           <p className="media-hero__description">{mediaPageCopy.description}</p>
         </div>
+        <nav className="media-hero__index" aria-label="MEDIA 섹션 바로가기">
+          {mediaSections.map((section) => <button type="button" key={section.id} onClick={() => scrollToSection(section.id)}><span>{section.number}</span>{section.title}</button>)}
+        </nav>
       </section>
 
       <div className="media-page__body">
         {mediaSections.map((section) => {
           const headingId = `media-${section.id}-title`;
           return (
-            <Reveal as="section" className={`media-section media-section--${section.id}`} aria-labelledby={headingId} key={section.id}>
+            <Reveal as="section" id={`media-${section.id}`} className={`media-section media-section--${section.id}`} aria-labelledby={headingId} key={section.id}>
               <header className="media-section__heading reveal__heading">
                 <span>{section.number}</span>
                 <h2 id={headingId}>{section.title}</h2>

@@ -10,10 +10,14 @@ type RecentWorksProps = {
 
 export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [previewIndex, setPreviewIndex] = useState(activeIndex);
+  const [interactionIndex, setInteractionIndex] = useState<number | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const interactionPointerTypeRef = useRef<string | null>(null);
   const suppressFocusOpenRef = useRef(false);
+  const scrollFrameRef = useRef<number | null>(null);
 
   const hasFineHoverPointer = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
@@ -29,7 +33,31 @@ export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) 
     return () => window.removeEventListener('keydown', handleEscape);
   }, [isOpen]);
 
+  useEffect(() => () => {
+    if (scrollFrameRef.current !== null) cancelAnimationFrame(scrollFrameRef.current);
+  }, []);
+
+  const updateMobilePreview = () => {
+    if (hasFineHoverPointer() || scrollFrameRef.current !== null) return;
+    scrollFrameRef.current = requestAnimationFrame(() => {
+      scrollFrameRef.current = null;
+      const track = trackRef.current;
+      if (!track) return;
+      const center = track.getBoundingClientRect().left + track.clientWidth / 2;
+      let closestIndex = previewIndex;
+      let closestDistance = Number.POSITIVE_INFINITY;
+      cardRefs.current.forEach((card, index) => {
+        if (!card) return;
+        const rect = card.getBoundingClientRect();
+        const distance = Math.abs(rect.left + rect.width / 2 - center);
+        if (distance < closestDistance) { closestDistance = distance; closestIndex = index; }
+      });
+      setPreviewIndex((current) => current === closestIndex ? current : closestIndex);
+    });
+  };
+
   const selectWork = (index: number) => {
+    setPreviewIndex(index);
     onSelect(index);
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     cardRefs.current[index]?.scrollIntoView({
@@ -94,10 +122,10 @@ export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) 
         <span className="recent-works__trigger-mark" aria-hidden="true">{isOpen ? '−' : '+'}</span>
       </button>
       <div className="recent-works__panel" id="recent-works-list" aria-label="최근 작품 선택">
-        <div className="recent-works__track" role="listbox" aria-label="HOME Hero 작품">
+        <div className="recent-works__track" role="listbox" aria-label="HOME Hero 작품" ref={trackRef} onScroll={updateMobilePreview}>
           {works.map((work, index) => (
             <button
-              className={`recent-work-card${index === activeIndex ? ' is-active' : ''}`}
+              className={`recent-work-card${index === activeIndex && interactionIndex === null ? ' is-active' : ''}${index === interactionIndex ? ' is-interacting' : ''}${index === previewIndex ? ' is-preview' : ''}`}
               style={{ '--work-index': index, '--work-count': works.length } as React.CSSProperties}
               type="button"
               role="option"
@@ -107,6 +135,10 @@ export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) 
               ref={(node) => { cardRefs.current[index] = node; }}
               onClick={() => selectWork(index)}
               onKeyDown={(event) => handleCardKeyDown(event, index)}
+              onPointerEnter={(event) => { if (event.pointerType === 'mouse' && hasFineHoverPointer()) setInteractionIndex(index); }}
+              onPointerLeave={(event) => { if (event.pointerType === 'mouse') setInteractionIndex(null); }}
+              onFocus={() => setInteractionIndex(index)}
+              onBlur={() => setInteractionIndex(null)}
             >
               <span className="recent-work-card__image-wrap">
                 <img src={`${import.meta.env.BASE_URL}${work.cardImage.replace(/^\//, '')}`} alt="" loading="lazy" />
