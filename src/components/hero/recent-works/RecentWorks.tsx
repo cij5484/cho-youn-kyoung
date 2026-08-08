@@ -12,12 +12,18 @@ export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) 
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const interactionPointerTypeRef = useRef<string | null>(null);
+  const suppressFocusOpenRef = useRef(false);
+
+  const hasFineHoverPointer = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
   useEffect(() => {
     const handleEscape = (event: globalThis.KeyboardEvent) => {
       if (event.key !== 'Escape' || !isOpen) return;
       setIsOpen(false);
+      suppressFocusOpenRef.current = true;
       rootRef.current?.querySelector<HTMLButtonElement>('.recent-works__trigger')?.focus();
+      window.queueMicrotask(() => { suppressFocusOpenRef.current = false; });
     };
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
@@ -25,7 +31,17 @@ export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) 
 
   const selectWork = (index: number) => {
     onSelect(index);
-    cardRefs.current[index]?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    cardRefs.current[index]?.scrollIntoView({
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
+      inline: 'center',
+      block: 'nearest',
+    });
+
+    if (!hasFineHoverPointer()) {
+      setIsOpen(false);
+      rootRef.current?.querySelector<HTMLButtonElement>('.recent-works__trigger')?.focus();
+    }
   };
 
   const handleCardKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
@@ -43,9 +59,20 @@ export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) 
     <div
       className={`recent-works${isOpen ? ' is-open' : ''}`}
       ref={rootRef}
-      onPointerEnter={() => setIsOpen(true)}
-      onPointerLeave={() => setIsOpen(false)}
-      onFocus={() => setIsOpen(true)}
+      onPointerDownCapture={(event) => { interactionPointerTypeRef.current = event.pointerType; }}
+      onPointerEnter={(event) => {
+        if (event.pointerType === 'mouse' && hasFineHoverPointer()) setIsOpen(true);
+      }}
+      onPointerLeave={(event) => {
+        if (event.pointerType === 'mouse' && hasFineHoverPointer()) setIsOpen(false);
+      }}
+      onFocus={() => {
+        if (suppressFocusOpenRef.current) return;
+        if (
+          interactionPointerTypeRef.current === null
+          || (interactionPointerTypeRef.current === 'mouse' && hasFineHoverPointer())
+        ) setIsOpen(true);
+      }}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) setIsOpen(false);
       }}
@@ -55,7 +82,13 @@ export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) 
         type="button"
         aria-expanded={isOpen}
         aria-controls="recent-works-list"
-        onClick={() => setIsOpen((open) => !open)}
+        onClick={(event) => {
+          const isFineMouseClick = event.detail > 0
+            && interactionPointerTypeRef.current === 'mouse'
+            && hasFineHoverPointer();
+          setIsOpen((open) => isFineMouseClick ? true : !open);
+          interactionPointerTypeRef.current = null;
+        }}
       >
         <span>RECENT WORKS</span>
         <span className="recent-works__trigger-mark" aria-hidden="true">{isOpen ? '−' : '+'}</span>
