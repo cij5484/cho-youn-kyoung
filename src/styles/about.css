@@ -325,7 +325,7 @@
   }
 
   .about-hero__portrait::before {
-    background: linear-gradient(180deg, #0b0d0c 0%, rgba(11, 13, 12, 0.08) 28%, rgba(11, 13, 12, 0.32) 100%);
+    background: linear-gradient(180deg, rgba(11, 13, 12, 0.48) 0%, rgba(11, 13, 12, 0.06) 28%, rgba(11, 13, 12, 0.14) 100%);
   }
 
   .about-hero__portrait img,
@@ -333,6 +333,11 @@
     height: auto;
     min-height: 58svh;
     max-height: 680px;
+  }
+
+  .about-hero__portrait img {
+    opacity: 1;
+    filter: brightness(1.08) contrast(1.02);
   }
 
   .about-body {
@@ -484,6 +489,7 @@
   .about-gallery__thumbnail {
     width: clamp(72px, 22vw, 92px);
     scroll-snap-align: start;
+    opacity: 0.8;
   }
 }
 
