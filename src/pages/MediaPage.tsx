@@ -67,14 +67,29 @@ function Discography() {
 
 function PressArticles() {
   if (pressArticlesNewestFirst.length === 0) return <p className="media-press__empty">검증된 언론 자료를 준비하고 있습니다.</p>;
-  return <div className="media-press">{pressArticlesNewestFirst.map((article) => (
-    <article className="media-press__article" key={article.id}>
-      <div className="media-press__meta"><span>{article.category ?? 'PRESS'} · {article.outlet}</span><time dateTime={article.publishedDate}>{article.publishedDate.replaceAll('-', '. ')}</time></div>
-      <h3>{article.title}</h3>
-      {article.shortDescription && <p>{article.shortDescription}</p>}
-      <a className="media-action motion-link" href={article.url} target="_blank" rel="noopener noreferrer">{article.label ?? 'READ ARTICLE'}<span aria-hidden="true">↗</span></a>
-    </article>
-  ))}</div>;
+  return (
+    <div className="media-press">
+      <div className="media-press__columns" aria-hidden="true">
+        <span>DATE</span><span>OUTLET</span><span>TITLE</span>
+      </div>
+      {pressArticlesNewestFirst.map((article) => (
+        <article className="media-press__article" key={article.id}>
+          <time className="media-press__date" dateTime={article.publishedDate}>
+            {article.publishedDate.replaceAll('-', '.')}
+          </time>
+          <p className="media-press__outlet">{article.category ?? 'PRESS'} · {article.outlet}</p>
+          <div className="media-press__story">
+            <h3>
+              <a href={article.url} target="_blank" rel="noopener noreferrer">
+                <span>{article.title}</span><span className="media-press__arrow" aria-hidden="true">↗</span>
+              </a>
+            </h3>
+            {article.shortDescription && <p>{article.shortDescription}</p>}
+          </div>
+        </article>
+      ))}
+    </div>
+  );
 }
 
 function SectionContent({ sectionId }: { sectionId: (typeof mediaSections)[number]['id'] }): ReactNode {
