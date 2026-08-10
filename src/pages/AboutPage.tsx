@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent, type PointerEvent, type WheelEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { SafeImage } from '../components/common/SafeImage';
 import { Reveal } from '../components/Reveal';
@@ -23,7 +23,8 @@ export function AboutPage() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const stripRef = useRef<HTMLDivElement>(null);
   const thumbnailRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const dragRef = useRef({ pointerId: -1, startX: 0, scrollLeft: 0, dragged: false });
+  const dragRef = useRef({ pointerId: -1, startX: 0, scrollLeft: 0, dragged: false, lastX: 0, lastTime: 0, velocity: 0 });
+  const inertiaFrameRef = useRef<number | null>(null);
   const suppressClickRef = useRef(false);
   const activeImage = profile.galleryImages[activeImageIndex] ?? profile.galleryImages[0];
   const timelinePerformances = [...profile.performances]
@@ -33,6 +34,16 @@ export function AboutPage() {
   const englishNameParts = profile.englishName.split(' ');
   const [roleLead, ...roleRestParts] = profile.role.split(' ');
   const roleRest = roleRestParts.join(' ');
+
+  const cancelStripInertia = () => {
+    if (inertiaFrameRef.current === null) return;
+    window.cancelAnimationFrame(inertiaFrameRef.current);
+    inertiaFrameRef.current = null;
+  };
+
+  useEffect(() => () => {
+    if (inertiaFrameRef.current !== null) window.cancelAnimationFrame(inertiaFrameRef.current);
+  }, []);
 
   const centerThumbnail = (index: number) => {
     const strip = stripRef.current;
@@ -51,23 +62,18 @@ export function AboutPage() {
     if (options?.focus) thumbnailRefs.current[index]?.focus({ preventScroll: true });
   };
 
-  const handleStripWheel = (event: WheelEvent<HTMLDivElement>) => {
-    const strip = stripRef.current;
-    if (!strip) return;
-
-    const rawDelta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
-    const delta = rawDelta * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? strip.clientWidth : 1);
-    const maxScrollLeft = strip.scrollWidth - strip.clientWidth;
-    const canScroll = delta < 0 ? strip.scrollLeft > 0 : strip.scrollLeft < maxScrollLeft;
-    if (!canScroll) return;
-
-    event.preventDefault();
-    strip.scrollLeft += delta;
-  };
-
   const handleStripPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.pointerType !== 'mouse' || event.button !== 0) return;
-    dragRef.current = { pointerId: event.pointerId, startX: event.clientX, scrollLeft: event.currentTarget.scrollLeft, dragged: false };
+    cancelStripInertia();
+    dragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      scrollLeft: event.currentTarget.scrollLeft,
+      dragged: false,
+      lastX: event.clientX,
+      lastTime: event.timeStamp,
+      velocity: 0,
+    };
   };
 
   const handleStripPointerMove = (event: PointerEvent<HTMLDivElement>) => {
@@ -83,6 +89,41 @@ export function AboutPage() {
     }
     event.preventDefault();
     event.currentTarget.scrollLeft = drag.scrollLeft - distance;
+
+    const elapsed = event.timeStamp - drag.lastTime;
+    if (elapsed > 0) {
+      const instantaneousVelocity = -(event.clientX - drag.lastX) / elapsed;
+      drag.velocity = drag.velocity * 0.35 + instantaneousVelocity * 0.65;
+      drag.lastX = event.clientX;
+      drag.lastTime = event.timeStamp;
+    }
+  };
+
+  const startStripInertia = (strip: HTMLDivElement, initialVelocity: number) => {
+    let velocity = Math.max(-1.5, Math.min(1.5, initialVelocity));
+    if (Math.abs(velocity) < 0.08 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    let previousTime = performance.now();
+    const animate = (currentTime: number) => {
+      const elapsed = Math.min(currentTime - previousTime, 32);
+      previousTime = currentTime;
+      const previousScrollLeft = strip.scrollLeft;
+      strip.scrollLeft += velocity * elapsed;
+
+      if (strip.scrollLeft === previousScrollLeft) {
+        inertiaFrameRef.current = null;
+        return;
+      }
+
+      velocity *= Math.exp(-elapsed / 65);
+      if (Math.abs(velocity) < 0.02) {
+        inertiaFrameRef.current = null;
+        return;
+      }
+      inertiaFrameRef.current = window.requestAnimationFrame(animate);
+    };
+
+    inertiaFrameRef.current = window.requestAnimationFrame(animate);
   };
 
   const finishStripDrag = (event: PointerEvent<HTMLDivElement>) => {
@@ -92,7 +133,10 @@ export function AboutPage() {
     if (drag.dragged) window.setTimeout(() => { suppressClickRef.current = false; }, 0);
     event.currentTarget.classList.remove('is-dragging');
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
-    dragRef.current = { pointerId: -1, startX: 0, scrollLeft: 0, dragged: false };
+    if (event.type === 'pointerup' && drag.dragged && event.timeStamp - drag.lastTime < 80) {
+      startStripInertia(event.currentTarget, drag.velocity);
+    }
+    dragRef.current = { pointerId: -1, startX: 0, scrollLeft: 0, dragged: false, lastX: 0, lastTime: 0, velocity: 0 };
   };
 
   const handleThumbnailKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
@@ -120,7 +164,6 @@ export function AboutPage() {
           <div
             className="about-gallery__strip"
             ref={stripRef}
-            onWheel={handleStripWheel}
             onPointerDown={handleStripPointerDown}
             onPointerMove={handleStripPointerMove}
             onPointerUp={finishStripDrag}
