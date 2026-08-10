@@ -27,6 +27,7 @@ export function AboutPage() {
   const activeIndexRef = useRef(0);
   const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wheelLockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wheelLockDirectionRef = useRef<-1 | 1 | null>(null);
   const wheelDeltaRef = useRef(0);
   const activeImage = profile.galleryImages[activeImageIndex] ?? profile.galleryImages[0];
   const timelinePerformances = [...profile.performances]
@@ -86,20 +87,37 @@ export function AboutPage() {
     };
 
     const handleWheel = (event: WheelEvent) => {
-      if (!window.matchMedia('(min-width: 1181px) and (pointer: fine)').matches || wheelLockTimerRef.current) return;
+      if (!window.matchMedia('(min-width: 1181px) and (pointer: fine)').matches || event.deltaY === 0) return;
+
+      const eventDirection = event.deltaY > 0 ? 1 : -1;
+      const currentIndex = activeIndexRef.current;
+      const canMoveInEventDirection = currentIndex + eventDirection >= 0
+        && currentIndex + eventDirection < profile.galleryImages.length;
+
+      if (wheelLockTimerRef.current) {
+        if (wheelLockDirectionRef.current === eventDirection || canMoveInEventDirection) event.preventDefault();
+        return;
+      }
+
+      if (!canMoveInEventDirection) {
+        wheelDeltaRef.current = 0;
+        return;
+      }
+
+      event.preventDefault();
       wheelDeltaRef.current += event.deltaY;
       if (Math.abs(wheelDeltaRef.current) < 36) return;
 
       const direction = wheelDeltaRef.current > 0 ? 1 : -1;
       wheelDeltaRef.current = 0;
-      const currentIndex = activeIndexRef.current;
       const nextIndex = currentIndex + direction;
       if (nextIndex < 0 || nextIndex >= profile.galleryImages.length) return;
 
-      event.preventDefault();
       selectImage(nextIndex);
+      wheelLockDirectionRef.current = direction;
       wheelLockTimerRef.current = setTimeout(() => {
         wheelLockTimerRef.current = null;
+        wheelLockDirectionRef.current = null;
       }, 380);
     };
 
@@ -110,6 +128,7 @@ export function AboutPage() {
       strip.removeEventListener('wheel', handleWheel);
       if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
       if (wheelLockTimerRef.current) clearTimeout(wheelLockTimerRef.current);
+      wheelLockDirectionRef.current = null;
     };
   }, [selectImage]);
 
