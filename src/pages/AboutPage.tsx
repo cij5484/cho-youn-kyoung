@@ -100,7 +100,7 @@ export function AboutPage() {
   };
 
   const startStripInertia = (strip: HTMLDivElement, initialVelocity: number) => {
-    let velocity = Math.max(-1.5, Math.min(1.5, initialVelocity));
+    let velocity = Math.max(-1.65, Math.min(1.65, initialVelocity));
     if (Math.abs(velocity) < 0.08 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     let previousTime = performance.now();
@@ -115,7 +115,7 @@ export function AboutPage() {
         return;
       }
 
-      velocity *= Math.exp(-elapsed / 65);
+      velocity *= Math.exp(-elapsed / 110);
       if (Math.abs(velocity) < 0.02) {
         inertiaFrameRef.current = null;
         return;
