@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useRef, useState, type KeyboardEvent, type PointerEvent, type WheelEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { SafeImage } from '../components/common/SafeImage';
 import { Reveal } from '../components/Reveal';
@@ -21,14 +21,10 @@ const compareTimelineItems = (a: { item: ProfilePerformance; index: number }, b:
 export function AboutPage() {
   const featuredAlbum = profile.discography[0];
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [selectionDirection, setSelectionDirection] = useState<'previous' | 'next'>('next');
   const stripRef = useRef<HTMLDivElement>(null);
   const thumbnailRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const activeIndexRef = useRef(0);
-  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const wheelLockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const wheelLockDirectionRef = useRef<-1 | 1 | null>(null);
-  const wheelDeltaRef = useRef(0);
+  const dragRef = useRef({ pointerId: -1, startX: 0, scrollLeft: 0, dragged: false });
+  const suppressClickRef = useRef(false);
   const activeImage = profile.galleryImages[activeImageIndex] ?? profile.galleryImages[0];
   const timelinePerformances = [...profile.performances]
     .map((item, index) => ({ item, index }))
@@ -38,7 +34,7 @@ export function AboutPage() {
   const [roleLead, ...roleRestParts] = profile.role.split(' ');
   const roleRest = roleRestParts.join(' ');
 
-  const centerThumbnail = useCallback((index: number) => {
+  const centerThumbnail = (index: number) => {
     const strip = stripRef.current;
     const thumbnail = thumbnailRefs.current[index];
     if (!strip || !thumbnail) return;
@@ -46,91 +42,58 @@ export function AboutPage() {
     const left = thumbnail.offsetLeft - (strip.clientWidth - thumbnail.offsetWidth) / 2;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     strip.scrollTo({ left, behavior: reduceMotion ? 'auto' : 'smooth' });
-  }, []);
+  };
 
-  const selectImage = useCallback((requestedIndex: number, options?: { focus?: boolean; center?: boolean }) => {
+  const selectImage = (requestedIndex: number, options?: { focus?: boolean }) => {
     const index = Math.max(0, Math.min(profile.galleryImages.length - 1, requestedIndex));
-    const previousIndex = activeIndexRef.current;
-    activeIndexRef.current = index;
-    if (index !== previousIndex) {
-      setSelectionDirection(index > previousIndex ? 'next' : 'previous');
-      setActiveImageIndex(index);
-    }
-    if (options?.center !== false) centerThumbnail(index);
+    setActiveImageIndex(index);
+    centerThumbnail(index);
     if (options?.focus) thumbnailRefs.current[index]?.focus({ preventScroll: true });
-  }, [centerThumbnail]);
+  };
 
-  useEffect(() => {
+  const handleStripWheel = (event: WheelEvent<HTMLDivElement>) => {
     const strip = stripRef.current;
     if (!strip) return;
 
-    const settleSelection = () => {
-      if (!window.matchMedia('(max-width: 1180px)').matches) return;
-      const stripCenter = strip.getBoundingClientRect().left + strip.clientWidth / 2;
-      let closestIndex = activeIndexRef.current;
-      let closestDistance = Number.POSITIVE_INFINITY;
-      thumbnailRefs.current.forEach((thumbnail, index) => {
-        if (!thumbnail) return;
-        const bounds = thumbnail.getBoundingClientRect();
-        const distance = Math.abs(bounds.left + bounds.width / 2 - stripCenter);
-        if (distance < closestDistance) {
-          closestDistance = distance;
-          closestIndex = index;
-        }
-      });
-      selectImage(closestIndex);
-    };
+    const rawDelta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+    const delta = rawDelta * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? strip.clientWidth : 1);
+    const maxScrollLeft = strip.scrollWidth - strip.clientWidth;
+    const canScroll = delta < 0 ? strip.scrollLeft > 0 : strip.scrollLeft < maxScrollLeft;
+    if (!canScroll) return;
 
-    const handleScroll = () => {
-      if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
-      settleTimerRef.current = setTimeout(settleSelection, 140);
-    };
+    event.preventDefault();
+    strip.scrollLeft += delta;
+  };
 
-    const handleWheel = (event: WheelEvent) => {
-      if (!window.matchMedia('(min-width: 1181px) and (pointer: fine)').matches || event.deltaY === 0) return;
+  const handleStripPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== 'mouse' || event.button !== 0) return;
+    dragRef.current = { pointerId: event.pointerId, startX: event.clientX, scrollLeft: event.currentTarget.scrollLeft, dragged: false };
+  };
 
-      const eventDirection = event.deltaY > 0 ? 1 : -1;
-      const currentIndex = activeIndexRef.current;
-      const canMoveInEventDirection = currentIndex + eventDirection >= 0
-        && currentIndex + eventDirection < profile.galleryImages.length;
+  const handleStripPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (drag.pointerId !== event.pointerId) return;
+    const distance = event.clientX - drag.startX;
+    if (!drag.dragged && Math.abs(distance) < 7) return;
 
-      if (wheelLockTimerRef.current) {
-        if (wheelLockDirectionRef.current === eventDirection || canMoveInEventDirection) event.preventDefault();
-        return;
-      }
+    if (!drag.dragged) {
+      drag.dragged = true;
+      event.currentTarget.setPointerCapture(event.pointerId);
+      event.currentTarget.classList.add('is-dragging');
+    }
+    event.preventDefault();
+    event.currentTarget.scrollLeft = drag.scrollLeft - distance;
+  };
 
-      if (!canMoveInEventDirection) {
-        wheelDeltaRef.current = 0;
-        return;
-      }
-
-      event.preventDefault();
-      wheelDeltaRef.current += event.deltaY;
-      if (Math.abs(wheelDeltaRef.current) < 36) return;
-
-      const direction = wheelDeltaRef.current > 0 ? 1 : -1;
-      wheelDeltaRef.current = 0;
-      const nextIndex = currentIndex + direction;
-      if (nextIndex < 0 || nextIndex >= profile.galleryImages.length) return;
-
-      selectImage(nextIndex);
-      wheelLockDirectionRef.current = direction;
-      wheelLockTimerRef.current = setTimeout(() => {
-        wheelLockTimerRef.current = null;
-        wheelLockDirectionRef.current = null;
-      }, 380);
-    };
-
-    strip.addEventListener('scroll', handleScroll, { passive: true });
-    strip.addEventListener('wheel', handleWheel, { passive: false });
-    return () => {
-      strip.removeEventListener('scroll', handleScroll);
-      strip.removeEventListener('wheel', handleWheel);
-      if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
-      if (wheelLockTimerRef.current) clearTimeout(wheelLockTimerRef.current);
-      wheelLockDirectionRef.current = null;
-    };
-  }, [selectImage]);
+  const finishStripDrag = (event: PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (drag.pointerId !== event.pointerId) return;
+    suppressClickRef.current = drag.dragged;
+    if (drag.dragged) window.setTimeout(() => { suppressClickRef.current = false; }, 0);
+    event.currentTarget.classList.remove('is-dragging');
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    dragRef.current = { pointerId: -1, startX: 0, scrollLeft: 0, dragged: false };
+  };
 
   const handleThumbnailKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
     if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
@@ -147,15 +110,22 @@ export function AboutPage() {
           <p className="about-hero__role"><span>{roleLead}</span>{roleRest && ` ${roleRest}`}</p>
           <p className="about-hero__position">{profile.currentPosition}</p>
         </div>
-        <figure className={`about-hero__portrait about-hero__portrait--${selectionDirection}`}>
+        <figure className="about-hero__portrait">
           <SafeImage key={activeImage.src} src={assetUrl(activeImage.src)} alt={activeImage.alt} fallbackClassName="about-hero__portrait-fallback" fallbackLabel={profile.englishName} objectPosition={activeImage.objectPosition ?? 'center bottom'} />
         </figure>
       </section>
 
       <section className="about-gallery" aria-label="조윤경 프로필 사진 선택">
         <div className="about-gallery__inner">
-          <div className="about-gallery__spacer" aria-hidden="true" />
-          <div className="about-gallery__strip" ref={stripRef}>
+          <div
+            className="about-gallery__strip"
+            ref={stripRef}
+            onWheel={handleStripWheel}
+            onPointerDown={handleStripPointerDown}
+            onPointerMove={handleStripPointerMove}
+            onPointerUp={finishStripDrag}
+            onPointerCancel={finishStripDrag}
+          >
             {profile.galleryImages.map((image, index) => (
               <button
                 className={`about-gallery__thumbnail${index === activeImageIndex ? ' is-active' : ''}`}
@@ -164,7 +134,13 @@ export function AboutPage() {
                 ref={(element) => { thumbnailRefs.current[index] = element; }}
                 aria-label={image.ariaLabel}
                 aria-pressed={index === activeImageIndex}
-                onClick={() => selectImage(index)}
+                onClick={() => {
+                  if (suppressClickRef.current) {
+                    suppressClickRef.current = false;
+                    return;
+                  }
+                  selectImage(index);
+                }}
                 onKeyDown={(event) => handleThumbnailKeyDown(event, index)}
               >
                 <SafeImage
