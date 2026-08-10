@@ -1,10 +1,10 @@
 # 자산 전수 목록 (Asset Inventory)
 
-- **최종 갱신 날짜:** 2026-07-26
-- **기준 main commit SHA:** `050bf6f471522b634fd61a0e8f28466f69118ded` (PR #50 병합 커밋)
-- **조사한 총 자산 수:** **36개** (`git ls-files` 기준)
-- **형식별 개수:** PNG 17, JPEG 14, PDF 4, SVG 1 (WebP/GIF/AVIF 0)
-- **전체 자산 용량:** **158,754,299 bytes (151.40 MiB)**
+- **최종 갱신 날짜:** 2026-08-10
+- **기준 main commit SHA:** `83f14e2f8111ddc6cb4ec44bd424564e168a7e6e` (`Add profile gallery images`)
+- **조사한 총 자산 수:** **90개** (`git ls-files` 기준)
+- **형식별 개수:** PNG 17, JPEG 14, WebP 54, PDF 4, SVG 1 (GIF/AVIF 0)
+- **전체 자산 용량:** **132,723,956 bytes (126.58 MiB)**
 - **조사 도구:** `git ls-files`, `rg`, Python 3, Pillow(이미지 디코딩·픽셀), pypdf(PDF 페이지/MediaBox), `hashlib`(SHA-256), `git hash-object`, `git log`
 - **확인하지 못한 항목:** `file`/`identify`/`pdfinfo` 명령이 없어 MIME은 확장자와 Pillow/pypdf 실제 디코딩의 교차 확인으로 기록했다. PDF의 재단선·bleed·색공간, 이미지 ICC/EXIF의 제작 의도, 외부에서 직접 사용 중인 공개 URL, 시각적 동일성(육안/원본 대조)은 확인 불가이다.
 - **판정 범위:** 참조 횟수는 배포/런타임 파일(`src`, `index.html`, manifest/설정)에서의 **직접 문자열 등장 수**이다. 문서의 예시·설명은 횟수에서 제외하되 비고와 별도 문제 목록에 반영했다. `assetUrl`, `BASE_URL`, 데이터 순회는 동적 소비 구조로 교차검토했다.
@@ -15,9 +15,9 @@
 | --- | ---: |
 | 공연 자산 | 27개 (2026-08-02: 10, 2026-08-16: 17) |
 | 앨범 자산 | 0개 (`albums.ts`의 1개 앨범은 자산 경로 미지정) |
-| 사람/프로필 자산 | 14개 (출연자 6, 조윤경 프로필/갤러리 8; 공연 수와 중복 집계 가능) |
+| 사람/프로필 자산 | 68개 (출연자 6, 조윤경 대표/갤러리 62; 공연 수와 중복 집계 가능) |
 | 공용 자산 | 1개 (favicon) |
-| 사용 중 | 36개 |
+| 사용 중 | 90개 |
 | 공용 재사용 중 | 1개 |
 | 미사용 추정 | 0개 |
 | 판단 보류 | 0개 |
@@ -29,7 +29,7 @@
 
 ## B. 전체 자산 목록
 
-- **이전 완료:** 36개. 현재 사용 중인 Hero, Viewer/PDF, 프로필·갤러리, 출연자 사진, favicon은 모두 `public/assets/`를 사용한다.
+- **이전 완료:** 90개. 현재 사용 중인 Hero, Viewer/PDF, 프로필·갤러리, 출연자 사진, favicon은 모두 `public/assets/`를 사용한다.
 - **`public/images/` 잔존:** 런타임 자산 0개 (`public/images/hero/.gitkeep`만 존재).
 
 | 번호 | 현재 경로 | 형식 | 크기 | 픽셀/PDF 규격 | 비율/페이지 | SHA-256 | Git blob SHA | 분류 | 사용 상태 | 참조 횟수 | 참조 위치 | 비고 |
@@ -70,6 +70,8 @@
 | 40 | `public/assets/artist/gallery/profile-gallery-05.jpg` | image/jpeg | 0.19 MiB (194,642 B) | 1066×1600px | 0.666:1 | `398825d32d9332329c7ce1f8b3ba6ef43e77080eea57820742abbf984a4fe904` | `4fc45c7100280d4448e40aca310af00cd91d5f5d` | 사람/프로필 | 사용 중 | 2 | `src/data/profile.ts:68`<br>`src/data/profile.ts:69` | last 01e02b0 2026-07-22 |
 | 41 | `public/assets/artist/gallery/profile-gallery-06.jpg` | image/jpeg | 0.13 MiB (134,626 B) | 1067×1600px | 0.667:1 | `cdeda631fb88819677e853bbbdfff169dc6752c5e64f0bdb57ae7d51a236f57d` | `db789e0457910fed660428e69e8a1464ade83056` | 사람/프로필 | 사용 중 | 2 | `src/data/profile.ts:76`<br>`src/data/profile.ts:77` | last 01e02b0 2026-07-22 |
 | 42 | `public/assets/artist/gallery/profile-gallery-07.jpg` | image/jpeg | 0.16 MiB (165,282 B) | 1066×1600px | 0.666:1 | `f6c1291f46563e72165f4b23229bbd87ddc17d5f260e5292e08874bcde9a2e32` | `31e966af025f576f1e603943bc9b2ec516f4685d` | 사람/프로필 | 사용 중 | 2 | `src/data/profile.ts:84`<br>`src/data/profile.ts:85` | last 01e02b0 2026-07-22 |
+| 43–69 | `public/assets/artist/gallery/profile-gallery-08.webp`–`34.webp` | image/webp | 합계 4.30 MiB | 저장소 파일 존재 확인 | 세로형 full image | 사용자 제공 | Git 추적 | 사람/프로필 | 사용 중 | 각 1 | `src/data/profile.ts` | 신규 full WebP 27개 |
+| 70–96 | `public/assets/artist/gallery/profile-gallery-08-thumb.webp`–`34-thumb.webp` | image/webp | 합계 0.25 MiB | 저장소 파일 존재 확인 | 경량 thumbnail | 사용자 제공 | Git 추적 | 사람/프로필 | 사용 중 | 각 1 | `src/data/profile.ts` | 신규 thumbnail WebP 27개; full과 역할 분리 |
 
 ## C. 공연별 목록
 
@@ -96,7 +98,7 @@
 
 | person-id 추정 | 현재 사진 | 사용 공연/화면 | 재사용·공용화 판단 |
 | --- | --- | --- | --- |
-| `cho-youn-kyoung` | `public/assets/artist/profile/portrait.jpg`, `public/assets/artist/gallery/profile-gallery-01.jpg`–`07.jpg` | ABOUT; 데이터 등록은 대표+01–07 | 대표와 01–07은 전용 프로필 세트. 미등록 중복 파일 08/09는 승인에 따라 삭제 완료 |
+| `cho-youn-kyoung` | `public/assets/artist/profile/portrait.jpg`, `public/assets/artist/gallery/profile-gallery-01.jpg`–`07.jpg`, `profile-gallery-08.webp`–`34.webp` 및 각 `-thumb.webp` | ABOUT; `src/data/profile.ts`에 대표+01–34, 총 35개 선택 항목 등록 | 기존 JPG 7개를 유지하고 신규 full WebP 27개와 별도 thumbnail WebP 27개를 연결 |
 | `yang-seung-hwan` | `public/assets/people/yang-seung-hwan/portrait.jpg` | 두 공연 상세 | 동일 파일을 두 공연이 직접 재사용; 공용 `people/` 후보 1개 |
 | `yoon-seung-hwan`, `jin-min-jin`, `eo-yoon-seok` | 각 `public/assets/people/{person-id}/portrait.jpg` | `haegeum-2026-08-02` | 사람별 표준 경로로 이동 완료 |
 | `kim-na-young`, `lee-young-seop` | 각 `public/assets/people/{person-id}/portrait.jpg` | `sanjo-gil-2026-08-16` | 사람별 공용 경로로 이동 완료 |
@@ -109,7 +111,7 @@
 
 ## F. 미사용 추정 및 판단 보류
 
-현재 자산 36개는 모두 런타임에서 사용 중이며, 미사용 추정·판단 보류 자산은 없다. 사용자가 현재 홈페이지의 `public/assets/` 세트를 최종본으로 승인하여 루트 중복본 5개는 삭제했다.
+현재 자산 90개는 모두 런타임에서 사용 중이며, 미사용 추정·판단 보류 자산은 없다. 사용자가 현재 홈페이지의 `public/assets/` 세트를 최종본으로 승인하여 루트 중복본 5개는 삭제했다.
 
 ## G. 중복 파일
 

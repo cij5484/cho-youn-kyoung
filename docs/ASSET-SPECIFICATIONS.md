@@ -1,7 +1,7 @@
 # 에셋 규격과 파일 운영 기준
 
-- 마지막 확인 날짜: 2026-07-24
-- 기준 commit SHA: `8a574e10b82f`
+- 마지막 확인 날짜: 2026-08-10
+- 기준 commit SHA: `83f14e2f8111ddc6cb4ec44bd424564e168a7e6e`
 
 ## 상태 구분
 
@@ -115,6 +115,13 @@
 | `public/assets/people/lee-young-seop/portrait.jpg` | JPEG | 602×901px | 0.668:1 | 0.06 MB |
 
 권장 원칙: 얼굴 중심의 세로형 또는 정방형에 가까운 원본을 사용하고 과도한 압축은 피합니다. 동일 인물은 기존 경로를 재사용할 수 있습니다. CSS `object-position`으로 크롭 조정이 가능하며, 사진을 공연 폴더로 반드시 복사해야 하는 것은 아닙니다. 재인코딩 없이 원본을 유지합니다.
+
+### ABOUT 프로필 갤러리
+
+- 대표 portrait와 기존 `profile-gallery-01.jpg`–`07.jpg`는 그대로 유지합니다.
+- 사용자가 제공한 신규 full 이미지는 `profile-gallery-08.webp`–`34.webp`, 목록용 thumbnail은 별도 `profile-gallery-08-thumb.webp`–`34-thumb.webp`를 사용합니다.
+- full 이미지는 선택된 큰 portrait에만 사용하고, thumbnail 목록에서는 대응하는 경량 `-thumb.webp`를 사용해 두 역할을 분리합니다.
+- Codex는 갤러리 바이너리를 생성·복사·재인코딩하지 않고 사용자가 제공해 저장소에 존재하는 파일을 `src/data/profile.ts`에서 참조합니다.
 
 ## G. 파일명 규칙
 
