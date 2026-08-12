@@ -1,16 +1,16 @@
 # MEDIA 페이지 운영 절차
 
-- 마지막 확인 날짜: 2026-07-27
+- 마지막 확인 날짜: 2026-08-12
 - 작업 기준 main SHA: `01b57156d81e`
 
 ## 1. 목적과 경로
 
-MEDIA는 공연 영상, 음반, 언론 보도, 특별한 음악 기록을 한곳에서 소개하는 페이지이며 HashRouter의 `/media`(공개 URL `#/media`)에서 제공됩니다.
+MEDIA는 공연 영상, 언론 보도, 특별한 음악 기록을 한곳에서 소개하는 페이지이며 HashRouter의 `/media`(공개 URL `#/media`)에서 제공됩니다.
 
 ## 2. 데이터 파일의 역할
 
 - `src/data/media.ts`: 영상·음원·외부 기록의 표시 정보와 `featured` / `selected` / `special` 분류를 관리합니다. 영상 추가는 이 배열에 객체를 추가하는 것으로 완료합니다.
-- `src/data/albums.ts`: 앨범 설명, 커버, 재생 링크를 관리합니다. MEDIA 페이지는 이 배열을 직접 순회하므로 앨범을 `media.ts`에 중복 입력하지 않습니다.
+- `src/data/albums.ts`: 앨범 Source of Truth이며 `/works`의 ALBUMS에서 소비합니다. MEDIA에는 DISCOGRAPHY를 두지 않습니다.
 - `src/data/press.ts`: PRESS & ARTICLES의 독립 Source of Truth입니다. `PressArticle`은 `id`, `outlet`, `publishedDate`, `title`, `url`과 선택 필드 `shortDescription`, `category`, `label`을 가집니다. UI는 날짜를 기준으로 자동 최신순 정렬된 export를 사용합니다.
 
 ## 3. PRESS & ARTICLES 운영
@@ -55,21 +55,9 @@ MEDIA Hero의 editorial index와 본문은 `media.ts`의 단일 `mediaSections` 
 - VR·360° 영상도 동일한 embed를 사용하며 제목·설명·버튼 라벨로 성격을 알립니다.
 - 배포 전 각 영상을 직접 열어 삭제·비공개·연령 제한 상태와 썸네일 fallback을 확인합니다. 사용할 수 없으면 검증된 대체 URL로 데이터만 갱신하거나 노출을 중단합니다.
 
-## 5. 앨범과 재생목록 추가
+## 5. MEDIA 섹션 구조
 
-1. `albums.ts`에 고유 ID, 확인된 제목·연도·설명을 입력합니다.
-2. 실제 커버 파일이 있을 때만 `coverImage`를 추가하고 커버를 표시합니다. `coverImage`가 없으면 임시 커버를 만들지 않고 앨범 정보를 단일 열로 표시합니다. 확인되지 않은 커버 이미지나 가상 커버를 임의로 생성하지 않습니다.
-3. 전체 재생목록은 `streamingLinks`에 플랫폼, URL, 라벨을 추가합니다.
-4. 앨범 전체 재생목록과 그 안의 개별 트랙 링크를 같은 페이지에 중복 노출하지 않습니다.
-5. 실제 수록곡명·참여자 정보는 원본으로 확인된 경우에만 추가합니다.
-
-```ts
-streamingLinks: [{
-  platform: 'YouTube',
-  label: 'LISTEN TO ALBUM',
-  url: 'https://www.youtube.com/playlist?list=확인된_재생목록_ID',
-}]
-```
+MEDIA는 `01 FEATURED PERFORMANCE`, `02 PRESS & ARTICLES`, `03 SELECTED PERFORMANCES`, `04 SPECIAL ARCHIVE`로 구성합니다. 앨범 등록과 재생 링크 운영은 [ALBUM-WORKFLOW.md](./ALBUM-WORKFLOW.md)를 따르며 WORKS에서 노출합니다.
 
 ## 6. 자체 영상·음원 추가
 

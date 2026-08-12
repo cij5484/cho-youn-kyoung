@@ -16,8 +16,11 @@ export const site = {
 
 export const navigationItems = [
   { label: 'HOME', path: '/' },
-  { label: 'PERFORMANCE', path: '/performance' },
+  { label: 'WORKS', path: '/works' },
   { label: 'MEDIA', path: '/media' },
   { label: 'ABOUT', path: '/about' },
   { label: 'CONTACT', path: '/contact' },
 ] as const;
+
+export const isWorksPath = (pathname: string) =>
+  pathname === '/works' || pathname === '/performance' || pathname.startsWith('/performance/') || pathname.startsWith('/album/');

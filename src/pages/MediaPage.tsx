@@ -1,11 +1,8 @@
 import { useEffect, type ReactNode } from 'react';
 import { Reveal } from '../components/Reveal';
-import { SafeImage } from '../components/common/SafeImage';
 import { YouTubePreview } from '../components/media/YouTubePreview';
-import { albums } from '../data/albums';
 import { mediaItems, mediaPageCopy, mediaSections, type MediaItem } from '../data/media';
 import { pressArticlesNewestFirst } from '../data/press';
-import { assetUrl } from '../utils/assetUrl';
 import '../styles/media.css';
 
 function ExternalAction({ item }: { item: Pick<MediaItem, 'label' | 'url'> }) {
@@ -30,38 +27,6 @@ function VideoCard({ item, variant = 'selected' }: { item: MediaItem; variant?: 
         <ExternalAction item={item} />
       </div>
     </article>
-  );
-}
-
-function Discography() {
-  return (
-    <div className="media-albums">
-      {albums.map((album) => {
-        const streamingLink = album.streamingLinks?.[0];
-        return (
-          <article className={`media-album${album.coverImage ? '' : ' media-album--text-only'}`} key={album.id}>
-            {album.coverImage && (
-              <div className="media-album__cover">
-                <SafeImage
-                  src={assetUrl(album.coverImage)}
-                  alt={`${album.title} 앨범 커버`}
-                />
-              </div>
-            )}
-            <div className="media-album__copy">
-              <time dateTime={album.year}>{album.year}</time>
-              <h3>{album.title}</h3>
-              <p>{album.description}</p>
-              {streamingLink?.url && (
-                <a className="media-action motion-link" href={streamingLink.url} target="_blank" rel="noopener noreferrer">
-                  {streamingLink.label ?? streamingLink.platform}<span aria-hidden="true">↗</span>
-                </a>
-              )}
-            </div>
-          </article>
-        );
-      })}
-    </div>
   );
 }
 
@@ -93,7 +58,6 @@ function PressArticles() {
 }
 
 function SectionContent({ sectionId }: { sectionId: (typeof mediaSections)[number]['id'] }): ReactNode {
-  if (sectionId === 'discography') return <Discography />;
   if (sectionId === 'press') return <PressArticles />;
   const items = mediaItems.filter((item) => item.section === sectionId);
   return (
@@ -125,15 +89,16 @@ export function MediaPage() {
   return (
     <article className="media-page">
       <section className="media-hero" aria-labelledby="media-title">
-        <div className="media-hero__copy">
-          <p className="media-hero__eyebrow">{mediaPageCopy.eyebrow}</p>
-          <h1 id="media-title">{mediaPageCopy.title}</h1>
-          <span className="media-hero__rule" aria-hidden="true" />
-          <p className="media-hero__description">{mediaPageCopy.description}</p>
+        <div className="media-hero__inner">
+          <div className="media-hero__copy">
+            <p className="media-hero__eyebrow">{mediaPageCopy.eyebrow}</p>
+            <h1 id="media-title">{mediaPageCopy.title}</h1>
+            <span className="media-hero__rule" aria-hidden="true" />
+          </div>
+          <nav className="media-hero__index" aria-label="MEDIA 섹션 바로가기">
+            {mediaSections.map((section) => <button type="button" key={section.id} onClick={() => scrollToSection(section.id)}><span>{section.number}</span>{section.title}</button>)}
+          </nav>
         </div>
-        <nav className="media-hero__index" aria-label="MEDIA 섹션 바로가기">
-          {mediaSections.map((section) => <button type="button" key={section.id} onClick={() => scrollToSection(section.id)}><span>{section.number}</span>{section.title}</button>)}
-        </nav>
       </section>
 
       <div className="media-page__body">

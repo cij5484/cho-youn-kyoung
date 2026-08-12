@@ -1,6 +1,6 @@
 # 공연 등록 워크플로
 
-- 마지막 확인 날짜: 2026-07-24
+- 마지막 확인 날짜: 2026-08-12
 - 기준 commit SHA: `8a574e10b82f`
 
 ## A. 사용자에게 먼저 받아야 할 자료
@@ -23,7 +23,11 @@
 5. 원문과 웹 문장이 다르면 그 이유를 PR 또는 작업 메모에 기록합니다.
 6. 오타 수정도 원본과 공식 명칭을 다시 확인한 뒤 반영합니다.
 
-## C. 공연 ID와 폴더 생성 규칙
+## C. WORKS 노출과 영구 경로
+
+공연 목록은 `/works`의 `01 PERFORMANCES`에 최신순으로 노출합니다. 기존 `/performance`는 같은 WORKS 목록을 제공하며, 외부에 공개된 모든 `/performance/:id` 상세 URL은 영구적으로 유지합니다. 공연 데이터의 Source of Truth는 계속 `src/data/performances.ts`입니다.
+
+## D. 공연 ID와 폴더 생성 규칙
 
 권장 ID 형식은 `{slug}-{YYYY-MM-DD}`입니다.
 
@@ -58,7 +62,7 @@ downloads/poster.pdf
 downloads/leaflet.pdf
 ```
 
-## D. 업로드 순서
+## E. 업로드 순서
 
 1. 사용자가 바이너리 파일을 GitHub에 직접 업로드합니다.
 2. 실제 경로와 파일명을 확인합니다.
@@ -66,7 +70,7 @@ downloads/leaflet.pdf
 4. PR에서 바이너리 변경 여부를 확인합니다.
 5. Viewer, 다운로드, 모바일 배경을 실제 화면에서 확인합니다.
 
-## E. `performances.ts` 입력 항목
+## F. `performances.ts` 입력 항목
 
 | 필드 | 용도 | 예시 |
 | --- | --- | --- |
@@ -96,7 +100,7 @@ downloads/leaflet.pdf
 
 HOME과 RECENT WORKS 노출에는 `homeHero`, `heroImage`, POSTER `archiveMaterials`가 모두 필요합니다. 카드 이미지는 기존 `viewer/poster.png`를 재사용하며 공연 데이터를 별도 HOME 파일에 복사하지 않습니다. 등록 및 기본 대표 Work 선정은 [HOME-HERO-WORKFLOW.md](./HOME-HERO-WORKFLOW.md)를 따릅니다.
 
-## F. 출연자·사회자
+## G. 출연자·사회자
 
 - 공통 프로필은 재사용 가능합니다.
 - 공연별 `image`와 `participatingWorks`는 따로 지정할 수 있습니다.
@@ -104,7 +108,7 @@ HOME과 RECENT WORKS 노출에는 `homeHero`, `heroImage`, POSTER `archiveMateri
 - 카드 수에 따라 PC·태블릿·모바일 열 수가 자연스럽게 변경되어야 합니다.
 - 프로필 패널과 `VIEW PROFILE` 동작을 확인합니다.
 
-## G. 디자인
+## H. 디자인
 
 - 모든 공연에 동일 디자인을 강제하지 않습니다.
 - 공연별 테마 클래스 안에서 색상과 배경을 관리합니다.
@@ -113,11 +117,11 @@ HOME과 RECENT WORKS 노출에는 `homeHero`, `heroImage`, POSTER `archiveMateri
 - 데스크톱·모바일 배경을 별도로 준비할 수 있습니다.
 - 본문이 길어지면 `background-size: cover` 크롭이 달라질 수 있으므로 원고 확정 후 배경을 적용합니다.
 
-## H. PR 흐름
+## I. PR 흐름
 
 논의 → 지시서 → Codex 작업 → PR 검토 → Actions 확인 → 직접 화면 확인 → 머지 → 배포 확인
 
-## I. 두 공연에서 발생한 시행착오
+## J. 두 공연에서 발생한 시행착오
 
 - 바이너리 파일 복사 작업으로 오류가 발생했습니다.
 - PR 설명만 믿지 않고 실제 변경 파일과 patch를 확인해야 합니다.

@@ -148,6 +148,7 @@ export function AboutPage() {
   return (
     <article className="about-page">
       <section className="about-hero" aria-labelledby="about-title">
+        <div className="about-hero__inner">
         <div className="about-hero__copy">
           <p className="about-kicker">ABOUT</p>
           <h1 id="about-title" aria-label={profile.englishName}>{englishNameParts.map((namePart) => <span key={namePart}>{namePart}</span>)}</h1>
@@ -157,6 +158,7 @@ export function AboutPage() {
         <figure className="about-hero__portrait">
           <SafeImage key={activeImage.src} src={assetUrl(activeImage.src)} alt={activeImage.alt} fallbackClassName="about-hero__portrait-fallback" fallbackLabel={profile.englishName} objectPosition={activeImage.objectPosition ?? 'center bottom'} />
         </figure>
+        </div>
       </section>
 
       <section className="about-gallery" aria-label="조윤경 프로필 사진 선택">
