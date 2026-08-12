@@ -51,7 +51,8 @@
   line-height: 0.9;
   letter-spacing: -0.065em;
 }
-.media-page .media-hero__rule { display: block; width: 34px; height: 1px; margin: 28px 0 24px; background: var(--gold); }
+.media-page .media-hero__rule { display: block; width: 34px; height: 1px; margin-top: 28px; background: var(--gold); }
+.media-page .media-hero__description { max-width: 32rem; margin: 24px 0 0; color: var(--muted); font-size: clamp(.86rem, 1vw, .98rem); line-height: 1.65; word-break: keep-all; }
 .media-page .media-page__body { width: min(1400px, calc(100% - 52px)); margin: 0 auto; padding-bottom: clamp(72px, 10vw, 140px); }
 .media-page .media-section {
   display: grid;

@@ -94,6 +94,7 @@ export function MediaPage() {
             <p className="media-hero__eyebrow">{mediaPageCopy.eyebrow}</p>
             <h1 id="media-title">{mediaPageCopy.title}</h1>
             <span className="media-hero__rule" aria-hidden="true" />
+            <p className="media-hero__description">{mediaPageCopy.description}</p>
           </div>
           <nav className="media-hero__index" aria-label="MEDIA 섹션 바로가기">
             {mediaSections.map((section) => <button type="button" key={section.id} onClick={() => scrollToSection(section.id)}><span>{section.number}</span>{section.title}</button>)}

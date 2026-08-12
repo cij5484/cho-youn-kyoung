@@ -152,8 +152,6 @@ export function AboutPage() {
         <div className="about-hero__copy">
           <p className="about-kicker">ABOUT</p>
           <h1 id="about-title" aria-label={profile.englishName}>{englishNameParts.map((namePart) => <span key={namePart}>{namePart}</span>)}</h1>
-          <p className="about-hero__intro">해금 연주자 조윤경의 음악과 활동을 소개합니다.</p>
-          <span className="about-hero__rule" aria-hidden="true" />
           <p className="about-hero__role"><span>{roleLead}</span>{roleRest && ` ${roleRest}`}</p>
           <p className="about-hero__position">{profile.currentPosition}</p>
         </div>
