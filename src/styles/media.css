@@ -29,7 +29,7 @@
   transform: skewX(-18deg);
 }
 
-.media-page .media-hero__inner { width: min(1400px, 100%); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 650px) minmax(300px, 360px); gap: clamp(56px, 8vw, 120px); align-items: end; }
+.media-page .media-hero__inner { width: min(1400px, 100%); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 650px) minmax(260px, 360px); gap: clamp(32px, 6vw, 96px); align-items: end; }
 .media-page .media-hero__copy { width: 100%; }
 .media-page .media-hero__index { width: 100%; display: grid; align-self: end; }
 .media-page .media-hero__index button { display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 12px 0; border: 0; border-bottom: 1px solid rgba(241, 237, 229, 0.14); color: rgba(241, 237, 229, 0.62); background: transparent; font: inherit; font-size: 0.68rem; font-weight: 500; letter-spacing: 0.14em; text-align: left; cursor: pointer; transition: color 210ms ease, padding-left 210ms ease, border-color 210ms ease; }
@@ -86,7 +86,7 @@
 .media-page .media-action:hover span, .media-page .media-action:focus-visible span { transform: translate(3px, -3px); }
 .media-page .media-action:focus-visible { border-bottom-color: rgba(189, 146, 80, 0.55); outline: 2px solid var(--gold); outline-offset: 5px; }
 
-.media-page .media-card--featured { display: grid; grid-template-columns: minmax(480px, 600px) minmax(360px, 1fr); gap: clamp(36px, 4vw, 60px); align-items: center; }
+.media-page .media-card--featured { display: grid; grid-template-columns: minmax(0, 600px) minmax(0, 1fr); gap: clamp(36px, 4vw, 60px); align-items: center; }
 .media-page .media-card--featured .media-youtube { width: 100%; max-width: 600px; }
 .media-page .media-card--featured h3 { white-space: nowrap; font-size: clamp(1.45rem, 1.8vw, 2.15rem); }
 .media-page .media-card--featured .media-card__copy { padding-top: 0; }
@@ -179,6 +179,12 @@
   .media-page .media-press__article:hover .media-press__story h3 a { color: var(--text); }
   .media-page .media-press__article:hover .media-press__arrow,
   .media-page .media-press__story h3 a:hover .media-press__arrow { color: var(--gold); transform: translate(2px, -2px); }
+}
+
+@media (max-width: 1280px) and (min-width: 801px) {
+  .media-page .media-card--featured { grid-template-columns: minmax(0, 600px); }
+  .media-page .media-card--featured h3 { white-space: normal; }
+  .media-page .media-card--featured .media-card__copy { padding-top: 26px; }
 }
 
 @media (max-width: 800px) {
