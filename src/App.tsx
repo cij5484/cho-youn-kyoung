@@ -1,7 +1,7 @@
 import { HashRouter, Route, Routes } from "react-router-dom";
 import { Header } from "./components/layout/Header";
 import { HomePage } from "./pages/HomePage";
-import { PerformancePage } from "./pages/PerformancePage";
+import { WorksPage } from "./pages/WorksPage";
 import { PerformanceDetailPage } from "./pages/PerformanceDetailPage";
 import { AboutPage } from "./pages/AboutPage";
 import { ContactPage } from "./pages/ContactPage";
@@ -19,7 +19,8 @@ export default function App() {
         <PageTransition>
           <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/performance" element={<PerformancePage />} />
+          <Route path="/works" element={<WorksPage />} />
+          <Route path="/performance" element={<WorksPage />} />
           <Route path="/performance/:id" element={<PerformanceDetailPage />} />
           <Route path="/media" element={<MediaPage />} />
           <Route path="/about" element={<AboutPage />} />

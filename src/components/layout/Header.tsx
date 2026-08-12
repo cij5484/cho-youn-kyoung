@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { navigationItems, site } from '../../data/site';
+import { isWorksPath, navigationItems, site } from '../../data/site';
 import { MobileMenu } from './MobileMenu';
 
 export function Header() {
@@ -41,7 +41,7 @@ export function Header() {
     <header className={`site-header${isSanjoDetail ? ' site-header--sanjo-detail' : ''}`}>
       <NavLink className="brand" to="/" onClick={() => setIsOpen(false)}>{site.artistName}</NavLink>
       <nav className="desktop-nav" aria-label="Primary navigation">
-        {navigationItems.map((item) => <NavLink key={item.path} to={item.path}>{item.label}</NavLink>)}
+        {navigationItems.map((item) => <NavLink key={item.path} to={item.path} className={({ isActive }) => (item.path === '/works' ? isWorksPath(location.pathname) : isActive) ? 'active' : undefined}>{item.label}</NavLink>)}
       </nav>
       <button ref={menuButtonRef} className="menu-button" type="button" aria-label={isOpen ? 'Close menu' : 'Open menu'} aria-expanded={isOpen} aria-controls="mobile-menu" onClick={toggleMenu}>
         <span aria-hidden="true" />

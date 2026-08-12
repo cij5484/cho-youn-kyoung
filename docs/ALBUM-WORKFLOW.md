@@ -1,9 +1,17 @@
 # 앨범 등록 워크플로
 
-- 마지막 확인 날짜: 2026-07-26
+- 마지막 확인 날짜: 2026-08-12
 - 기준 commit SHA: `0856c7299b97c4ca04db18eadf7595ef8f66f60f` (PR #51 후속 커밋)
 
 앨범 작업도 공연 작업과 동일하게 원본 자료를 먼저 확인하고, 확정·권장·미확정 정보를 구분합니다. 아직 저장소에서 확정되지 않은 앨범 목록·상세·Viewer UI나 픽셀 규격은 **미확정**으로 표시합니다.
+
+
+## WORKS 목록과 향후 상세 경로
+
+- 앨범 Source of Truth는 계속 `src/data/albums.ts`이며 공연 데이터와 합치지 않습니다.
+- `/works`의 `02 ALBUMS`는 `albums.ts`를 직접 소비합니다. `detailsPath`가 있으면 `VIEW →`, 실제 `streamingLinks`만 있으면 `LISTEN ↗`를 제공하고 어느 쪽도 없으면 가짜 action을 만들지 않습니다.
+- 실제 상세 자료와 라우트가 준비된 향후 앨범 상세는 `/album/:id` 구조를 사용합니다. 상세 자료가 없는 앨범을 위해 임의 페이지를 만들지 않습니다.
+- 앨범은 MEDIA DISCOGRAPHY에 중복 노출하지 않습니다.
 
 ## 먼저 받아야 할 자료
 
@@ -91,7 +99,7 @@ public/assets/albums/{album-id}/
 | `AlbumMediaItem` | `video`, `image`, `article` 관련 자료와 선택적 URL·썸네일·설명 |
 | `AlbumDownload` | 다운로드 라벨·URL과 선택적 파일 형식 |
 
-트랙 크레딧(`AlbumTrackCredit`)과 앨범 전체 크레딧(`AlbumCredit`)은 범위가 다르므로 구분해 입력합니다. 확인되지 않은 정보는 데이터에 추가하지 않고, 빈 배열도 억지로 넣지 않습니다. 값이 없는 선택 필드는 생략하며 향후 UI에서는 데이터가 있을 때만 해당 섹션을 표시합니다. 이번 PR에서는 앨범 상세 UI, 라우트, 버튼을 만들지 않습니다.
+트랙 크레딧(`AlbumTrackCredit`)과 앨범 전체 크레딧(`AlbumCredit`)은 범위가 다르므로 구분해 입력합니다. 확인되지 않은 정보는 데이터에 추가하지 않고, 빈 배열도 억지로 넣지 않습니다. 값이 없는 선택 필드는 생략하며 향후 UI에서는 데이터가 있을 때만 해당 섹션을 표시합니다. 상세 UI와 라우트는 실제 자료가 준비된 앨범에만 추가합니다.
 
 HOME RECENT WORKS에는 확정 `releaseDate`, 실제 `coverImage`, 실제 `detailsPath`, 전용 Hero Scene이 모두 준비된 앨범만 연결합니다. 앨범 원본은 계속 `albums.ts`에서 관리하고 HOME adapter에는 원본 내용을 복사하지 않습니다. 자세한 연결 절차는 [HOME-HERO-WORKFLOW.md](./HOME-HERO-WORKFLOW.md)를 따릅니다.
 
