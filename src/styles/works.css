@@ -22,8 +22,8 @@
 .works-section__heading { display: flex; gap: 20px; align-items: baseline; margin-bottom: 34px; }
 .works-section__heading h2 { margin: 0; font-family: var(--serif); font-size: clamp(1.4rem,2vw,1.85rem); line-height: 1; letter-spacing: -.04em; }
 .works-archive__row {
-  --performance-row-accent: rgba(241, 237, 229, 0.42);
-  --performance-row-wash: rgba(241, 237, 229, 0.035);
+  --works-row-accent: rgba(241, 237, 229, 0.42);
+  --works-row-wash: rgba(241, 237, 229, 0.035);
   position: relative;
   display: grid;
   grid-template-columns: 86px minmax(210px, 250px) minmax(300px, 1fr) minmax(170px, 260px) 86px;
@@ -36,13 +36,13 @@
 }
 
 .works-archive__row--haegeum-2026-08-02 {
-  --performance-row-accent: #BD9250;
-  --performance-row-wash: rgba(189, 146, 80, 0.07);
+  --works-row-accent: #BD9250;
+  --works-row-wash: rgba(189, 146, 80, 0.07);
 }
 
 .works-archive__row--sanjo-gil-2026-08-16 {
-  --performance-row-accent: #78A9D7;
-  --performance-row-wash: rgba(120, 169, 215, 0.08);
+  --works-row-accent: #78A9D7;
+  --works-row-wash: rgba(120, 169, 215, 0.08);
 }
 
 .works-archive__row:last-child {
@@ -61,7 +61,7 @@
 .works-archive__row::before {
   inset: 0 -18px;
   z-index: -1;
-  background: var(--performance-row-wash);
+  background: var(--works-row-wash);
   transform: scaleX(0.985);
   transform-origin: center;
 }
@@ -72,14 +72,14 @@
   top: -1px;
   bottom: -1px;
   z-index: 1;
-  border-top: 1px solid var(--performance-row-accent);
-  border-bottom: 1px solid var(--performance-row-accent);
+  border-top: 1px solid var(--works-row-accent);
+  border-bottom: 1px solid var(--works-row-accent);
   transform: scaleX(0);
   transform-origin: left center;
 }
 
 .works-archive__row:focus-visible {
-  outline: 3px solid var(--performance-row-accent);
+  outline: 3px solid var(--works-row-accent);
   outline-offset: 8px;
   border-top-color: transparent;
 }
@@ -100,7 +100,7 @@
 
 .works-archive__row:focus-visible .works-archive__title,
 .works-archive__row:focus-visible .works-archive__arrow {
-  color: var(--performance-row-accent);
+  color: var(--works-row-accent);
 }
 
 .works-archive__year {
@@ -159,8 +159,8 @@
   .works-archive__row:not(.works-archive__row--static):hover { border-top-color: transparent; }
   .works-archive__row:not(.works-archive__row--static):hover::before, .works-archive__row:not(.works-archive__row--static):hover::after { opacity: 1; transform: scaleX(1); }
   .works-archive__row:not(.works-archive__row--static):hover .works-archive__info { transform: translateX(5px); }
-  .works-archive__row:not(.works-archive__row--static):hover .works-archive__arrow { color: var(--performance-row-accent); transform: translateX(8px); }
-  .works-archive__row:not(.works-archive__row--static):hover .works-archive__title { color: var(--performance-row-accent); }
+  .works-archive__row:not(.works-archive__row--static):hover .works-archive__arrow { color: var(--works-row-accent); transform: translateX(8px); }
+  .works-archive__row:not(.works-archive__row--static):hover .works-archive__title { color: var(--works-row-accent); }
 }
 @media (max-width: 820px) {
   .works-archive__hero { min-height: auto; padding: calc(var(--header) + 42px) 18px 34px; }
