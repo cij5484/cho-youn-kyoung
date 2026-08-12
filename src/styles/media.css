@@ -8,10 +8,10 @@
 }
 
 .media-page .media-hero {
-  min-height: min(54svh, 520px);
-  padding: calc(var(--header) + clamp(56px, 8vw, 110px)) clamp(22px, 8vw, 132px) clamp(58px, 8vw, 100px);
+  min-height: clamp(360px, 48svh, 520px);
+  padding: calc(var(--header) + 56px) clamp(22px, 7vw, 112px) 56px;
   display: grid;
-  align-items: center;
+  align-items: start;
   position: relative;
   isolation: isolate;
   border-bottom: 1px solid rgba(166, 162, 154, 0.12);
@@ -29,9 +29,9 @@
   transform: skewX(-18deg);
 }
 
-.media-page .media-hero__inner { width: min(1400px, 100%); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 650px) minmax(260px, 360px); gap: clamp(32px, 6vw, 96px); align-items: end; }
+.media-page .media-hero__inner { width: min(1400px, 100%); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 390px); gap: clamp(52px, 8vw, 120px); align-items: start; }
 .media-page .media-hero__copy { width: 100%; }
-.media-page .media-hero__index { width: 100%; display: grid; align-self: end; }
+.media-page .media-hero__index { width: 100%; display: grid; }
 .media-page .media-hero__index button { display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 12px 0; border: 0; border-bottom: 1px solid rgba(241, 237, 229, 0.14); color: rgba(241, 237, 229, 0.62); background: transparent; font: inherit; font-size: 0.68rem; font-weight: 500; letter-spacing: 0.14em; text-align: left; cursor: pointer; transition: color 210ms ease, padding-left 210ms ease, border-color 210ms ease; }
 .media-page .media-hero__index button span { color: var(--gold); font-family: var(--serif); letter-spacing: 0.06em; }
 .media-page .media-hero__index button:hover, .media-page .media-hero__index button:focus-visible { padding-left: 5px; border-color: var(--gold); color: var(--text); }
@@ -188,10 +188,10 @@
 }
 
 @media (max-width: 800px) {
-  .media-page .media-hero { min-height: 430px; padding: calc(var(--header) + 54px) 18px 60px; }
+  .media-page .media-hero { min-height: auto; padding: calc(var(--header) + 42px) 18px 34px; }
   .media-page .media-hero::after { left: 70%; }
   .media-page .media-hero__inner { display: block; }
-  .media-page .media-hero__index { width: 100%; margin-top: 42px; }
+  .media-page .media-hero__index { width: 100%; margin-top: 28px; }
   .media-page .media-hero__index button { padding-block: 9px; }
   .media-page .media-hero h1 { font-size: clamp(2.15rem, 10.85vw, 4.65rem); letter-spacing: -0.065em; white-space: nowrap; }
   .media-page .media-page__body { width: calc(100% - 36px); }
