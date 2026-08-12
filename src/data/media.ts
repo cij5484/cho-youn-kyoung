@@ -20,6 +20,7 @@ export type MediaItem = {
 export const mediaPageCopy = {
   eyebrow: 'PERFORMANCE · PRESS · ARCHIVE',
   title: 'MEDIA',
+  description: '조윤경의 공연 영상과 언론 보도, 특별한 음악 기록을 모아 소개합니다.',
   pageTitle: 'MEDIA | CHO YOUN KYOUNG',
   metaDescription: '해금 연주자 조윤경의 공연 영상과 음반, 언론 보도와 특별한 음악 기록을 소개합니다.',
 } as const;

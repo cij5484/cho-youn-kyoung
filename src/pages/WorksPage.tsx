@@ -27,8 +27,8 @@ export function WorksPage() {
           <div className="works-archive__copy">
             <p className="works-archive__eyebrow">ARTIST ARCHIVE</p>
             <h1 id="works-archive-title">WORKS</h1>
-            <p className="works-archive__intro">조윤경의 공연과 음반 기록을 모아 소개합니다.</p>
             <span className="works-archive__rule" aria-hidden="true" />
+            <p className="works-archive__intro">조윤경의 공연과 음반 기록을 모아 소개합니다.</p>
           </div>
           <nav className="works-archive__index" aria-label="WORKS 섹션 바로가기">
             {sections.map((section) => (

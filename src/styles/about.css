@@ -45,22 +45,6 @@
   display: block;
 }
 
-.about-hero__intro {
-  margin: 0;
-  color: var(--muted);
-  font-size: clamp(.86rem, 1vw, .98rem);
-  line-height: 1.65;
-  word-break: keep-all;
-}
-
-.about-hero__rule {
-  display: block;
-  width: 34px;
-  height: 1px;
-  margin: 18px 0 24px;
-  background: var(--gold);
-}
-
 .about-hero__role {
   margin: 0;
   font-size: clamp(1.1rem, 2vw, 2rem);
