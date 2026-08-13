@@ -10,7 +10,7 @@
 
 - 앨범 Source of Truth는 계속 `src/data/albums.ts`이며 공연 데이터와 합치지 않습니다.
 - `/works`의 `02 ALBUMS`는 `albums.ts`를 직접 소비합니다. `detailsPath`가 있으면 `VIEW →`, 실제 `streamingLinks`만 있으면 `LISTEN ↗`를 제공하고 어느 쪽도 없으면 가짜 action을 만들지 않습니다.
-- 실제 상세 자료와 라우트가 준비된 향후 앨범 상세는 `/album/:id` 구조를 사용합니다. 상세 자료가 없는 앨범을 위해 임의 페이지를 만들지 않습니다.
+- 공통 `AlbumDetailPage`와 `/album/:id` 라우트가 앨범 ID를 조회하는 1차 구조로 구현되어 있습니다. WORKS의 상세 링크는 실제 자료가 준비되어 `detailsPath`를 설정한 앨범에만 노출합니다. 없는 ID는 공통 404로 처리합니다.
 - 앨범은 MEDIA DISCOGRAPHY에 중복 노출하지 않습니다.
 
 ## 먼저 받아야 할 자료
@@ -71,9 +71,14 @@ public/assets/albums/{album-id}/
 | --- | --- | --- |
 | `id` | 필수 | 앨범을 식별하는 영문 소문자 kebab-case ID |
 | `title` | 필수 | 공식 앨범명 |
+| `englishTitle` | 선택 | 공식 영문 앨범명 |
 | `year` | 필수 | 확인된 발매 연도 문자열 |
+| `releaseStatus` | 선택 | `coming-soon` 또는 `released` 발매 상태 |
 | `description` | 필수 | 목록 등에 사용하는 짧은 앨범 소개 |
+| `detailedDescription` | 선택 | 상세 화면의 긴 소개 본문 |
 | `coverImage` | 선택 | 웹용 커버 이미지의 public 상대경로 |
+| `cdLabelImage` | 선택 | 향후 Virtual CD Player가 사용할 실제 CD 라벨 이미지 경로 |
+| `albumHero` | 선택 | HOME Album Hero를 위한 앨범 전용 테마 설정. 현재 HOME에는 연결하지 않음 |
 | `detailsPath` | 선택 | 상세 화면이 실제로 생겼을 때 사용하는 경로 |
 | `featured` | 선택 | 대표 앨범 노출 여부 |
 | `releaseDate` | 선택 | 확인된 전체 발매일. 향후 `YYYY-MM-DD` 형식을 사용 |
@@ -90,7 +95,9 @@ public/assets/albums/{album-id}/
 | 타입 | 용도 |
 | --- | --- |
 | `AlbumTrackCredit` | 한 트랙 안에서 역할과 이름을 연결하는 트랙별 크레딧 |
-| `AlbumTrack` | 트랙 번호와 제목, 선택적 부제·재생 시간·트랙 크레딧 |
+| `AlbumTrack` | 트랙 번호와 제목, 선택적 부제·재생 시간·트랙 크레딧·`webAudioUrl` |
+| `AlbumReleaseStatus` | 최소 발매 상태인 `coming-soon`, `released` |
+| `AlbumHeroSettings` | 공연 Hero 타입과 분리된 앨범 전용 Hero 설정 |
 | `AlbumParticipant` | 참여자 이름·역할과 선택적 ID·이미지·설명 |
 | `AlbumCredit` | 역할별 이름 목록과 선택적 섹션으로 구성한 앨범 전체 크레딧 |
 | `AlbumBookletImage` | 부클릿 Viewer 이미지 경로·대체 텍스트와 선택적 라벨 |
@@ -103,23 +110,15 @@ public/assets/albums/{album-id}/
 
 HOME RECENT WORKS에는 확정 `releaseDate`, 실제 `coverImage`, 실제 `detailsPath`, 전용 Hero Scene이 모두 준비된 앨범만 연결합니다. 앨범 원본은 계속 `albums.ts`에서 관리하고 HOME adapter에는 원본 내용을 복사하지 않습니다. 자세한 연결 절차는 [HOME-HERO-WORKFLOW.md](./HOME-HERO-WORKFLOW.md)를 따릅니다.
 
-## 향후 `albums.ts` 확장 필요사항
+## `albums.ts` 1차 상세 확장 구조
 
-> **미확정 — 코드 작업 단계에서 설계:** 아래는 향후 HOME Album Hero와 앨범 상세 구현에 필요한 정보 범위이며, 현재 `Album` 타입에 존재하는 확정 필드명이 아닙니다. 이번 문서 작업에서는 TypeScript 타입을 변경하지 않습니다. 실제 필드명, 필수 여부와 타입은 구현을 시작할 때 현재 `albums.ts` 구조를 다시 검토해 확정합니다.
+영문명(`englishTitle`), 발매 상태(`releaseStatus`), 앨범 전용 Hero 설정(`albumHero`), CD 라벨(`cdLabelImage`), 트랙별 외부 재생 URL(`webAudioUrl`), 상세 소개(`detailedDescription`)를 선택 필드로 정의했습니다. 공식 플랫폼 `streamingLinks`와 자체 웹 재생 URL은 역할을 분리합니다. 기존 앨범에는 확인되지 않은 값을 채우지 않습니다.
 
-- 영문 앨범명
-- 발매 상태(`COMING SOON`, `RELEASED` 등)
-- 앨범 Hero 설정
-- 실제 CD 라벨 이미지 경로
-- 트랙별 외부 웹 재생 URL
-- 앨범 상세 소개·본문
-- 디지털 북클릿 설정
-
-공식 플랫폼 링크와 자체 웹 재생 URL은 서로 다른 역할이므로 하나의 값으로 취급하지 않습니다. 확인되지 않은 값, 필드명 또는 URL을 미리 만들지 않습니다.
+`booklet.previewImages` 배열 순서가 페이지 순서이며 각 항목이 이미지 경로와 대체 텍스트를 보유하므로 8P 자료도 안정적으로 관리할 수 있습니다. 따라서 1차 구조에서는 새 북클릿 타입을 만들지 않습니다. 페이지 넘김 UI와 펼침면 정보는 실제 구현 단계까지 미확정으로 유지합니다.
 
 ## HOME Album Hero 운영 방향
 
-> **확정 운영 원칙 / 구현 미완료:** 앨범은 공연과 동일한 `RECENT WORKS` 선택 인터페이스에서 선택할 수 있는 독립 Hero Scene을 가집니다. 현재 `homeHeroSlides.ts`의 앨범 adapter와 `/album/:id` 라우트는 준비 조건을 문서화한 상태이며 실제 앨범 Hero는 아직 연결되지 않았습니다.
+> **확정 운영 원칙 / 구현 미완료:** 앨범은 공연과 동일한 `RECENT WORKS` 선택 인터페이스에서 선택할 수 있는 독립 Hero Scene을 가집니다. `/album/:id` 기본 라우트는 구현되었지만 실제 앨범 Hero는 아직 연결되지 않았습니다.
 
 - `workType`은 `ALBUM`을 사용하고 앨범 전용 Hero Scene을 활성화합니다.
 - 실제 앨범 커버를 핵심 시각 요소로 사용하며, 앨범 고유 디자인을 새로운 공통 디자인으로 덮어쓰지 않습니다.
@@ -127,9 +126,9 @@ HOME RECENT WORKS에는 확정 `releaseDate`, 실제 `coverImage`, 실제 `detai
 - 실제 상세페이지가 없으면 `VIEW ALBUM` 링크를 만들지 않습니다. 검증된 스트리밍 링크가 생긴 뒤 필요할 때만 `LISTEN` 링크를 별도 추가할 수 있습니다.
 - 상세 트랙 목록, 크레딧과 북클릿은 Hero가 아니라 앨범 상세에서 제공합니다.
 
-## 향후 Album Detail 기본 경험
+## Album Detail 구현 상태와 향후 경험
 
-> **권장 / 향후 앨범 상세 구현 시:** 다음 세 영역은 `/album/:id`가 실제로 구현될 때 적용할 기본 경험입니다. 현재 `App.tsx`에는 앨범 상세 라우트가 없으므로 구현 완료 기능으로 간주하지 않습니다.
+공통 `AlbumDetailPage`는 현재 앨범명, 영문명, 연도, 발매 상태, 소개, 커버, 트랙, 크레딧, 공식 스트리밍 링크를 데이터가 있을 때만 표시하는 최소 구조입니다. Virtual CD Player, 웹 음원 재생, CD 회전, Digital Booklet page flip은 구현되지 않았으며 아래 내용은 향후 권장 사항입니다.
 
 ### A. Virtual CD Player
 
@@ -158,7 +157,7 @@ HOME RECENT WORKS에는 확정 `releaseDate`, 실제 `coverImage`, 실제 `detai
 ## 검수
 
 - 목록: 앨범 정렬과 대표 앨범 노출을 확인하고, 실제 커버가 있으면 커버가 표시되는지 확인합니다. 커버가 없으면 임시 박스 없이 앨범 정보가 텍스트 단일 열로 표시되는지 확인합니다.
-- 상세: **미확정**. 상세 UI가 생기면 `/album/:id`, 헤더, 본문, 크레딧 확인
+- 상세: `/album/:id`의 조건부 섹션, 없는 ID의 공통 404, HOME·WORKS 복귀 링크를 확인
 - Player: **미확정**. 향후 상세 UI가 생기면 트랙 선택·재생·일시정지, CD 회전 상태, reduced-motion, 외부 음원 URL 오류 fallback 확인
 - Viewer: **미확정**. 향후 디지털 북클릿이 생기면 이미지 순서, Desktop 펼침면, Mobile touch/swipe, keyboard와 PDF 역할 분리 확인
 - 다운로드: PDF URL, 파일명, 새 창/다운로드 동작 확인

@@ -9,6 +9,13 @@ export type AlbumTrack = {
   subtitle?: string;
   duration?: string;
   credits?: AlbumTrackCredit[];
+  webAudioUrl?: string;
+};
+
+export type AlbumReleaseStatus = 'coming-soon' | 'released';
+
+export type AlbumHeroSettings = {
+  theme: string;
 };
 
 export type AlbumParticipant = {
@@ -60,10 +67,15 @@ export type AlbumDownload = {
 export type Album = {
   id: string;
   title: string;
+  englishTitle?: string;
   year: string;
+  releaseStatus?: AlbumReleaseStatus;
   releaseDate?: string;
   description: string;
+  detailedDescription?: string;
   coverImage?: string;
+  cdLabelImage?: string;
+  albumHero?: AlbumHeroSettings;
   detailsPath?: string;
   featured?: boolean;
   tracks?: AlbumTrack[];
