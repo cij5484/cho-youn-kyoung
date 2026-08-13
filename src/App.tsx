@@ -9,6 +9,7 @@ import { ScrollToTop } from "./components/layout/ScrollToTop";
 import { PageTransition } from "./components/PageTransition";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { MediaPage } from "./pages/MediaPage";
+import { AlbumDetailPage } from "./pages/AlbumDetailPage";
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/works" element={<WorksPage />} />
           <Route path="/performance" element={<WorksPage />} />
           <Route path="/performance/:id" element={<PerformanceDetailPage />} />
+          <Route path="/album/:id" element={<AlbumDetailPage />} />
           <Route path="/media" element={<MediaPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
