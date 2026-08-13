@@ -1,7 +1,7 @@
 # 홈페이지 구조와 운영 원칙
 
-- 마지막 확인 날짜: 2026-08-12
-- 작업 기준 main SHA: `01b57156d81e`
+- 마지막 확인 날짜: 2026-08-13
+- 작업 기준 main SHA: `13ff9af`
 - 저장소: `cij5484/cho-youn-kyoung`
 
 ## 확정된 기술 구조
@@ -30,7 +30,8 @@
 | `/works` | WORKS. 최신순 PERFORMANCES와 ALBUMS 아카이브를 함께 보여준다. |
 | `/performance` | 기존 공연 목록 링크 호환을 위해 `/works`와 같은 WORKS 페이지를 보여준다. |
 | `/performance/:id` | 공연 상세. 공연별 콘텐츠와 테마를 보여준다. |
-| `/media` | MEDIA. 공연 영상, 언론 보도와 특별한 음악 기록을 보여준다. |
+| `/album/:id` | 향후 실제 자료와 라우트가 준비된 앨범의 상세 경로. 현재는 미구현이다. |
+| `/media` | MEDIA. 공연 영상, 언론 보도와 특별한 음악 기록을 보여주며 앨범 DISCOGRAPHY는 중복 구성하지 않는다. |
 | `/about` | ABOUT. 프로필과 공연 이력을 보여준다. 공연 이력은 오래된 순서 우선이다. |
 | `/contact` | CONTACT. 공식 연락 채널을 보여준다. |
 | 그 외 경로 | 404 안내와 HOME·WORKS 복귀 링크를 보여준다. |
@@ -62,9 +63,9 @@
 - HOME Hero는 자동 순환하지 않으며, 현재 대표 Work를 유지하고 사용자가 RECENT WORKS에서 다른 고유 Hero Scene을 선택합니다. 자세한 운영 원칙은 [HOME-HERO-WORKFLOW.md](./HOME-HERO-WORKFLOW.md)를 따릅니다.
 - 모바일 메뉴는 열린 뒤 첫 링크에 포커스하고, ESC·경로 변경 시 닫으며, 열려 있는 동안 배경 스크롤을 잠급니다. ESC 또는 메뉴 버튼으로 닫으면 메뉴 버튼에 포커스를 복원합니다.
 - 내비게이션은 HOME → WORKS → MEDIA → ABOUT → CONTACT 순서입니다.
-- WORKS는 `performances.ts`와 `albums.ts`를 각각 소비하며, 공연 상세의 `/performance/:id` 공개 URL은 영구 유지합니다. 향후 실제 앨범 상세는 `/album/:id` 구조를 사용합니다.
+- WORKS는 `performances.ts`와 `albums.ts`를 각각 소비합니다. 앨범은 WORKS에서 관리하고 `albums.ts`를 Source of Truth로 유지하며, 공연 상세의 `/performance/:id` 공개 URL은 영구 유지합니다. 향후 실제 자료와 라우트가 준비된 앨범 상세는 `/album/:id` 구조를 사용합니다.
 - WORKS 활성 상태는 `/works`, `/performance`, `/performance/:id`, `/album/:id`에 함께 적용합니다.
-- 앨범과 재생 링크는 `albums.ts`, 영상과 특별 기록은 `media.ts`, 언론 기사는 `press.ts`에서 관리하며 도메인 데이터를 중복하지 않습니다.
+- 앨범과 공식 플랫폼 링크 및 향후 앨범 상세용 웹 재생 정보는 `albums.ts`, 일반 MEDIA 영상·음원과 특별 기록은 `media.ts`, 언론 기사는 `press.ts`에서 관리하며 도메인 데이터를 중복하지 않습니다. 앨범의 HOME 노출 모델은 원본 데이터를 복사하지 않고 `homeHeroSlides.ts` adapter에서 조합합니다.
 - Codex에게 이미지 복사, 재인코딩, 재압축을 시키지 않습니다.
 
 ## Archive Viewer 원칙

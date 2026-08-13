@@ -1,7 +1,7 @@
 # 릴리스 체크리스트
 
-- 마지막 확인 날짜: 2026-07-27
-- 작업 기준 main SHA: `01b57156d81e`
+- 마지막 확인 날짜: 2026-08-13
+- 작업 기준 main SHA: `13ff9af`
 
 ## 콘텐츠
 
@@ -50,8 +50,9 @@
 - [ ] 카드 열 수
 - [ ] 프로필 패널
 - [ ] 키보드·ESC·포커스
-- [ ] HOME 자동 전환 PAUSE/PLAY 버튼이 작은 화면에서도 잘리지 않음
-- [ ] reduced-motion에서 HOME 자동 전환 중지
+- [ ] HOME이 자동 순환하지 않고 사용자가 RECENT WORKS 카드 선택으로만 Hero를 변경함
+- [ ] RECENT WORKS의 desktop hover/focus와 mobile swipe preview가 선택 전 Hero를 변경하지 않음
+- [ ] RECENT WORKS keyboard 선택·ESC·포커스 및 reduced-motion 동작
 - [ ] 모바일 메뉴 ESC·경로 변경 자동 닫기·스크롤 잠금·포커스 복원
 - [ ] reduced motion
 - [ ] MEDIA PC·태블릿 및 390px·360px·320px 독립 1열 반응형
@@ -78,7 +79,7 @@
 - [ ] 외부 링크
 - [ ] 이미지 fallback
 - [ ] 존재하지 않는 경로의 404 안내와 HOME·PERFORMANCE 링크
-- [ ] HOME 자동 전환 PAUSE/PLAY와 수동 점·스와이프
+- [ ] HOME 기본 Work 선정과 RECENT WORKS 카드 선택 및 상세 링크
 - [ ] 공연 상세 아래쪽 출연자 카드 이미지 lazy loading
 - [ ] `#/media` 직접 접근과 PC·모바일 메뉴 MEDIA 활성 상태
 - [ ] 모바일 메뉴에서 MEDIA 이동 후 자동 닫힘
@@ -88,6 +89,21 @@
 - [ ] 앨범 전체 재생목록 외부 링크
 - [ ] YouTube 썸네일 fallback 및 앨범 `coverImage` 유무에 따른 커버·텍스트 단일 열 표시
 - [ ] MEDIA 외부 링크의 새 탭 및 보안 속성
+
+## 향후 앨범 상세 구현 시
+
+> 아래 항목은 현재 구현 검수가 아니라 `/album/:id`, 앨범 Hero와 상세 기능을 구현하는 PR에서 활성화할 **미확정 체크리스트**입니다.
+
+- [ ] 실제 자료가 준비된 앨범만 `/album/:id`로 직접 접근 가능하며 없는 ID는 안전하게 처리
+- [ ] RECENT WORKS에서 `ALBUM` 선택 시 전용 Hero Scene과 실제 `VIEW ALBUM` 링크 표시
+- [ ] 앨범 Hero에는 앨범명·상태/연도·간단한 트랙 정보만 표시하고 상세 트랙·Credits·북클릿은 상세로 분리
+- [ ] 트랙 선택, 재생·일시정지와 현재 트랙 상태 동기화
+- [ ] CD가 재생 중 자연스럽게 회전하고 일시정지 시 자연스럽게 멈춤
+- [ ] `prefers-reduced-motion`에서 CD 회전 등 비필수 motion 축소·제거
+- [ ] 디지털 북클릿 Desktop 펼침면과 keyboard 조작, Mobile touch/swipe
+- [ ] 디지털 북클릿 Viewer와 PDF 다운로드 역할 분리
+- [ ] 외부 웹 음원 URL의 만료·404·CORS·네트워크 오류 시 안전한 fallback과 오류 안내
+- [ ] 공식 플랫폼 링크와 자체 웹 재생 URL이 구분되고 임의 URL이 없음
 
 ## 개발
 
