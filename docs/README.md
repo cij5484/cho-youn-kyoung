@@ -1,7 +1,7 @@
 # 홈페이지 운영 문서
 
-- 마지막 확인 날짜: 2026-07-27
-- 기준 main SHA: `01b57156d81e`
+- 마지막 확인 날짜: 2026-08-13
+- 기준 main SHA: `13ff9af`
 - 저장소: `cij5484/cho-youn-kyoung`
 
 이 `docs/` 폴더는 조윤경 홈페이지 운영의 공식 기준서(Source of Truth)입니다. 새 공연·앨범·자료 교체 작업을 시작하기 전에는 반드시 관련 문서를 먼저 읽고, 저장소의 실제 파일과 함께 확인합니다.
@@ -21,8 +21,8 @@
 | [WEBSITE-OPERATIONS.md](./WEBSITE-OPERATIONS.md) | 홈페이지 구조, 라우팅, 데이터 파일, 운영 원칙 |
 | [HOME-HERO-WORKFLOW.md](./HOME-HERO-WORKFLOW.md) | HOME 대표 Work 선정, RECENT WORKS 데이터 연결·인터랙션·접근성 |
 | [PERFORMANCE-WORKFLOW.md](./PERFORMANCE-WORKFLOW.md) | 새 공연 등록 단계, 공연 데이터, 공연별 테마 작업 순서 |
-| [ALBUM-WORKFLOW.md](./ALBUM-WORKFLOW.md) | 앨범 등록 준비 자료, 데이터 입력, 미확정 앨범 UI 관리 |
-| [MEDIA-WORKFLOW.md](./MEDIA-WORKFLOW.md) | MEDIA 영상·앨범·특별 기록 등록 및 검수 절차 |
+| [ALBUM-WORKFLOW.md](./ALBUM-WORKFLOW.md) | WORKS 앨범 등록, HOME Hero 연결, 향후 앨범 상세·재생·북클릿 운영 원칙 |
+| [MEDIA-WORKFLOW.md](./MEDIA-WORKFLOW.md) | MEDIA 공연 영상·언론 보도·특별 기록 등록 및 검수 절차 |
 | [ASSET-SPECIFICATIONS.md](./ASSET-SPECIFICATIONS.md) | 포스터·리플렛·웹 배경·출연자 사진의 실제 규격과 권장 규칙 |
 | [ASSET-INVENTORY.md](./ASSET-INVENTORY.md) | 현재 저장소 자산 전수 목록과 참조 현황 |
 | [ASSET-MIGRATION-MAP.md](./ASSET-MIGRATION-MAP.md) | `public/assets/` 표준 구조로 이전한 경로 대응표와 최종 처리 결과 |
@@ -37,3 +37,4 @@
 4. 원본 자료와 홈페이지 문구가 다르면 임의로 고치지 말고 원본, 공식 명칭, 사용자 확인을 거칩니다.
 5. Markdown 문서 작업 PR은 `.md` 외 파일 변경과 바이너리 변경이 0건이어야 합니다.
 6. 사용 중인 공연·프로필·공용 인물 자산은 `public/assets/`를 기준으로 하며, 앨범 폴더는 실제 자산이 생길 때만 만듭니다.
+7. 앨범은 MEDIA가 아니라 WORKS에서 관리합니다. Source of Truth는 `src/data/albums.ts`, 향후 상세 경로는 `/album/:id`이며, HOME에는 `src/data/homeHeroSlides.ts` adapter를 통해 연결합니다.

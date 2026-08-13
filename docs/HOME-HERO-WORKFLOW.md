@@ -1,6 +1,6 @@
 # HOME Hero와 RECENT WORKS 운영 워크플로
 
-- 마지막 확인 날짜: 2026-08-08
+- 마지막 확인 날짜: 2026-08-13
 
 ## 역할과 대표 Work 선정
 
@@ -24,6 +24,17 @@ HOME Hero는 현재 가장 가까운 주요 활동을 안정적으로 소개하�
 1. `ALBUM-WORKFLOW.md`에 따라 `albums.ts`와 실제 자산을 등록한다.
 2. 확정 `releaseDate`, `coverImage`, 실제 `detailsPath`, 전용 Hero Scene이 준비된 뒤 HOME adapter 매핑을 추가한다.
 3. PERFORMANCE와 같은 선택 인터페이스를 사용하되 타입은 `ALBUM`으로 표시한다. 존재하지 않는 상세 페이지나 임시 커버는 만들지 않는다.
+
+## 앨범 Hero 운영 원칙
+
+> **확정 운영 원칙 / 구현 미완료:** 앨범도 PERFORMANCE와 동일한 `RECENT WORKS` 선택 인터페이스를 사용하지만, 현재 adapter에는 준비된 앨범 slide가 없으며 실제 앨범 Hero Scene도 아직 구현되지 않았다.
+
+- `workType`은 `ALBUM`으로 표시하고 공연 Hero를 재사용하지 않는 앨범 전용 Hero Scene을 사용한다.
+- 실제 커버를 Hero의 핵심 시각 요소로 삼고 앨범 고유 디자인을 보존한다.
+- 앨범명, 발매 상태 또는 연도, 간단한 트랙 정보와 실제 상세페이지로 가는 `VIEW ALBUM` 정도만 표시한다.
+- 검증된 공식 스트리밍 링크가 생기면 필요에 따라 `LISTEN`을 추가할 수 있지만 임의 링크는 만들지 않는다.
+- 상세 트랙 목록, Credits, 디지털 북클릿은 Hero에 넣지 않고 `/album/:id` 상세페이지에서 제공한다.
+- 앨범 Scene 추가로 기존 공연 Hero의 선정, 디자인, 애니메이션 또는 선택 동작을 변경하지 않는다.
 
 ## 자산 위치
 

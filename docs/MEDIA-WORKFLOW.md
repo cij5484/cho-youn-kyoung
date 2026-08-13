@@ -1,7 +1,7 @@
 # MEDIA 페이지 운영 절차
 
-- 마지막 확인 날짜: 2026-08-12
-- 작업 기준 main SHA: `01b57156d81e`
+- 마지막 확인 날짜: 2026-08-13
+- 작업 기준 main SHA: `13ff9af`
 
 ## 1. 목적과 경로
 
@@ -59,9 +59,17 @@ MEDIA Hero의 editorial index와 본문은 `media.ts`의 단일 `mediaSections` 
 
 MEDIA는 `01 FEATURED PERFORMANCE`, `02 PRESS & ARTICLES`, `03 SELECTED PERFORMANCES`, `04 SPECIAL ARCHIVE`로 구성합니다. 앨범 등록과 재생 링크 운영은 [ALBUM-WORKFLOW.md](./ALBUM-WORKFLOW.md)를 따르며 WORKS에서 노출합니다.
 
-## 6. 자체 영상·음원 추가
+## 6. 일반 MEDIA용 로컬 영상·오디오
 
-실제 파일을 받은 뒤 `public/assets/media/{media-id}/` 아래에 MP4 또는 MP3/WAV를 저장하고, `media.ts`의 `kind`를 `local-video` 또는 `local-audio`로 지정해 연결합니다. 파일이 없는 동안 경로 또는 빈 폴더를 미리 만들지 않습니다. 파일 형식, 크기, 저작권, 브라우저 재생과 fallback을 배포 전에 확인합니다.
+이 규칙은 앨범 웹 플레이어가 아니라 MEDIA의 독립적인 영상·음원 기록에만 적용합니다. 실제 파일을 받은 뒤 `public/assets/media/{media-id}/` 아래에 MP4 또는 MP3/WAV를 저장하고, `media.ts`의 `kind`를 `local-video` 또는 `local-audio`로 지정해 연결합니다. 파일이 없는 동안 경로 또는 빈 폴더를 미리 만들지 않습니다. 파일 형식, 크기, 저작권, 브라우저 재생과 fallback을 배포 전에 확인합니다.
+
+### 앨범 상세용 외부 웹 음원과의 구분
+
+- 앨범은 MEDIA에 DISCOGRAPHY로 다시 만들지 않으며 `albums.ts`를 Source of Truth로 WORKS에서 관리합니다.
+- 향후 `/album/:id` 플레이어에서 사용하는 고음질·웹 감상용 트랙은 GitHub의 `public/assets/media/`에 저장하지 않는 방향을 기본으로 합니다.
+- 해당 트랙은 Cloudflare R2 등 외부 object storage/CDN의 웹 재생 URL 연결을 검토합니다. 저장소와 데이터 필드 설계는 아직 **미확정**입니다.
+- 공식 플랫폼 외부 링크와 자체 웹 플레이어의 트랙 URL을 구분하고 확인되지 않은 URL은 만들지 않습니다.
+- 앨범 Hero, 상세, 재생과 북클릿의 전체 원칙은 [ALBUM-WORKFLOW.md](./ALBUM-WORKFLOW.md)를 따릅니다.
 
 ## 7. 콘텐츠 검증 원칙
 
