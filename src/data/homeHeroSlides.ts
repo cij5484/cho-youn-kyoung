@@ -61,14 +61,12 @@ const albumHeroSlides: HomeHeroSlide[] = albums.flatMap((album) => {
   const canShowComingSoon = album.releaseStatus === 'coming-soon' && Boolean(album.year);
   if (!album.coverImage || !album.detailsPath || !album.albumHero || (!album.releaseDate && !canShowComingSoon)) return [];
 
-  const [artistLine, albumLine, ...subtitleParts] = (album.englishTitle ?? album.title).split('\n');
-  const heroTitle = albumLine ? `${artistLine}\n${albumLine}` : artistLine;
   const [cardTitle, cardSubtitle] = album.title.split(/\s+[–—-]\s+/, 2);
   return [{
     id: album.id,
     eyebrow: 'ALBUM',
-    title: heroTitle,
-    subtitle: subtitleParts.join(' '),
+    title: cardTitle,
+    subtitle: cardSubtitle,
     date: album.releaseDate,
     displayDate: `${album.year}${album.releaseStatus === 'coming-soon' ? ' · COMING SOON' : ''}`,
     time: '',

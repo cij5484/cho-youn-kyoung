@@ -35,12 +35,13 @@ HOME Hero는 현재 가장 가까운 주요 활동을 안정적으로 소개하�
 - 검증된 공식 스트리밍 링크가 생기면 필요에 따라 `LISTEN`을 추가할 수 있지만 임의 링크는 만들지 않는다.
 - 상세 트랙 목록, Credits, 디지털 북클릿은 Hero에 넣지 않고 `/album/:id` 상세페이지에서 제공한다.
 - 앨범 Scene 추가로 기존 공연 Hero의 선정, 디자인, 애니메이션 또는 선택 동작을 변경하지 않는다.
-- `album-package` theme은 공연 Hero와 분리된 실제 desktop/mobile 전용 배경 이미지, HTML 정보 영역과 단일 3D canvas를 사용한다. `<picture>`의 media source로 현재 viewport에 필요한 배경만 요청하며 영문 주제는 desktop에서 `CHO YOUN KYOUNG` / `HAEGEUM SANJO` 두 줄로 유지한다.
+- `album-package` theme은 공연 Hero와 분리된 실제 desktop/mobile 전용 배경 이미지, HTML 정보 영역과 단일 3D canvas를 사용한다. `<picture>`의 media source로 현재 viewport에 필요한 배경만 요청하며 지영희류 Hero 제목은 공식 앨범명에서 분리한 `조윤경 해금산조` / `지영희류`를 사용한다.
 - 디지팩은 수동 조작 시 X축 ±28°와 Y축 ±168° 범위의 pointer·touch drag와 frame damping을 지원한다. 진입 시 Y축으로 약 22초에 한 바퀴 도는 조용한 자동 회전을 시작하고 첫 pointer 조작 즉시 영구 중단한다. `prefers-reduced-motion`에서는 자동 회전하지 않는다.
 - 보이는 면의 방향과 관계없이 표지 전체 크기의 투명 interaction plane을 유지하며, canvas 밖에서 발생한 `pointerup`·`pointercancel`과 pointer capture 상실도 drag를 종료한다.
 - 앞·뒤·좌·우·위·아래 texture slot은 독립적으로 받을 수 있다. 실제 texture가 없으면 무광 neutral material만 사용하며 임시 artwork를 만들지 않는다.
 - 지영희류 패키지는 실제 front/back과 왼쪽 spine texture를 사용한 무광 종이 커버가 내부 트레이보다 조금 돌출되는 구조다. 반대쪽 얇은 면과 위·아래에는 한 단계 안쪽의 절제된 반투명 플라스틱 트레이가 보인다. 부드러운 저농도 shadow receiver와 실제 조명이 회전에 반응하며, 넓어진 camera/canvas 안전 영역은 전체 회전에서 모서리를 보존한다. 앨범 Hero는 활성화될 때만 lazy-load하여 초기 공연 Hero에서 3D bundle과 대형 texture를 요청하지 않는다.
 - 지영희류 Hero는 하나의 desktop/mobile 배경을 전체 영역에 연속 배치하고 3D canvas도 full-stage로 Hero 전체를 덮어 그림자의 canvas 경계가 드러나지 않게 한다. 3D 패키지는 desktop 약 10%, mobile 약 20% 작게 표시하고, mobile에서는 패키지 다음에 정보가 잘리지 않고 이어진다. 오른쪽 위 key light와 왼쪽 아래로 흐르는 실제 3D 그림자, 최대 8배 anisotropy·mipmap과 최대 2 DPR로 인쇄 디테일을 보존한다.
+- 정면 패키지의 중앙은 desktop/mobile 배경 원본에서 확인한 세로선에 맞춘다. `object-fit: cover`의 scale과 좌우 crop offset을 현재 viewport에서 계산해 screen-space anchor를 구하므로 화면 비율이 달라져도 선이 이어진다.
 - 패키지는 먼저 1.7초 동안 절제되게 나타나고 정보 block은 약 0.62초 뒤 따라온다. reduced-motion에서는 둘 다 즉시 최종 상태로 표시한다. 앨범의 muted oxblood accent는 정보의 작은 라벨·상태·구분선·`VIEW ALBUM` 및 HOME GNB active/hover/focus에만 사용하며 8/16 navy와 분리한다.
 - `VIEW ALBUM`은 공연 Hero와 같이 hover/focus-visible에서 underline이 왼쪽부터 나타나고 화살표가 4px 이동한다. RECENT WORKS의 앨범 표기는 `albums.ts` 공식 한글 제목을 adapter에서 `조윤경 해금산조` / `지영희류`로 분리하며 공연 카드는 기존 제목 fallback을 유지한다.
 - WORKS 앨범 row는 album ID class로 고유 accent를 선택한다. 지영희류는 어두운 surface에서 같은 oxblood hue의 밝은 tonal variant를 쓰며 기존 공연별 gold/navy 규칙은 건드리지 않는다.
