@@ -241,7 +241,7 @@ export function AlbumPackage3D({ textures }: AlbumPackage3DProps) {
         shadow-radius={8}
       />
       <directionalLight position={[-3.5, 1.5, 3]} intensity={0.28} />
-      <Package textures={textures} scale={mobile ? 0.8 : 0.9} position={mobile ? [0, 1.05, 0] : [-1.35, 0.2, 0]} />
+      <Package textures={textures} scale={mobile ? 0.6 : 0.7} position={mobile ? [0, 1.05, 0] : [-1.35, 0.2, 0]} />
       <mesh position={[0, 0, -0.34]} receiveShadow>
         <planeGeometry args={[12, 10]} />
         <shadowMaterial transparent opacity={0.13} depthWrite={false} />
