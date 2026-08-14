@@ -15,6 +15,7 @@ const ROTATION_LIMIT = {
 const AUTO_ROTATION_SPEED = (Math.PI * 2) / 22;
 
 type AlbumPackage3DProps = { textures?: AlbumHeroTextures };
+type PackageProps = AlbumPackage3DProps & { scale: number };
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -28,6 +29,20 @@ function useReducedMotion() {
   }, []);
 
   return reduced;
+}
+
+function useMobileViewport() {
+  const [mobile, setMobile] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 700px)');
+    const update = () => setMobile(query.matches);
+    update();
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+
+  return mobile;
 }
 
 function usePackageMaterials(textures?: AlbumHeroTextures) {
@@ -81,18 +96,7 @@ function usePackageMaterials(textures?: AlbumHeroTextures) {
   }, [maps]);
 }
 
-function ResponsiveCamera() {
-  const { camera, size } = useThree();
-
-  useEffect(() => {
-    camera.position.z = size.width <= 700 ? 6.25 : 5.55;
-    camera.updateProjectionMatrix();
-  }, [camera, size.width]);
-
-  return null;
-}
-
-function Package({ textures }: AlbumPackage3DProps) {
+function Package({ textures, scale }: PackageProps) {
   const group = useRef<THREE.Group>(null);
   const drag = useRef<{ pointerId: number; x: number; y: number } | null>(null);
   const target = useRef({ ...DEFAULT_ROTATION });
@@ -184,6 +188,7 @@ function Package({ textures }: AlbumPackage3DProps) {
       <group
         ref={group}
         rotation={[DEFAULT_ROTATION.x, DEFAULT_ROTATION.y, 0]}
+        scale={scale}
       >
         <mesh material={materials.plastic} castShadow>
           <boxGeometry args={[PACKAGE_SIZE.width, PACKAGE_SIZE.height, PACKAGE_SIZE.depth]} />
@@ -207,6 +212,8 @@ function Package({ textures }: AlbumPackage3DProps) {
 }
 
 export function AlbumPackage3D({ textures }: AlbumPackage3DProps) {
+  const mobile = useMobileViewport();
+
   return (
     <Canvas
       className="album-package-canvas"
@@ -216,7 +223,6 @@ export function AlbumPackage3D({ textures }: AlbumPackage3DProps) {
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       shadows="soft"
     >
-      <ResponsiveCamera />
       <ambientLight intensity={0.82} />
       <directionalLight
         position={[4.5, 6, 5.5]}
@@ -234,7 +240,7 @@ export function AlbumPackage3D({ textures }: AlbumPackage3DProps) {
         shadow-radius={8}
       />
       <directionalLight position={[-3.5, 1.5, 3]} intensity={0.28} />
-      <Package textures={textures} />
+      <Package textures={textures} scale={mobile ? 0.8 : 0.9} />
       <mesh position={[0, 0, -0.34]} receiveShadow>
         <planeGeometry args={[7.5, 7.5]} />
         <shadowMaterial transparent opacity={0.13} depthWrite={false} />
