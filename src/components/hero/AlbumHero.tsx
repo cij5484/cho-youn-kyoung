@@ -8,6 +8,7 @@ type AlbumHeroProps = {
 
 export function AlbumHero({ slide }: AlbumHeroProps) {
   const titleLines = slide.title.split('\n');
+  const [year, status] = slide.displayDate.split(' · ');
 
   return (
     <section className="album-hero" aria-labelledby={`${slide.id}-hero-title`}>
@@ -26,7 +27,10 @@ export function AlbumHero({ slide }: AlbumHeroProps) {
           {titleLines.map((line) => <span key={line}>{line}</span>)}
         </h1>
         {slide.subtitle ? <p className="album-hero__subtitle">{slide.subtitle}</p> : null}
-        <p className="album-hero__meta">{slide.displayDate}</p>
+        <p className="album-hero__meta">
+          <span>{year}</span>
+          {status ? <span className="album-hero__status">{status}</span> : null}
+        </p>
         {slide.trackCount ? <p className="album-hero__tracks">{slide.trackCount} TRACKS</p> : null}
         <Link className="album-hero__link" to={slide.detailLink}>
           VIEW ALBUM <span aria-hidden="true">→</span>
