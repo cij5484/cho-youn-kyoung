@@ -101,7 +101,7 @@ export const albums: Album[] = [
   {
     id: 'ji-young-hee-ryu-haegeum-sanjo-2026',
     title: '조윤경 해금산조 – 지영희류',
-    englishTitle: 'CHO YOUN KYOUNG HAEGEUM SANJO\nJi Young-hee Ryu',
+    englishTitle: 'CHO YOUN KYOUNG\nHAEGEUM SANJO\nJi Young-hee Ryu',
     year: '2026',
     releaseStatus: 'coming-soon',
     description: '지영희류 해금산조 앨범.',

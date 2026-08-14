@@ -52,7 +52,10 @@
 - [ ] HOME이 자동 순환하지 않고 사용자가 RECENT WORKS 카드 선택으로만 Hero를 변경함
 - [ ] RECENT WORKS의 desktop hover/focus와 mobile swipe preview가 선택 전 Hero를 변경하지 않음
 - [ ] RECENT WORKS keyboard 선택·ESC·포커스 및 reduced-motion 동작
-- [ ] Album Hero canvas의 mouse/touch 제한 drag, reduced-motion, WebGL fallback 및 RECENT WORKS hit area 비간섭
+- [ ] Album Hero의 아이보리 종이 배경과 desktop 영문 제목 2줄 표시
+- [ ] Album Hero canvas의 mouse/touch 제한 drag, 영역 밖 pointer 해제, ±168° Y축 회전, reduced-motion 및 WebGL fallback
+- [ ] Album Hero의 동적 바닥 그림자, spine 외 3개 edge plastic material과 0.9–1.35배 wheel zoom·double-click reset
+- [ ] RECENT WORKS 앨범 카드만 1:1 `contain`이고 비활성·hover·focus·active 상태 및 공연 포스터 비율에 회귀 없음
 - [ ] Album Hero를 포함해 390px·360px·320px 가로 스크롤 없음
 - [ ] 모바일 메뉴 ESC·경로 변경 자동 닫기·스크롤 잠금·포커스 복원
 - [ ] reduced motion

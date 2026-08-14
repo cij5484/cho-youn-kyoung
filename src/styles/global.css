@@ -74,14 +74,24 @@ html[data-home-hero-theme="sanjo-matiere"] .site-header {
   background: linear-gradient(180deg, rgba(245, 239, 230, 0.46), rgba(245, 239, 230, 0));
   box-shadow: none;
 }
+html[data-home-hero-theme="album-package"] .site-header {
+  background: linear-gradient(180deg, rgba(238, 234, 224, .58), rgba(238, 234, 224, 0));
+  box-shadow: none;
+}
 html[data-home-hero-theme="sanjo-matiere"] .brand,
 html[data-home-hero-theme="sanjo-matiere"] .desktop-nav a,
-html[data-home-hero-theme="sanjo-matiere"] .menu-button {
+html[data-home-hero-theme="sanjo-matiere"] .menu-button,
+html[data-home-hero-theme="album-package"] .brand,
+html[data-home-hero-theme="album-package"] .desktop-nav a,
+html[data-home-hero-theme="album-package"] .menu-button {
   color: #292a29;
 }
 html[data-home-hero-theme="sanjo-matiere"] .desktop-nav a.active,
 html[data-home-hero-theme="sanjo-matiere"] .desktop-nav a:hover,
-html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active {
+html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active,
+html[data-home-hero-theme="album-package"] .desktop-nav a.active,
+html[data-home-hero-theme="album-package"] .desktop-nav a:hover,
+html[data-home-hero-theme="album-package"] .mobile-menu a.active {
   color: #1F4F7A;
 }
 .menu-button {
@@ -673,6 +683,10 @@ html[data-home-hero-theme="sanjo-matiere"] .home-creative-credit {
   --credit-color: rgba(31, 47, 65, 0.8);
   --credit-personal-color: rgba(40, 48, 57, 0.70);
 }
+html[data-home-hero-theme="album-package"] .home-creative-credit {
+  --credit-color: rgba(43, 43, 40, .74);
+  --credit-personal-color: rgba(43, 43, 40, .58);
+}
 .recent-works {
   position: absolute;
   z-index: 8;
@@ -773,6 +787,13 @@ html[data-home-hero-theme="sanjo-matiere"] .home-creative-credit {
   height: 100%;
   object-fit: cover;
 }
+.recent-work-card--album .recent-work-card__image-wrap {
+  aspect-ratio: 1;
+  background: #dedbd2;
+}
+.recent-work-card--album .recent-work-card__image-wrap img {
+  object-fit: contain;
+}
 .recent-work-card__meta {
   display: grid;
   gap: 2px;
@@ -793,6 +814,12 @@ html[data-home-hero-theme="sanjo-matiere"] .home-creative-credit {
 }
 .home-hero-rotator[data-theme="sanjo-matiere"] .recent-works {
   color: rgba(18, 31, 51, 0.9);
+}
+.home-hero-rotator[data-theme="album-package"] .recent-works {
+  color: rgba(43, 43, 40, 0.86);
+}
+.home-hero-rotator[data-theme="album-package"] .recent-work-card__meta {
+  text-shadow: 0 1px 8px rgba(255, 255, 255, 0.72);
 }
 .home-hero-rotator[data-theme="sanjo-matiere"] .recent-work-card__meta {
   text-shadow: 0 1px 8px rgba(255, 255, 255, 0.7);
