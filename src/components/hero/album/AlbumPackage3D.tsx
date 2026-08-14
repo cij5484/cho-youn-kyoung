@@ -2,7 +2,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import type { ThreeEvent } from '@react-three/fiber';
-import type { AlbumHeroTextures } from '../../../data/homeHeroSlides';
+import type { AlbumHeroTextures } from '../../../data/albums';
 
 const PACKAGE_SIZE = {
   width: 2.35,
@@ -45,6 +45,10 @@ function usePackageMaterials(textures?: AlbumHeroTextures) {
     Promise.all(entries.map(async ([face, url]) => {
       const texture = await new THREE.TextureLoader().loadAsync(url);
       texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = 4;
+      texture.minFilter = THREE.LinearMipmapLinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.generateMipmaps = true;
       loaded.push(texture);
       return [face, texture] as const;
     })).then((results) => {

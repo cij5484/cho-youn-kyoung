@@ -1,6 +1,6 @@
 # HOME Hero와 RECENT WORKS 운영 워크플로
 
-- 마지막 확인 날짜: 2026-08-13
+- 마지막 확인 날짜: 2026-08-14
 
 ## 역할과 대표 Work 선정
 
@@ -10,7 +10,7 @@ HOME Hero는 현재 가장 가까운 주요 활동을 안정적으로 소개하�
 
 - 공연 Source of Truth는 `src/data/performances.ts`, 앨범 Source of Truth는 `src/data/albums.ts`이다. 두 파일을 합치거나 내용을 복사하지 않는다.
 - `src/data/homeHeroSlides.ts`는 HOME 전용 adapter이다. `homeHero`가 있고 POSTER Viewer 자산이 있는 공연을 RECENT WORKS 모델로 조합한다.
-- 앨범은 커버, 확정 발매일, 실제 상세 경로, 전용 Hero Scene이 모두 생긴 뒤 같은 adapter에서 조합한다. 현재 자산이나 상세 화면이 없는 앨범은 노출하지 않는다.
+- 앨범은 실제 커버, 상세 경로, 전용 Hero Scene이 모두 있을 때 같은 adapter에서 조합한다. `released`는 확정 발매일이 필요하고, 날짜 미정 `coming-soon`은 확인된 연도가 있을 때만 예외적으로 노출한다.
 
 ## 공연 추가
 
@@ -22,12 +22,12 @@ HOME Hero는 현재 가장 가까운 주요 활동을 안정적으로 소개하�
 ## 앨범 추가
 
 1. `ALBUM-WORKFLOW.md`에 따라 `albums.ts`와 실제 자산을 등록한다.
-2. 확정 `releaseDate`, `coverImage`, 실제 `detailsPath`, 전용 Hero Scene이 준비된 뒤 HOME adapter 매핑을 추가한다.
+2. 확정 `releaseDate`, `coverImage`, 실제 `detailsPath`, 전용 Hero Scene을 준비한다. 단, `coming-soon`은 확정 연도와 나머지 실제 자산·경로가 모두 있으면 `releaseDate` 없이 노출할 수 있다.
 3. PERFORMANCE와 같은 선택 인터페이스를 사용하되 타입은 `ALBUM`으로 표시한다. 존재하지 않는 상세 페이지나 임시 커버는 만들지 않는다.
 
 ## 앨범 Hero 운영 원칙
 
-> **기반 구현 완료 / 실제 노출 미완료:** 앨범도 PERFORMANCE와 동일한 `RECENT WORKS` 선택 인터페이스를 사용한다. `AlbumHero`와 React Three Fiber 기반 `AlbumPackage3D` Scene은 준비되었지만, 현재 adapter에는 준비된 앨범 slide가 없어 실제 HOME 노출은 비활성 상태다.
+> **실제 노출 활성화:** 지영희류 앨범이 PERFORMANCE와 동일한 `RECENT WORKS` 선택 인터페이스, `AlbumHero`, React Three Fiber 기반 `AlbumPackage3D` Scene에 연결되어 있다.
 
 - `workType`은 `ALBUM`으로 표시하고 공연 Hero를 재사용하지 않는 앨범 전용 Hero Scene을 사용한다.
 - 실제 커버를 Hero의 핵심 시각 요소로 삼고 앨범 고유 디자인을 보존한다.
@@ -37,6 +37,8 @@ HOME Hero는 현재 가장 가까운 주요 활동을 안정적으로 소개하�
 - 앨범 Scene 추가로 기존 공연 Hero의 선정, 디자인, 애니메이션 또는 선택 동작을 변경하지 않는다.
 - `album-package` theme은 공연 Hero와 분리된 HTML 정보 영역과 단일 3D canvas를 사용한다. 디지팩은 제한된 X/Y축 pointer·touch drag와 damping을 지원하며 자동 회전하지 않는다.
 - 앞·뒤·좌·우·위·아래 texture slot은 독립적으로 받을 수 있다. 실제 texture가 없으면 무광 neutral material만 사용하며 임시 artwork를 만들지 않는다.
+- 지영희류 패키지는 실제 front/back과 왼쪽 spine texture를 사용하고 반대쪽 얇은 면과 위·아래 면은 neutral material이다. 앨범 Hero는 활성화될 때만 lazy-load하여 초기 공연 Hero에서 3D bundle과 대형 texture를 요청하지 않는다.
+- 날짜 없는 `coming-soon` 앨범은 RECENT WORKS 연도 정렬에는 참여하지만 HOME 날짜 기반 기본 Hero 후보에서는 제외한다. 공연의 서울 날짜 기준 기본 선정은 그대로 유지한다.
 - Three.js와 `@react-three/fiber`만 사용하고 DPR을 제한한다. postprocessing, HDR environment와 별도 animation library는 추가하지 않는다.
 
 ## 자산 위치

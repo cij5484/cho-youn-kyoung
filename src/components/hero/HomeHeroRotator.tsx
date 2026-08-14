@@ -14,6 +14,7 @@ const AlbumHero = lazy(() => import('./AlbumHero').then((module) => ({ default: 
 
 const renderSlide = (slide: HomeHeroSlide, isActive: boolean) => {
   if (slide.theme === 'album-package') {
+    if (!isActive) return null;
     return (
       <Suspense fallback={<div className="album-hero-loading" aria-hidden="true" />}>
         <AlbumHero slide={slide} />

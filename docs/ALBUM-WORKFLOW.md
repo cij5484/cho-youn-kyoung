@@ -1,7 +1,6 @@
 # 앨범 등록 워크플로
 
-- 마지막 확인 날짜: 2026-08-13
-- 기준 commit SHA: `13ff9af`
+- 마지막 확인 날짜: 2026-08-14
 
 앨범 작업도 공연 작업과 동일하게 원본 자료를 먼저 확인하고, 확정·권장·미확정 정보를 구분합니다. 아직 저장소에서 확정되지 않은 앨범 목록·상세·Viewer UI나 픽셀 규격은 **미확정**으로 표시합니다.
 
@@ -9,8 +8,8 @@
 
 - 앨범 전용 `AlbumHero`와 Three.js + React Three Fiber 기반 `AlbumPackage3D`가 구현되어 있다. 공연 Hero 컴포넌트와 CSS는 재사용하지 않는다.
 - 디지팩의 여섯 면 texture를 독립적으로 연결할 수 있고, texture가 없을 때는 artwork 없는 neutral material을 표시한다. 제한 회전, mouse/touch drag, frame damping, reduced-motion 대응과 제한 DPR을 기본으로 한다.
-- 실제 앨범을 HOME에 공개하려면 확정 cover/면별 texture, `releaseDate`, `detailsPath`, `albumHero` 설정을 검수한 뒤 `homeHeroSlides.ts` adapter에 명시적으로 연결한다.
-- 현재 등록된 앨범에는 이 연결을 추가하지 않았으며 HOME의 실제 ALBUM slide는 비활성 상태다. 실제 지영희류 데이터나 이미지도 등록되어 있지 않다.
+- 지영희류 앨범의 확정 데이터와 기존 `front.png`, `back.png`, `spine.png`를 연결했다. 닫힌 패키지의 왼쪽 얇은 면에 spine을 사용하며 반대쪽과 위·아래 면은 neutral material을 유지한다.
+- `released` 앨범은 확정 `releaseDate`가 있어야 HOME에 노출한다. 날짜가 미정인 `coming-soon` 앨범은 확인된 `year`, 실제 `coverImage`, `detailsPath`, `albumHero`가 모두 있을 때 노출할 수 있다.
 
 
 ## WORKS 목록과 향후 상세 경로
@@ -85,7 +84,7 @@ public/assets/albums/{album-id}/
 | `detailedDescription` | 선택 | 상세 화면의 긴 소개 본문 |
 | `coverImage` | 선택 | 웹용 커버 이미지의 public 상대경로 |
 | `cdLabelImage` | 선택 | 향후 Virtual CD Player가 사용할 실제 CD 라벨 이미지 경로 |
-| `albumHero` | 선택 | HOME Album Hero를 위한 앨범 전용 테마 설정. 현재 HOME에는 연결하지 않음 |
+| `albumHero` | 선택 | HOME Album Hero를 위한 앨범 전용 테마와 실제 면별 texture 설정 |
 | `detailsPath` | 선택 | 상세 화면이 실제로 생겼을 때 사용하는 경로 |
 | `featured` | 선택 | 대표 앨범 노출 여부 |
 | `releaseDate` | 선택 | 확인된 전체 발매일. 향후 `YYYY-MM-DD` 형식을 사용 |
@@ -115,7 +114,7 @@ public/assets/albums/{album-id}/
 
 트랙 크레딧(`AlbumTrackCredit`)과 앨범 전체 크레딧(`AlbumCredit`)은 범위가 다르므로 구분해 입력합니다. 확인되지 않은 정보는 데이터에 추가하지 않고, 빈 배열도 억지로 넣지 않습니다. 값이 없는 선택 필드는 생략하며 향후 UI에서는 데이터가 있을 때만 해당 섹션을 표시합니다. 상세 UI와 라우트는 실제 자료가 준비된 앨범에만 추가합니다.
 
-HOME RECENT WORKS에는 확정 `releaseDate`, 실제 `coverImage`, 실제 `detailsPath`, 전용 Hero Scene이 모두 준비된 앨범만 연결합니다. 앨범 원본은 계속 `albums.ts`에서 관리하고 HOME adapter에는 원본 내용을 복사하지 않습니다. 자세한 연결 절차는 [HOME-HERO-WORKFLOW.md](./HOME-HERO-WORKFLOW.md)를 따릅니다.
+HOME RECENT WORKS에는 확정 `releaseDate`가 있거나 위의 `coming-soon` 예외 조건을 충족하고, 실제 `coverImage`, `detailsPath`, 전용 Hero Scene이 모두 준비된 앨범만 연결합니다. 앨범 원본은 계속 `albums.ts`에서 관리하고 HOME adapter에는 원본 내용을 복사하지 않습니다. 자세한 연결 절차는 [HOME-HERO-WORKFLOW.md](./HOME-HERO-WORKFLOW.md)를 따릅니다.
 
 ## `albums.ts` 1차 상세 확장 구조
 
@@ -125,7 +124,7 @@ HOME RECENT WORKS에는 확정 `releaseDate`, 실제 `coverImage`, 실제 `detai
 
 ## HOME Album Hero 운영 방향
 
-> **확정 운영 원칙 / 구현 미완료:** 앨범은 공연과 동일한 `RECENT WORKS` 선택 인터페이스에서 선택할 수 있는 독립 Hero Scene을 가집니다. `/album/:id` 기본 라우트는 구현되었지만 실제 앨범 Hero는 아직 연결되지 않았습니다.
+> **구현 완료:** 지영희류 앨범은 공연과 동일한 `RECENT WORKS` 선택 인터페이스에서 독립 Hero Scene과 `/album/:id` 상세 경로로 연결됩니다.
 
 - `workType`은 `ALBUM`을 사용하고 앨범 전용 Hero Scene을 활성화합니다.
 - 실제 앨범 커버를 핵심 시각 요소로 사용하며, 앨범 고유 디자인을 새로운 공통 디자인으로 덮어쓰지 않습니다.
@@ -136,6 +135,8 @@ HOME RECENT WORKS에는 확정 `releaseDate`, 실제 `coverImage`, 실제 `detai
 ## Album Detail 구현 상태와 향후 경험
 
 공통 `AlbumDetailPage`는 현재 앨범명, 영문명, 연도, 발매 상태, 소개, 커버, 트랙, 크레딧, 공식 스트리밍 링크를 데이터가 있을 때만 표시하는 최소 구조입니다. Virtual CD Player, 웹 음원 재생, CD 회전, Digital Booklet page flip은 구현되지 않았으며 아래 내용은 향후 권장 사항입니다.
+
+지영희류 앨범은 2026년 `COMING SOON` 상태이며 발매일과 스트리밍 링크는 아직 없다. 여섯 트랙, 제공된 Credits, front cover만 상세에 표시하며 R2 음원, CD Player와 Digital Booklet은 구현하지 않았다.
 
 ### A. Virtual CD Player
 
