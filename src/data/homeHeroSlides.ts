@@ -18,6 +18,7 @@ export type HomeHeroSlide = {
   workType: 'PERFORMANCE' | 'ALBUM';
   cardImage: string;
   albumTextures?: AlbumHeroTextures;
+  albumBackground?: { desktop: string; mobile: string };
   trackCount?: number;
 };
 
@@ -74,6 +75,7 @@ const albumHeroSlides: HomeHeroSlide[] = albums.flatMap((album) => {
     workType: 'ALBUM' as const,
     cardImage: album.coverImage,
     albumTextures: album.albumHero.textures,
+    albumBackground: album.albumHero.background,
     trackCount: album.tracks?.length,
   }];
 });
