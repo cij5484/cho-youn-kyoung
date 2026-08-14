@@ -1,7 +1,6 @@
 # 홈페이지 구조와 운영 원칙
 
-- 마지막 확인 날짜: 2026-08-13
-- 작업 기준 main SHA: `13ff9af`
+- 마지막 확인 날짜: 2026-08-14
 - 저장소: `cij5484/cho-youn-kyoung`
 
 ## 확정된 기술 구조
@@ -61,7 +60,9 @@
 - 바이너리 파일은 사용자가 직접 업로드하고 Codex는 코드 연결만 담당합니다.
 - 같은 인물 사진은 기존 경로를 재사용할 수 있습니다.
 - HOME Hero는 자동 순환하지 않으며, 현재 대표 Work를 유지하고 사용자가 RECENT WORKS에서 다른 고유 Hero Scene을 선택합니다. 자세한 운영 원칙은 [HOME-HERO-WORKFLOW.md](./HOME-HERO-WORKFLOW.md)를 따릅니다.
-- HOME에는 향후 앨범을 위한 별도 `album-package` Hero theme과 Three.js + React Three Fiber 디지팩 Scene 기반이 있다. 실제 앨범 slide와 texture는 아직 연결하지 않았고 기존 공연 Hero 및 RECENT WORKS 동작은 그대로 유지한다.
+- HOME의 별도 `album-package` Hero theme과 Three.js + React Three Fiber 디지팩 Scene에 지영희류 앨범의 실제 front/back/왼쪽 spine texture를 연결했다. RECENT WORKS의 `ALBUM` 카드에서 선택하며 기존 공연 Hero와 공통 선택 동작은 유지한다.
+- HOME 앨범은 실제 cover, `detailsPath`, `albumHero`와 확정 발매일이 있을 때 노출한다. 발매일 미정 `coming-soon`은 확인된 연도가 있으면 노출할 수 있지만 날짜 기반 기본 Hero 후보에서는 제외하여 공연 선정 로직을 바꾸지 않는다.
+- 지영희류 앨범은 발매일과 스트리밍 링크가 아직 없으며 CD Player, R2 재생과 Digital Booklet도 구현하지 않았다.
 - 모바일 메뉴는 열린 뒤 첫 링크에 포커스하고, ESC·경로 변경 시 닫으며, 열려 있는 동안 배경 스크롤을 잠급니다. ESC 또는 메뉴 버튼으로 닫으면 메뉴 버튼에 포커스를 복원합니다.
 - 내비게이션은 HOME → WORKS → MEDIA → ABOUT → CONTACT 순서입니다.
 - WORKS는 `performances.ts`와 `albums.ts`를 각각 소비합니다. 앨범은 WORKS에서 관리하고 `albums.ts`를 Source of Truth로 유지하며, 공연 상세의 `/performance/:id` 공개 URL은 영구 유지합니다. 실제 자료가 준비된 앨범 상세는 공통 `/album/:id` 구조를 사용합니다. 목록의 `detailsPath`는 상세 연결을 공개할 앨범에만 설정합니다.

@@ -29,7 +29,7 @@
 }
 .album-detail__back { display: inline-block; margin-bottom: clamp(44px, 8vw, 86px); }
 .album-detail__hero h1 { margin: 18px 0 10px; font-family: var(--serif); font-size: clamp(2.2rem, 5vw, 4.8rem); font-weight: 500; line-height: 1.18; }
-.album-detail__english-title { margin: 0; color: var(--muted); font-family: var(--serif); font-size: clamp(1rem, 2vw, 1.35rem); }
+.album-detail__english-title { margin: 0; color: var(--muted); font-family: var(--serif); font-size: clamp(1rem, 2vw, 1.35rem); white-space: pre-line; }
 .album-detail__status { margin-top: 28px; }
 .album-detail__description { max-width: 620px; margin-top: 32px; color: var(--muted); line-height: 1.9; }
 .album-detail__cover img { width: 100%; height: auto; }

@@ -1,23 +1,14 @@
 import { performances } from './performances';
-import { albums } from './albums';
+import { albums, type AlbumHeroTextures } from './albums';
 
 export type HomeHeroTheme = 'haegeum-recital' | 'sanjo-matiere' | 'album-package';
-
-export type AlbumHeroTextures = {
-  front?: string;
-  back?: string;
-  spineLeft?: string;
-  spineRight?: string;
-  top?: string;
-  bottom?: string;
-};
 
 export type HomeHeroSlide = {
   id: string;
   eyebrow: string;
   title: string;
   subtitle: string;
-  date: string;
+  date?: string;
   displayDate: string;
   time: string;
   venue: string;
@@ -27,6 +18,7 @@ export type HomeHeroSlide = {
   workType: 'PERFORMANCE' | 'ALBUM';
   cardImage: string;
   albumTextures?: AlbumHeroTextures;
+  trackCount?: number;
 };
 
 const formatHomeDate = (date: string) => {
@@ -62,9 +54,28 @@ const performanceHeroSlides: HomeHeroSlide[] = performances
     }];
   });
 
-// Albums remain owned by albums.ts. An album only enters this adapter after its
-// cover, release date, detail route, and dedicated Hero scene all exist.
-const albumHeroSlides: HomeHeroSlide[] = albums.flatMap(() => []);
+const albumHeroSlides: HomeHeroSlide[] = albums.flatMap((album) => {
+  const canShowComingSoon = album.releaseStatus === 'coming-soon' && Boolean(album.year);
+  if (!album.coverImage || !album.detailsPath || !album.albumHero || (!album.releaseDate && !canShowComingSoon)) return [];
+
+  const [heroTitle, ...subtitleParts] = (album.englishTitle ?? album.title).split('\n');
+  return [{
+    id: album.id,
+    eyebrow: 'ALBUM',
+    title: heroTitle,
+    subtitle: subtitleParts.join(' '),
+    date: album.releaseDate,
+    displayDate: `${album.year}${album.releaseStatus === 'coming-soon' ? ' · COMING SOON' : ''}`,
+    time: '',
+    venue: '',
+    theme: album.albumHero.theme,
+    detailLink: album.detailsPath,
+    workType: 'ALBUM' as const,
+    cardImage: album.coverImage,
+    albumTextures: album.albumHero.textures,
+    trackCount: album.tracks?.length,
+  }];
+});
 
 export const homeHeroSlides: HomeHeroSlide[] = [
   ...performanceHeroSlides,
@@ -84,16 +95,18 @@ export const getSeoulDateString = (date = new Date()) => {
 };
 
 export const getRecentWorks = (slides: HomeHeroSlide[]) =>
-  [...slides].sort((a, b) => b.date.localeCompare(a.date));
+  [...slides].sort((a, b) => (b.date ?? `${b.displayDate.slice(0, 4)}-00-00`)
+    .localeCompare(a.date ?? `${a.displayDate.slice(0, 4)}-00-00`));
 
 export const getDefaultHomeHeroIndex = (slides: HomeHeroSlide[], today = getSeoulDateString()) => {
   const upcoming = slides
     .map((slide, index) => ({ slide, index }))
-    .filter(({ slide }) => slide.date >= today)
-    .sort((a, b) => a.slide.date.localeCompare(b.slide.date));
+    .filter(({ slide }) => Boolean(slide.date && slide.date >= today))
+    .sort((a, b) => a.slide.date!.localeCompare(b.slide.date!));
 
   if (upcoming.length > 0) return upcoming[0].index;
 
-  return slides.reduce((latestIndex, slide, index) =>
-    slide.date > slides[latestIndex].date ? index : latestIndex, 0);
+  const datedSlides = slides.map((slide, index) => ({ slide, index })).filter(({ slide }) => slide.date);
+  if (datedSlides.length === 0) return 0;
+  return datedSlides.reduce((latest, current) => current.slide.date! > latest.slide.date! ? current : latest).index;
 };
