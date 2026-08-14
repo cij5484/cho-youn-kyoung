@@ -1,7 +1,16 @@
 import { performances } from './performances';
 import { albums } from './albums';
 
-export type HomeHeroTheme = 'haegeum-recital' | 'sanjo-matiere';
+export type HomeHeroTheme = 'haegeum-recital' | 'sanjo-matiere' | 'album-package';
+
+export type AlbumHeroTextures = {
+  front?: string;
+  back?: string;
+  spineLeft?: string;
+  spineRight?: string;
+  top?: string;
+  bottom?: string;
+};
 
 export type HomeHeroSlide = {
   id: string;
@@ -17,6 +26,7 @@ export type HomeHeroSlide = {
   heroImage?: string;
   workType: 'PERFORMANCE' | 'ALBUM';
   cardImage: string;
+  albumTextures?: AlbumHeroTextures;
 };
 
 const formatHomeDate = (date: string) => {

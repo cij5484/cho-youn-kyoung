@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import {
   getDefaultHomeHeroIndex,
   getRecentWorks,
@@ -10,7 +10,16 @@ import { SanjoMatiereHero } from './SanjoMatiereHero';
 import { HomeCreativeCredit } from './HomeCreativeCredit';
 import { RecentWorks } from './recent-works/RecentWorks';
 
+const AlbumHero = lazy(() => import('./AlbumHero').then((module) => ({ default: module.AlbumHero })));
+
 const renderSlide = (slide: HomeHeroSlide, isActive: boolean) => {
+  if (slide.theme === 'album-package') {
+    return (
+      <Suspense fallback={<div className="album-hero-loading" aria-hidden="true" />}>
+        <AlbumHero slide={slide} />
+      </Suspense>
+    );
+  }
   if (slide.theme === 'sanjo-matiere') {
     return <SanjoMatiereHero slide={slide} isActive={isActive} />;
   }

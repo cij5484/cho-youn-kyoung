@@ -53,6 +53,8 @@
 - [ ] HOME이 자동 순환하지 않고 사용자가 RECENT WORKS 카드 선택으로만 Hero를 변경함
 - [ ] RECENT WORKS의 desktop hover/focus와 mobile swipe preview가 선택 전 Hero를 변경하지 않음
 - [ ] RECENT WORKS keyboard 선택·ESC·포커스 및 reduced-motion 동작
+- [ ] Album Hero canvas의 mouse/touch 제한 drag, reduced-motion, WebGL fallback 및 RECENT WORKS hit area 비간섭
+- [ ] Album Hero를 포함해 390px·360px·320px 가로 스크롤 없음
 - [ ] 모바일 메뉴 ESC·경로 변경 자동 닫기·스크롤 잠금·포커스 복원
 - [ ] reduced motion
 - [ ] MEDIA PC·태블릿 및 390px·360px·320px 독립 1열 반응형
@@ -95,7 +97,8 @@
 - [ ] `/album/:id`가 `albums.ts`의 앨범을 표시하고 없는 ID는 공통 404로 안전하게 처리
 - [ ] 선택 데이터가 없는 상세 섹션은 렌더링하지 않고 WORKS의 `detailsPath` 없는 앨범 동작 유지
 
-> 아래 항목은 HOME Album Hero, 재생기와 북클릿을 구현하는 향후 PR의 **미확정 체크리스트**입니다.
+> 아래 항목 중 HOME Album Hero는 3D 디지팩 컴포넌트 기반만 구현되었고 실제 앨범 데이터·texture·노출은 아직 비활성입니다. 재생기와 북클릿은 향후 PR의 **미확정 체크리스트**입니다.
+- [ ] 실제 공개 전 면별 공식 texture와 앨범 데이터 연결 확인(임시 artwork 및 binary 금지)
 - [ ] RECENT WORKS에서 `ALBUM` 선택 시 전용 Hero Scene과 실제 `VIEW ALBUM` 링크 표시
 - [ ] 앨범 Hero에는 앨범명·상태/연도·간단한 트랙 정보만 표시하고 상세 트랙·Credits·북클릿은 상세로 분리
 - [ ] 트랙 선택, 재생·일시정지와 현재 트랙 상태 동기화
