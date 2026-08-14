@@ -58,7 +58,8 @@ const albumHeroSlides: HomeHeroSlide[] = albums.flatMap((album) => {
   const canShowComingSoon = album.releaseStatus === 'coming-soon' && Boolean(album.year);
   if (!album.coverImage || !album.detailsPath || !album.albumHero || (!album.releaseDate && !canShowComingSoon)) return [];
 
-  const [heroTitle, ...subtitleParts] = (album.englishTitle ?? album.title).split('\n');
+  const [artistLine, albumLine, ...subtitleParts] = (album.englishTitle ?? album.title).split('\n');
+  const heroTitle = albumLine ? `${artistLine}\n${albumLine}` : artistLine;
   return [{
     id: album.id,
     eyebrow: 'ALBUM',

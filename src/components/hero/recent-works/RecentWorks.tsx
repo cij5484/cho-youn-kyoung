@@ -125,7 +125,7 @@ export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) 
         <div className="recent-works__track" role="listbox" aria-label="HOME Hero 작품" ref={trackRef} onScroll={updateMobilePreview}>
           {works.map((work, index) => (
             <button
-              className={`recent-work-card${index === activeIndex && interactionIndex === null ? ' is-active' : ''}${index === interactionIndex ? ' is-interacting' : ''}${index === previewIndex ? ' is-preview' : ''}`}
+              className={`recent-work-card recent-work-card--${work.workType.toLowerCase()}${index === activeIndex && interactionIndex === null ? ' is-active' : ''}${index === interactionIndex ? ' is-interacting' : ''}${index === previewIndex ? ' is-preview' : ''}`}
               style={{ '--work-index': index, '--work-count': works.length } as React.CSSProperties}
               type="button"
               role="option"

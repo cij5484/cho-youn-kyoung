@@ -7,6 +7,8 @@ type AlbumHeroProps = {
 };
 
 export function AlbumHero({ slide }: AlbumHeroProps) {
+  const titleLines = slide.title.split('\n');
+
   return (
     <section className="album-hero" aria-labelledby={`${slide.id}-hero-title`}>
       <div className="album-hero__object" role="img" aria-label={`${slide.title} 디지팩 3D 미리보기`}>
@@ -14,7 +16,9 @@ export function AlbumHero({ slide }: AlbumHeroProps) {
       </div>
       <div className="album-hero__content">
         <p className="album-hero__eyebrow">{slide.eyebrow || 'ALBUM'}</p>
-        <h1 id={`${slide.id}-hero-title`}>{slide.title}</h1>
+        <h1 id={`${slide.id}-hero-title`}>
+          {titleLines.map((line) => <span key={line}>{line}</span>)}
+        </h1>
         {slide.subtitle ? <p className="album-hero__subtitle">{slide.subtitle}</p> : null}
         <p className="album-hero__meta">{slide.displayDate}</p>
         {slide.trackCount ? <p className="album-hero__tracks">{slide.trackCount} TRACKS</p> : null}

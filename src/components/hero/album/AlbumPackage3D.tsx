@@ -13,8 +13,9 @@ const PACKAGE_SIZE = {
 const DEFAULT_ROTATION = { x: -0.06, y: 0.1 };
 const ROTATION_LIMIT = {
   x: THREE.MathUtils.degToRad(14),
-  y: THREE.MathUtils.degToRad(30),
+  y: THREE.MathUtils.degToRad(168),
 } as const;
+const ZOOM_LIMIT = { min: 0.9, max: 1.35 } as const;
 
 type AlbumPackage3DProps = {
   textures?: AlbumHeroTextures;
@@ -64,14 +65,33 @@ function usePackageMaterials(textures?: AlbumHeroTextures) {
   }, [textures]);
 
   return useMemo(() => {
-    const material = (map?: THREE.Texture) => new THREE.MeshStandardMaterial({
+    const printedMaterial = (map?: THREE.Texture) => new THREE.MeshStandardMaterial({
       color: map ? '#ffffff' : '#cbc8c1',
       map,
       roughness: 0.88,
       metalness: 0,
     });
+    const edgeMaterial = (map?: THREE.Texture) => map
+      ? printedMaterial(map)
+      : new THREE.MeshPhysicalMaterial({
+        color: '#e9e7df',
+        transparent: true,
+        opacity: 0.72,
+        roughness: 0.3,
+        metalness: 0,
+        clearcoat: 0.42,
+        clearcoatRoughness: 0.38,
+        depthWrite: true,
+      });
     // BoxGeometry order: right, left, top, bottom, front, back.
-    return [maps.spineRight, maps.spineLeft, maps.top, maps.bottom, maps.front, maps.back].map(material);
+    return [
+      edgeMaterial(maps.spineRight),
+      printedMaterial(maps.spineLeft),
+      edgeMaterial(maps.top),
+      edgeMaterial(maps.bottom),
+      printedMaterial(maps.front),
+      printedMaterial(maps.back),
+    ];
   }, [maps]);
 }
 
@@ -79,20 +99,38 @@ function Package({ textures }: AlbumPackage3DProps) {
   const group = useRef<THREE.Group>(null);
   const drag = useRef<{ pointerId: number; x: number; y: number } | null>(null);
   const target = useRef({ ...DEFAULT_ROTATION });
+  const zoom = useRef(1);
+  const targetZoom = useRef(1);
   const reducedMotion = useReducedMotion();
   const materials = usePackageMaterials(textures);
 
   useEffect(() => () => materials.forEach((material) => material.dispose()), [materials]);
 
+  useEffect(() => {
+    const endDrag = (event: PointerEvent) => {
+      if (drag.current?.pointerId === event.pointerId) drag.current = null;
+    };
+    window.addEventListener('pointerup', endDrag);
+    window.addEventListener('pointercancel', endDrag);
+    return () => {
+      drag.current = null;
+      window.removeEventListener('pointerup', endDrag);
+      window.removeEventListener('pointercancel', endDrag);
+    };
+  }, []);
+
   useFrame((_, delta) => {
     if (!group.current) return;
     if (reducedMotion) {
       group.current.rotation.set(target.current.x, target.current.y, 0);
+      group.current.scale.setScalar(targetZoom.current);
       return;
     }
     const easing = 1 - Math.exp(-10 * delta);
     group.current.rotation.x = THREE.MathUtils.lerp(group.current.rotation.x, target.current.x, easing);
     group.current.rotation.y = THREE.MathUtils.lerp(group.current.rotation.y, target.current.y, easing);
+    zoom.current = THREE.MathUtils.lerp(zoom.current, targetZoom.current, easing);
+    group.current.scale.setScalar(zoom.current);
   });
 
   const handlePointerDown = (event: ThreeEvent<PointerEvent>) => {
@@ -114,8 +152,21 @@ function Package({ textures }: AlbumPackage3DProps) {
   const endDrag = (event: ThreeEvent<PointerEvent>) => {
     if (drag.current?.pointerId !== event.pointerId) return;
     drag.current = null;
-    (event.nativeEvent.currentTarget as HTMLCanvasElement).releasePointerCapture(event.pointerId);
+    const canvas = event.nativeEvent.currentTarget as HTMLCanvasElement;
+    if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
   };
+
+  const handleWheel = (event: ThreeEvent<WheelEvent>) => {
+    event.stopPropagation();
+    if (event.nativeEvent.cancelable) event.nativeEvent.preventDefault();
+    targetZoom.current = THREE.MathUtils.clamp(
+      targetZoom.current - event.deltaY * 0.0007,
+      ZOOM_LIMIT.min,
+      ZOOM_LIMIT.max,
+    );
+  };
+
+  const resetZoom = () => { targetZoom.current = 1; };
 
   return (
     <group
@@ -125,6 +176,9 @@ function Package({ textures }: AlbumPackage3DProps) {
       onPointerMove={handlePointerMove}
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
+      onLostPointerCapture={() => { drag.current = null; }}
+      onWheel={handleWheel}
+      onDoubleClick={resetZoom}
     >
       <mesh material={materials} castShadow>
         <boxGeometry args={[PACKAGE_SIZE.width, PACKAGE_SIZE.height, PACKAGE_SIZE.depth]} />
@@ -141,12 +195,24 @@ export function AlbumPackage3D({ textures }: AlbumPackage3DProps) {
       dpr={[1, 1.5]}
       fallback={<div className="album-package-fallback" aria-hidden="true" />}
       gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
-      shadows
+      shadows="soft"
     >
-      <ambientLight intensity={1.3} />
-      <directionalLight position={[3, 4, 5]} intensity={1.7} castShadow />
+      <ambientLight intensity={1.15} />
+      <directionalLight
+        position={[2.5, 7, 4.5]}
+        intensity={1.75}
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+        shadow-bias={-0.0004}
+        shadow-radius={5}
+      />
       <directionalLight position={[-3, -1, 2]} intensity={0.45} />
       <Package textures={textures} />
+      <mesh position={[0, -1.32, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[5.4, 3.4]} />
+        <shadowMaterial transparent opacity={0.15} />
+      </mesh>
     </Canvas>
   );
 }

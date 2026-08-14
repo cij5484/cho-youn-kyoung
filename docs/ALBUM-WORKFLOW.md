@@ -7,8 +7,9 @@
 ## HOME 3D Hero 기반
 
 - 앨범 전용 `AlbumHero`와 Three.js + React Three Fiber 기반 `AlbumPackage3D`가 구현되어 있다. 공연 Hero 컴포넌트와 CSS는 재사용하지 않는다.
-- 디지팩의 여섯 면 texture를 독립적으로 연결할 수 있고, texture가 없을 때는 artwork 없는 neutral material을 표시한다. 제한 회전, mouse/touch drag, frame damping, reduced-motion 대응과 제한 DPR을 기본으로 한다.
-- 지영희류 앨범의 확정 데이터와 기존 `front.png`, `back.png`, `spine.png`를 연결했다. 닫힌 패키지의 왼쪽 얇은 면에 spine을 사용하며 반대쪽과 위·아래 면은 neutral material을 유지한다.
+- 디지팩의 여섯 면 texture를 독립적으로 연결할 수 있고, texture가 없는 얇은 edge에는 artwork 없는 절제된 plastic material을 표시한다. X축 ±14°·Y축 ±168° 제한 회전, canvas 밖에서도 안전하게 해제되는 mouse/touch drag, frame damping, reduced-motion 대응과 제한 DPR을 기본으로 한다.
+- 지영희류 앨범의 확정 데이터와 기존 `front.png`, `back.png`, `spine.png`를 연결했다. 닫힌 패키지의 왼쪽 얇은 면에 spine을 사용하며 반대쪽과 위·아래 면에는 은은한 반투명 plastic material을 사용한다. 동적 조명·shadow receiver와 0.9–1.35배 wheel zoom을 제공하고 double click으로 배율을 초기화한다.
+- HOME 배경은 밝은 아이보리 종이 질감, 중심축과 절제된 곡선을 CSS layer로 구성한다. RECENT WORKS 앨범 cover만 1:1 `contain`으로 표시하며 공연 포스터 카드의 비율과 상태 동작은 바꾸지 않는다.
 - `released` 앨범은 확정 `releaseDate`가 있어야 HOME에 노출한다. 날짜가 미정인 `coming-soon` 앨범은 확인된 `year`, 실제 `coverImage`, `detailsPath`, `albumHero`가 모두 있을 때 노출할 수 있다.
 
 
