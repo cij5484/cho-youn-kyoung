@@ -130,7 +130,7 @@ export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) 
               type="button"
               role="option"
               aria-selected={index === activeIndex}
-              aria-label={`${work.workType === 'PERFORMANCE' ? '공연' : '앨범'} ${work.title}, ${work.displayDate}`}
+              aria-label={`${work.workType === 'PERFORMANCE' ? '공연' : '앨범'} ${work.cardTitle ?? work.title}${work.cardSubtitle ? `, ${work.cardSubtitle}` : ''}, ${work.displayDate}`}
               key={work.id}
               ref={(node) => { cardRefs.current[index] = node; }}
               onClick={() => selectWork(index)}
@@ -145,7 +145,8 @@ export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) 
               </span>
               <span className="recent-work-card__meta">
                 <span className="recent-work-card__type">{work.workType}</span>
-                <strong>{work.title}</strong>
+                <strong>{work.cardTitle ?? work.title}</strong>
+                {work.cardSubtitle ? <span>{work.cardSubtitle}</span> : null}
                 <span>{work.displayDate}</span>
               </span>
             </button>

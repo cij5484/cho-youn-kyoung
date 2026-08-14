@@ -4,9 +4,10 @@ import * as THREE from 'three';
 import type { ThreeEvent } from '@react-three/fiber';
 import type { AlbumHeroTextures } from '../../../data/albums';
 
-const PACKAGE_SIZE = { width: 2.35, height: 2.35, depth: 0.16 } as const;
+// spine.png is 171 × 3000: its 0.057 width/height ratio defines the printed spine.
+const PACKAGE_SIZE = { width: 2.35, height: 2.35, depth: 0.102 } as const;
 const COVER_OVERHANG = 0.035;
-const COVER_DEPTH = 0.025;
+const COVER_DEPTH = 0.018;
 const DEFAULT_ROTATION = { x: -0.06, y: 0.1 };
 const ROTATION_LIMIT = {
   x: THREE.MathUtils.degToRad(28),
@@ -15,7 +16,7 @@ const ROTATION_LIMIT = {
 const AUTO_ROTATION_SPEED = (Math.PI * 2) / 22;
 
 type AlbumPackage3DProps = { textures?: AlbumHeroTextures };
-type PackageProps = AlbumPackage3DProps & { scale: number };
+type PackageProps = AlbumPackage3DProps & { scale: number; position: [number, number, number] };
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -96,7 +97,7 @@ function usePackageMaterials(textures?: AlbumHeroTextures) {
   }, [maps]);
 }
 
-function Package({ textures, scale }: PackageProps) {
+function Package({ textures, scale, position }: PackageProps) {
   const group = useRef<THREE.Group>(null);
   const drag = useRef<{ pointerId: number; x: number; y: number } | null>(null);
   const target = useRef({ ...DEFAULT_ROTATION });
@@ -184,7 +185,7 @@ function Package({ textures, scale }: PackageProps) {
   };
 
   return (
-    <>
+    <group position={position}>
       <group
         ref={group}
         rotation={[DEFAULT_ROTATION.x, DEFAULT_ROTATION.y, 0]}
@@ -207,7 +208,7 @@ function Package({ textures, scale }: PackageProps) {
         <planeGeometry args={[coverSize * 1.14, coverSize * 1.14]} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
       </mesh>
-    </>
+    </group>
   );
 }
 
@@ -240,9 +241,9 @@ export function AlbumPackage3D({ textures }: AlbumPackage3DProps) {
         shadow-radius={8}
       />
       <directionalLight position={[-3.5, 1.5, 3]} intensity={0.28} />
-      <Package textures={textures} scale={mobile ? 0.8 : 0.9} />
+      <Package textures={textures} scale={mobile ? 0.8 : 0.9} position={mobile ? [0, 1.05, 0] : [-1.35, 0.2, 0]} />
       <mesh position={[0, 0, -0.34]} receiveShadow>
-        <planeGeometry args={[7.5, 7.5]} />
+        <planeGeometry args={[12, 10]} />
         <shadowMaterial transparent opacity={0.13} depthWrite={false} />
       </mesh>
     </Canvas>

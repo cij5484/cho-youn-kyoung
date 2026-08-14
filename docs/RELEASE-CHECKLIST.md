@@ -55,9 +55,13 @@
 - [ ] Album Hero의 실제 desktop/mobile 전용 배경 선택과 desktop 영문 제목 2줄 표시
 - [ ] Album Hero canvas의 넓은 투명 interaction 영역, mouse/touch 제한 drag, 영역 밖 pointer 해제, 수동 ±168° Y축 회전 및 WebGL fallback
 - [ ] Album Hero 진입 시 약 22초 단방향 자동 회전, 첫 pointer 조작 시 중단 및 `prefers-reduced-motion` 자동 회전 제외
-- [ ] Album Hero의 회전에 반응하는 부드러운 동적 그림자와 전체 회전 범위 3D 안전 영역
+- [ ] Album Hero full-stage canvas에서 회전에 반응하는 부드러운 동적 그림자와 receiver/canvas 경계 미노출
 - [ ] Album Hero의 desktop 약 10%·mobile 약 20% 축소, 연속된 단일 배경, 잘리지 않는 정보·그림자 확인
-- [ ] Album Hero texture 선명도와 절제된 옷고름 blue accent, 오른쪽 위 광원과 그림자 방향 정합성 확인
+- [ ] Album Hero texture 선명도, 실제 spine 비율과 절제된 muted oxblood accent, 오른쪽 위 광원과 그림자 방향 정합성 확인
+- [ ] package-first/info-delayed 진입과 reduced-motion 즉시 표시, `VIEW ALBUM` underline·화살표 interaction 확인
+- [ ] album-package HOME GNB desktop/mobile active·hover·focus oxblood accent와 8/16 navy 분리 확인
+- [ ] RECENT WORKS 앨범의 `조윤경 해금산조` / `지영희류` 표기 및 공연 카드 fallback 확인
+- [ ] WORKS 지영희류 row의 oxblood hover/focus와 기존 공연 gold/blue 회귀 없음
 - [ ] 무광 종이 front/back/spine이 안쪽 반투명 plastic tray보다 조금 돌출되는 실제 디지팩 구조
 - [ ] RECENT WORKS 앨범 카드가 crop 없이 실제 cover 이미지 비율로 표시되고 비활성·hover·focus·active 상태 및 공연 포스터 비율에 회귀 없음
 - [ ] Album Hero를 포함해 390px·360px·320px 가로 스크롤 없음
