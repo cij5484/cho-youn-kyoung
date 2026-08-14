@@ -5,6 +5,13 @@
 
 앨범 작업도 공연 작업과 동일하게 원본 자료를 먼저 확인하고, 확정·권장·미확정 정보를 구분합니다. 아직 저장소에서 확정되지 않은 앨범 목록·상세·Viewer UI나 픽셀 규격은 **미확정**으로 표시합니다.
 
+## HOME 3D Hero 기반
+
+- 앨범 전용 `AlbumHero`와 Three.js + React Three Fiber 기반 `AlbumPackage3D`가 구현되어 있다. 공연 Hero 컴포넌트와 CSS는 재사용하지 않는다.
+- 디지팩의 여섯 면 texture를 독립적으로 연결할 수 있고, texture가 없을 때는 artwork 없는 neutral material을 표시한다. 제한 회전, mouse/touch drag, frame damping, reduced-motion 대응과 제한 DPR을 기본으로 한다.
+- 실제 앨범을 HOME에 공개하려면 확정 cover/면별 texture, `releaseDate`, `detailsPath`, `albumHero` 설정을 검수한 뒤 `homeHeroSlides.ts` adapter에 명시적으로 연결한다.
+- 현재 등록된 앨범에는 이 연결을 추가하지 않았으며 HOME의 실제 ALBUM slide는 비활성 상태다. 실제 지영희류 데이터나 이미지도 등록되어 있지 않다.
+
 
 ## WORKS 목록과 향후 상세 경로
 

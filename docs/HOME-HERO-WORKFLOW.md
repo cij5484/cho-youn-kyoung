@@ -27,7 +27,7 @@ HOME Hero는 현재 가장 가까운 주요 활동을 안정적으로 소개하�
 
 ## 앨범 Hero 운영 원칙
 
-> **확정 운영 원칙 / 구현 미완료:** 앨범도 PERFORMANCE와 동일한 `RECENT WORKS` 선택 인터페이스를 사용하지만, 현재 adapter에는 준비된 앨범 slide가 없으며 실제 앨범 Hero Scene도 아직 구현되지 않았다.
+> **기반 구현 완료 / 실제 노출 미완료:** 앨범도 PERFORMANCE와 동일한 `RECENT WORKS` 선택 인터페이스를 사용한다. `AlbumHero`와 React Three Fiber 기반 `AlbumPackage3D` Scene은 준비되었지만, 현재 adapter에는 준비된 앨범 slide가 없어 실제 HOME 노출은 비활성 상태다.
 
 - `workType`은 `ALBUM`으로 표시하고 공연 Hero를 재사용하지 않는 앨범 전용 Hero Scene을 사용한다.
 - 실제 커버를 Hero의 핵심 시각 요소로 삼고 앨범 고유 디자인을 보존한다.
@@ -35,6 +35,9 @@ HOME Hero는 현재 가장 가까운 주요 활동을 안정적으로 소개하�
 - 검증된 공식 스트리밍 링크가 생기면 필요에 따라 `LISTEN`을 추가할 수 있지만 임의 링크는 만들지 않는다.
 - 상세 트랙 목록, Credits, 디지털 북클릿은 Hero에 넣지 않고 `/album/:id` 상세페이지에서 제공한다.
 - 앨범 Scene 추가로 기존 공연 Hero의 선정, 디자인, 애니메이션 또는 선택 동작을 변경하지 않는다.
+- `album-package` theme은 공연 Hero와 분리된 HTML 정보 영역과 단일 3D canvas를 사용한다. 디지팩은 제한된 X/Y축 pointer·touch drag와 damping을 지원하며 자동 회전하지 않는다.
+- 앞·뒤·좌·우·위·아래 texture slot은 독립적으로 받을 수 있다. 실제 texture가 없으면 무광 neutral material만 사용하며 임시 artwork를 만들지 않는다.
+- Three.js와 `@react-three/fiber`만 사용하고 DPR을 제한한다. postprocessing, HDR environment와 별도 animation library는 추가하지 않는다.
 
 ## 자산 위치
 
