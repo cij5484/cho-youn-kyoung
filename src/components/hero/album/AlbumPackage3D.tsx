@@ -1,4 +1,4 @@
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import type { ThreeEvent } from '@react-three/fiber';
@@ -15,6 +15,7 @@ const ROTATION_LIMIT = {
 const AUTO_ROTATION_SPEED = (Math.PI * 2) / 22;
 
 type AlbumPackage3DProps = { textures?: AlbumHeroTextures };
+type PackageProps = AlbumPackage3DProps & { scale: number };
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -30,8 +31,23 @@ function useReducedMotion() {
   return reduced;
 }
 
+function useMobileViewport() {
+  const [mobile, setMobile] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 700px)');
+    const update = () => setMobile(query.matches);
+    update();
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+
+  return mobile;
+}
+
 function usePackageMaterials(textures?: AlbumHeroTextures) {
   const [maps, setMaps] = useState<Partial<Record<keyof AlbumHeroTextures, THREE.Texture>>>({});
+  const { gl } = useThree();
 
   useEffect(() => {
     let cancelled = false;
@@ -43,9 +59,10 @@ function usePackageMaterials(textures?: AlbumHeroTextures) {
     Promise.all(entries.map(async ([face, url]) => {
       const texture = await new THREE.TextureLoader().loadAsync(url);
       texture.colorSpace = THREE.SRGBColorSpace;
-      texture.anisotropy = 4;
+      texture.anisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy());
       texture.minFilter = THREE.LinearMipmapLinearFilter;
       texture.magFilter = THREE.LinearFilter;
+      texture.generateMipmaps = true;
       loaded.push(texture);
       return [face, texture] as const;
     })).then((results) => {
@@ -58,7 +75,7 @@ function usePackageMaterials(textures?: AlbumHeroTextures) {
       cancelled = true;
       loaded.forEach((texture) => texture.dispose());
     };
-  }, [textures]);
+  }, [gl, textures]);
 
   return useMemo(() => {
     const paper = new THREE.MeshStandardMaterial({ color: '#e8e3d8', roughness: 0.94 });
@@ -79,7 +96,7 @@ function usePackageMaterials(textures?: AlbumHeroTextures) {
   }, [maps]);
 }
 
-function Package({ textures }: AlbumPackage3DProps) {
+function Package({ textures, scale }: PackageProps) {
   const group = useRef<THREE.Group>(null);
   const drag = useRef<{ pointerId: number; x: number; y: number } | null>(null);
   const target = useRef({ ...DEFAULT_ROTATION });
@@ -171,6 +188,7 @@ function Package({ textures }: AlbumPackage3DProps) {
       <group
         ref={group}
         rotation={[DEFAULT_ROTATION.x, DEFAULT_ROTATION.y, 0]}
+        scale={scale}
       >
         <mesh material={materials.plastic} castShadow>
           <boxGeometry args={[PACKAGE_SIZE.width, PACKAGE_SIZE.height, PACKAGE_SIZE.depth]} />
@@ -194,36 +212,38 @@ function Package({ textures }: AlbumPackage3DProps) {
 }
 
 export function AlbumPackage3D({ textures }: AlbumPackage3DProps) {
+  const mobile = useMobileViewport();
+
   return (
     <Canvas
       className="album-package-canvas"
       camera={{ position: [0, 0, 5], fov: 36 }}
-      dpr={[1, 1.5]}
+      dpr={[1, 2]}
       fallback={<div className="album-package-fallback" aria-hidden="true" />}
-      gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
+      gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       shadows="soft"
     >
-      <ambientLight intensity={1.05} />
+      <ambientLight intensity={0.82} />
       <directionalLight
-        position={[3.5, 5.5, 5]}
-        intensity={1.5}
+        position={[4.5, 6, 5.5]}
+        intensity={1.65}
         castShadow
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}
-        shadow-camera-left={-3.2}
-        shadow-camera-right={3.2}
-        shadow-camera-top={3.2}
-        shadow-camera-bottom={-3.2}
+        shadow-camera-left={-4}
+        shadow-camera-right={4}
+        shadow-camera-top={4}
+        shadow-camera-bottom={-4}
         shadow-camera-near={1}
         shadow-camera-far={12}
         shadow-bias={-0.0002}
-        shadow-radius={7}
+        shadow-radius={8}
       />
-      <directionalLight position={[-3, 1, 3]} intensity={0.32} />
-      <Package textures={textures} />
-      <mesh position={[0.08, -0.04, -0.25]} receiveShadow>
-        <planeGeometry args={[6.2, 6.2]} />
-        <shadowMaterial transparent opacity={0.11} depthWrite={false} />
+      <directionalLight position={[-3.5, 1.5, 3]} intensity={0.28} />
+      <Package textures={textures} scale={mobile ? 0.8 : 0.9} />
+      <mesh position={[0, 0, -0.34]} receiveShadow>
+        <planeGeometry args={[7.5, 7.5]} />
+        <shadowMaterial transparent opacity={0.13} depthWrite={false} />
       </mesh>
     </Canvas>
   );

@@ -11,6 +11,7 @@
 - 지영희류 앨범의 확정 데이터와 기존 `front.png`, `back.png`, `spine.png`를 연결했다. 무광 종이 cover와 spine은 반투명 plastic tray보다 조금 크게 돌출되고, 반대쪽과 위·아래에서는 안쪽 트레이가 드러난다. 실제 조명에 반응하는 부드러운 저농도 shadow receiver와 넓어진 3D 안전 영역을 사용한다.
 - HOME은 `albumHero.background`의 실제 desktop/mobile 전용 이미지를 `<picture>`로 선택해 사용한다. RECENT WORKS 앨범 cover는 강제 비율이나 crop 없이 실제 이미지 비율로 표시하며 공연 포스터 카드의 비율과 상태 동작은 바꾸지 않는다.
 - 표지 크기의 투명 interaction plane으로 어느 면에서도 drag를 시작할 수 있다. 진입 시 Y축 단방향 자동 회전은 약 22초에 한 바퀴이며 첫 mouse/touch 조작 즉시 중단되고 `prefers-reduced-motion`에서는 시작하지 않는다.
+- HOME 지영희류 Hero의 패키지는 desktop 약 10%, mobile 약 20% 축소하고 mobile에서 3D 위·정보 아래 순서가 한 배경 위에 끝까지 보이도록 배치한다. texture는 최대 8배 anisotropy, mipmap, 최대 2 DPR을 사용하며 오른쪽 위 key light와 반대 방향의 부드러운 실제 3D 그림자를 맞춘다. 옷고름 계열 blue는 작은 라벨·발매 상태·구분선·상세 링크에만 제한한다.
 - `released` 앨범은 확정 `releaseDate`가 있어야 HOME에 노출한다. 날짜가 미정인 `coming-soon` 앨범은 확인된 `year`, 실제 `coverImage`, `detailsPath`, `albumHero`가 모두 있을 때 노출할 수 있다.
 
 
