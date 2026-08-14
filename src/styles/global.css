@@ -88,11 +88,17 @@ html[data-home-hero-theme="album-package"] .menu-button {
 }
 html[data-home-hero-theme="sanjo-matiere"] .desktop-nav a.active,
 html[data-home-hero-theme="sanjo-matiere"] .desktop-nav a:hover,
+html[data-home-hero-theme="sanjo-matiere"] .desktop-nav a:focus-visible,
 html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a.active,
+html[data-home-hero-theme="sanjo-matiere"] .mobile-menu a:focus-visible {
+  color: #1F4F7A;
+}
 html[data-home-hero-theme="album-package"] .desktop-nav a.active,
 html[data-home-hero-theme="album-package"] .desktop-nav a:hover,
-html[data-home-hero-theme="album-package"] .mobile-menu a.active {
-  color: #1F4F7A;
+html[data-home-hero-theme="album-package"] .desktop-nav a:focus-visible,
+html[data-home-hero-theme="album-package"] .mobile-menu a.active,
+html[data-home-hero-theme="album-package"] .mobile-menu a:focus-visible {
+  color: #70453f;
 }
 .menu-button {
   display: none;

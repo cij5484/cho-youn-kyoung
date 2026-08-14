@@ -17,6 +17,8 @@ export type HomeHeroSlide = {
   heroImage?: string;
   workType: 'PERFORMANCE' | 'ALBUM';
   cardImage: string;
+  cardTitle?: string;
+  cardSubtitle?: string;
   albumTextures?: AlbumHeroTextures;
   albumBackground?: { desktop: string; mobile: string };
   trackCount?: number;
@@ -61,6 +63,7 @@ const albumHeroSlides: HomeHeroSlide[] = albums.flatMap((album) => {
 
   const [artistLine, albumLine, ...subtitleParts] = (album.englishTitle ?? album.title).split('\n');
   const heroTitle = albumLine ? `${artistLine}\n${albumLine}` : artistLine;
+  const [cardTitle, cardSubtitle] = album.title.split(/\s+[–—-]\s+/, 2);
   return [{
     id: album.id,
     eyebrow: 'ALBUM',
@@ -74,6 +77,8 @@ const albumHeroSlides: HomeHeroSlide[] = albums.flatMap((album) => {
     detailLink: album.detailsPath,
     workType: 'ALBUM' as const,
     cardImage: album.coverImage,
+    cardTitle,
+    cardSubtitle,
     albumTextures: album.albumHero.textures,
     albumBackground: album.albumHero.background,
     trackCount: album.tracks?.length,

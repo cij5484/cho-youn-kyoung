@@ -18,7 +18,7 @@ export function AlbumHero({ slide }: AlbumHeroProps) {
           <img src={slide.albumBackground.desktop} alt="" />
         </picture>
       ) : null}
-      <div className="album-hero__object" role="img" aria-label={`${slide.title} 디지팩 3D 미리보기`}>
+      <div className="album-hero__stage" role="img" aria-label={`${slide.title} 디지팩 3D 미리보기`}>
         <AlbumPackage3D textures={slide.albumTextures} />
       </div>
       <div className="album-hero__content">

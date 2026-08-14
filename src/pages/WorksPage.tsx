@@ -61,10 +61,11 @@ export function WorksPage() {
           <div className="works-section__content reveal__content">
             {archiveAlbums.map((album) => {
               const streamingLink = album.streamingLinks?.find((link) => Boolean(link.url));
+              const rowClassName = `works-archive__row works-archive__row--album works-archive__row--${album.id}`;
               const content = <><span className="works-archive__year">{album.year}</span><span className="works-archive__info"><span className="works-archive__title">{album.title}</span><small className="works-archive__subtitle">{album.description}</small></span><span className="works-archive__album-status">{streamingLink?.platform ?? ''}</span>{(album.detailsPath || streamingLink) && <span className="works-archive__arrow" aria-hidden="true">{album.detailsPath ? 'VIEW →' : 'LISTEN ↗'}</span>}</>;
-              if (album.detailsPath) return <Link className="works-archive__row works-archive__row--album" to={album.detailsPath} key={album.id}>{content}</Link>;
-              if (streamingLink) return <a className="works-archive__row works-archive__row--album" href={streamingLink.url} target="_blank" rel="noopener noreferrer" key={album.id}>{content}</a>;
-              return <div className="works-archive__row works-archive__row--album works-archive__row--static" key={album.id}>{content}</div>;
+              if (album.detailsPath) return <Link className={rowClassName} to={album.detailsPath} key={album.id}>{content}</Link>;
+              if (streamingLink) return <a className={rowClassName} href={streamingLink.url} target="_blank" rel="noopener noreferrer" key={album.id}>{content}</a>;
+              return <div className={`${rowClassName} works-archive__row--static`} key={album.id}>{content}</div>;
             })}
           </div>
         </Reveal>

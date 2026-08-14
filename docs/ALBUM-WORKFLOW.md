@@ -11,7 +11,10 @@
 - 지영희류 앨범의 확정 데이터와 기존 `front.png`, `back.png`, `spine.png`를 연결했다. 무광 종이 cover와 spine은 반투명 plastic tray보다 조금 크게 돌출되고, 반대쪽과 위·아래에서는 안쪽 트레이가 드러난다. 실제 조명에 반응하는 부드러운 저농도 shadow receiver와 넓어진 3D 안전 영역을 사용한다.
 - HOME은 `albumHero.background`의 실제 desktop/mobile 전용 이미지를 `<picture>`로 선택해 사용한다. RECENT WORKS 앨범 cover는 강제 비율이나 crop 없이 실제 이미지 비율로 표시하며 공연 포스터 카드의 비율과 상태 동작은 바꾸지 않는다.
 - 표지 크기의 투명 interaction plane으로 어느 면에서도 drag를 시작할 수 있다. 진입 시 Y축 단방향 자동 회전은 약 22초에 한 바퀴이며 첫 mouse/touch 조작 즉시 중단되고 `prefers-reduced-motion`에서는 시작하지 않는다.
-- HOME 지영희류 Hero의 패키지는 desktop 약 10%, mobile 약 20% 축소하고 mobile에서 3D 위·정보 아래 순서가 한 배경 위에 끝까지 보이도록 배치한다. texture는 최대 8배 anisotropy, mipmap, 최대 2 DPR을 사용하며 오른쪽 위 key light와 반대 방향의 부드러운 실제 3D 그림자를 맞춘다. 옷고름 계열 blue는 작은 라벨·발매 상태·구분선·상세 링크에만 제한한다.
+- HOME 지영희류 Hero의 패키지는 desktop 약 10%, mobile 약 20% 축소하고 mobile에서 3D 위·정보 아래 순서가 한 배경 위에 끝까지 보이도록 배치한다. texture는 최대 8배 anisotropy, mipmap, 최대 2 DPR을 사용하며 오른쪽 위 key light와 반대 방향의 부드러운 실제 3D 그림자를 맞춘다. muted oxblood 계열은 작은 라벨·발매 상태·구분선·상세 링크에만 제한한다.
+- 3D canvas는 패키지 박스가 아니라 Hero 전체를 덮는 visual stage에 둔다. shadow receiver의 끝이나 canvas 사각 경계가 드러나지 않아야 하며 정보·GNB·RECENT WORKS는 더 높은 interaction layer를 유지한다. drag target은 canvas 전체가 아닌 패키지 주변의 투명 plane으로 한정한다.
+- 진입은 배경 즉시 표시, 패키지 선행 reveal, 정보 block 지연 reveal 순서다. `prefers-reduced-motion`에서는 숨은 초기 상태가 남지 않도록 opacity·filter·transform을 즉시 최종 상태로 둔다.
+- `spine.png`의 실제 171×3000 비율(0.057)을 세네카 geometry의 기준으로 삼는다. texture를 비균등 scale하지 않고 tray와 종이 cover 두께를 함께 조정해 얇은 디지팩 비율을 유지한다.
 - `released` 앨범은 확정 `releaseDate`가 있어야 HOME에 노출한다. 날짜가 미정인 `coming-soon` 앨범은 확인된 `year`, 실제 `coverImage`, `detailsPath`, `albumHero`가 모두 있을 때 노출할 수 있다.
 
 
@@ -140,6 +143,14 @@ HOME RECENT WORKS에는 확정 `releaseDate`가 있거나 위의 `coming-soon` �
 공통 `AlbumDetailPage`는 현재 앨범명, 영문명, 연도, 발매 상태, 소개, 커버, 트랙, 크레딧, 공식 스트리밍 링크를 데이터가 있을 때만 표시하는 최소 구조입니다. Virtual CD Player, 웹 음원 재생, CD 회전, Digital Booklet page flip은 구현되지 않았으며 아래 내용은 향후 권장 사항입니다.
 
 지영희류 앨범은 2026년 `COMING SOON` 상태이며 발매일과 스트리밍 링크는 아직 없다. 여섯 트랙, 제공된 Credits, front cover만 상세에 표시하며 R2 음원, CD Player와 Digital Booklet은 구현하지 않았다.
+
+### 앨범별 상세 경험 향후 기획
+
+- 현재 공통 `AlbumDetailPage`는 최소 구조이며 지영희류의 최종 상세 디자인이 아니다. 공연별 상세처럼 앨범도 고유 concept을 사용하고, 지영희류 상세에 8/2 공연 visual system을 재사용하지 않는다.
+- 지영희류는 HOME의 3D digipack을 재사용하되, 닫힌 앞표지가 hinge처럼 열리고 안쪽 translucent tray와 실제 CD가 나타나는 click/tap 경험을 별도 기획한다. 트랙 선택 시 web audio 재생·active state·CD의 느린 회전을 연결하고 pause 시 자연스럽게 감속하는 방향을 검토한다.
+- Desktop과 Mobile interaction을 각각 설계하고 `prefers-reduced-motion`을 지원한다. 음원은 GitHub에 넣지 않으며 Cloudflare R2 같은 외부 object storage를 후보로만 검토한다. 이 항목들은 이번 HOME Hero 작업의 구현 범위가 아니다.
+- 2020 한범수류는 지영희류와 같은 공통 앨범 시스템 위에 실제 앨범·뒷표지·세네카·CD 라벨 스캔을 기준으로 **한범수류 고유** Hero와 detail scene을 향후 만든다. 지영희류 디자인을 복사하지 않는다.
+- 한범수류 전체 앨범 등록이 끝날 때 ABOUT의 음반/경력 영역에도 반영한다. 스캔 binary, 한범수류 Hero/detail, ABOUT 수정은 이번 작업에 포함하지 않는다.
 
 ### A. Virtual CD Player
 

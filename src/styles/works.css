@@ -46,6 +46,11 @@
   --works-row-wash: rgba(120, 169, 215, 0.08);
 }
 
+.works-archive__row--ji-young-hee-ryu-haegeum-sanjo-2026 {
+  --works-row-accent: #b87970;
+  --works-row-wash: rgba(184, 121, 112, 0.08);
+}
+
 .works-archive__row:last-child {
   border-bottom: 1px solid rgba(241, 237, 229, 0.16);
 }
