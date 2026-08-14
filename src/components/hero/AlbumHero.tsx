@@ -11,6 +11,12 @@ export function AlbumHero({ slide }: AlbumHeroProps) {
 
   return (
     <section className="album-hero" aria-labelledby={`${slide.id}-hero-title`}>
+      {slide.albumBackground ? (
+        <picture className="album-hero__background" aria-hidden="true">
+          <source media="(max-width: 700px)" srcSet={slide.albumBackground.mobile} />
+          <img src={slide.albumBackground.desktop} alt="" />
+        </picture>
+      ) : null}
       <div className="album-hero__object" role="img" aria-label={`${slide.title} 디지팩 3D 미리보기`}>
         <AlbumPackage3D textures={slide.albumTextures} />
       </div>

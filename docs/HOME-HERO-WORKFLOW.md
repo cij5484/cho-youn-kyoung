@@ -35,10 +35,11 @@ HOME Hero는 현재 가장 가까운 주요 활동을 안정적으로 소개하�
 - 검증된 공식 스트리밍 링크가 생기면 필요에 따라 `LISTEN`을 추가할 수 있지만 임의 링크는 만들지 않는다.
 - 상세 트랙 목록, Credits, 디지털 북클릿은 Hero에 넣지 않고 `/album/:id` 상세페이지에서 제공한다.
 - 앨범 Scene 추가로 기존 공연 Hero의 선정, 디자인, 애니메이션 또는 선택 동작을 변경하지 않는다.
-- `album-package` theme은 공연 Hero와 분리된 밝은 아이보리 종이 질감·중심선·절제된 곡선 배경, HTML 정보 영역과 단일 3D canvas를 사용한다. 영문 주제는 desktop에서 `CHO YOUN KYOUNG` / `HAEGEUM SANJO` 두 줄로 유지한다.
-- 디지팩은 X축 ±14°와 Y축 ±168° 범위의 pointer·touch drag, frame damping을 지원하며 자동 회전하지 않는다. canvas 밖에서 발생한 `pointerup`·`pointercancel`과 pointer capture 상실도 drag를 종료한다.
+- `album-package` theme은 공연 Hero와 분리된 실제 desktop/mobile 전용 배경 이미지, HTML 정보 영역과 단일 3D canvas를 사용한다. `<picture>`의 media source로 현재 viewport에 필요한 배경만 요청하며 영문 주제는 desktop에서 `CHO YOUN KYOUNG` / `HAEGEUM SANJO` 두 줄로 유지한다.
+- 디지팩은 수동 조작 시 X축 ±14°와 Y축 ±168° 범위의 pointer·touch drag와 frame damping을 지원한다. 진입 시 Y축으로 약 22초에 한 바퀴 도는 조용한 자동 회전을 시작하고 첫 pointer 조작 즉시 영구 중단한다. `prefers-reduced-motion`에서는 자동 회전하지 않는다.
+- 보이는 면의 방향과 관계없이 표지 전체 크기의 투명 interaction plane을 유지하며, canvas 밖에서 발생한 `pointerup`·`pointercancel`과 pointer capture 상실도 drag를 종료한다.
 - 앞·뒤·좌·우·위·아래 texture slot은 독립적으로 받을 수 있다. 실제 texture가 없으면 무광 neutral material만 사용하며 임시 artwork를 만들지 않는다.
-- 지영희류 패키지는 실제 front/back과 왼쪽 spine texture를 사용한다. 반대쪽 얇은 면과 위·아래 면은 은은한 반투명·clearcoat의 플라스틱 edge material을 사용하고, 실제 조명에 반응하는 바닥 shadow receiver로 입체감을 만든다. wheel zoom은 오브젝트에만 0.9–1.35배로 제한하며 double click으로 기본 배율에 복귀한다. 앨범 Hero는 활성화될 때만 lazy-load하여 초기 공연 Hero에서 3D bundle과 대형 texture를 요청하지 않는다.
+- 지영희류 패키지는 실제 front/back과 왼쪽 spine texture를 사용한 무광 종이 커버가 내부 트레이보다 조금 돌출되는 구조다. 반대쪽 얇은 면과 위·아래에는 한 단계 안쪽의 절제된 반투명 플라스틱 트레이가 보인다. 부드러운 저농도 shadow receiver와 실제 조명이 회전에 반응하며, 넓어진 camera/canvas 안전 영역은 전체 회전에서 모서리를 보존한다. 앨범 Hero는 활성화될 때만 lazy-load하여 초기 공연 Hero에서 3D bundle과 대형 texture를 요청하지 않는다.
 - 날짜 없는 `coming-soon` 앨범은 RECENT WORKS 연도 정렬에는 참여하지만 HOME 날짜 기반 기본 Hero 후보에서는 제외한다. 공연의 서울 날짜 기준 기본 선정은 그대로 유지한다.
 - Three.js와 `@react-three/fiber`만 사용하고 DPR을 제한한다. postprocessing, HDR environment와 별도 animation library는 추가하지 않는다.
 
@@ -52,7 +53,7 @@ HOME Hero는 현재 가장 가까운 주요 활동을 안정적으로 소개하�
 
 - Desktop: 아무 카드도 탐색하지 않을 때 실제 Hero인 `activeIndex`를 강조한다. 카드 hover 또는 keyboard focus 중에는 별도 interaction index의 카드만 위로 꺼낸 듯 확대·상승하고, 기존 active 카드는 일반 상태로 돌아간다.
 - Mobile: label tap으로 하단 가로 목록을 열고, native swipe/drag와 center scroll snap으로 탐색한다. 중앙에 가장 가까운 `previewIndex`만 시각적으로 강조하며 swipe만으로 `activeIndex`나 Hero를 변경하지 않는다. 카드를 tap한 경우에만 Hero를 선택한다.
-- 앨범 카드만 1:1 비율과 `contain` 표시를 사용해 실제 cover 전체를 보존한다. 공연 포스터 카드는 기존 세로 비율과 `cover` 표시를 그대로 유지하며, 앨범 카드도 공통 active·hover·focus·preview 상태 규칙을 따른다.
+- 앨범 카드만 실제 정사각 cover와 정확히 맞는 1:1 이미지 박스와 `cover` 표시를 사용한다. 공연 포스터 카드는 기존 세로 비율과 `cover` 표시를 그대로 유지하며, 앨범 카드도 공통 active·hover·focus·preview 상태 규칙을 따른다.
 - 좌우 방향키, Home, End로 카드 포커스를 이동하고 ESC로 목록을 닫는다. 현재 카드는 `aria-selected`로 전달한다.
 - 비활성 Hero는 `aria-hidden`과 `inert`로 포커스 및 접근성 트리에서 제외한다.
 - `prefers-reduced-motion`에서는 fan, 큰 이동, crossfade transition을 제거하되 모든 선택 기능은 유지한다.

@@ -26,6 +26,10 @@ export type AlbumHeroTextures = {
 export type AlbumHeroSettings = {
   theme: 'album-package';
   textures: AlbumHeroTextures;
+  background: {
+    desktop: string;
+    mobile: string;
+  };
 };
 
 export type AlbumParticipant = {
@@ -108,6 +112,10 @@ export const albums: Album[] = [
     coverImage: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/front.png',
     albumHero: {
       theme: 'album-package',
+      background: {
+        desktop: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/home-hero-desktop.png',
+        mobile: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/home-hero-mobile.png',
+      },
       textures: {
         front: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/front.png',
         back: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/back.png',

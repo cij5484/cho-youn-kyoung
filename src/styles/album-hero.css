@@ -7,26 +7,20 @@
   min-height: 100svh;
   padding: var(--header) clamp(24px, 7vw, 112px) clamp(150px, 18vh, 210px);
   overflow: hidden;
-  background:
-    linear-gradient(90deg, transparent calc(50% - .5px), rgba(91, 86, 76, .16) 50%, transparent calc(50% + .5px)),
-    radial-gradient(ellipse 62% 88% at 50% 106%, transparent 49.7%, rgba(116, 108, 94, .13) 50%, rgba(116, 108, 94, .13) 50.25%, transparent 50.6%),
-    radial-gradient(ellipse 82% 94% at 6% 50%, transparent 64%, rgba(130, 121, 105, .07) 64.2%, transparent 64.55%),
-    repeating-linear-gradient(7deg, rgba(90, 82, 68, .018) 0 1px, transparent 1px 5px),
-    #eeeae0;
+  background: #eeeae0;
   color: #252525;
 }
 
-.album-hero::after {
+.album-hero__background {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 34% 46%, rgba(255, 255, 255, .32), transparent 42%);
-  content: '';
   pointer-events: none;
 }
+.album-hero__background img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
 .album-hero-loading { min-height: 100svh; background: #eeeae0; }
 
-.album-hero__object { min-width: 0; height: min(66vh, 680px); touch-action: pan-y; cursor: grab; }
+.album-hero__object { position: relative; min-width: 0; height: min(72vh, 740px); transform: translateX(-1.5%); touch-action: pan-y; cursor: grab; }
 .album-hero__object:active { cursor: grabbing; }
 .album-package-canvas { display: block; width: 100%; height: 100%; }
 .album-package-fallback { width: min(55vw, 420px); aspect-ratio: 1; margin: auto; background: #cbc8c1; }
@@ -41,7 +35,7 @@
 
 @media (max-width: 700px) {
   .album-hero { grid-template-columns: 1fr; align-content: start; padding: calc(var(--header) + 10px) 20px 160px; }
-  .album-hero__object { width: 100%; height: min(48vh, 410px); }
+  .album-hero__object { width: calc(100% + 40px); height: min(48vh, 410px); margin-left: -20px; transform: none; }
   .album-hero__content { margin-top: -10px; }
   .album-hero h1 { font-size: clamp(1.75rem, 8.7vw, 3rem); }
   .album-hero h1 span { white-space: normal; }

@@ -789,10 +789,11 @@ html[data-home-hero-theme="album-package"] .home-creative-credit {
 }
 .recent-work-card--album .recent-work-card__image-wrap {
   aspect-ratio: 1;
-  background: #dedbd2;
+  background: transparent;
 }
 .recent-work-card--album .recent-work-card__image-wrap img {
-  object-fit: contain;
+  display: block;
+  object-fit: cover;
 }
 .recent-work-card__meta {
   display: grid;
