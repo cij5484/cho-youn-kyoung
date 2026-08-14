@@ -46,9 +46,9 @@
   animation: albumInfoIn 1.7s cubic-bezier(.22, .61, .36, 1) .62s both;
 }
 .album-hero__eyebrow { margin: 0 0 20px; color: var(--album-accent); font-size: .72rem; font-weight: 700; letter-spacing: .2em; }
-.album-hero h1 { margin: 0; font-family: var(--serif); font-size: clamp(2rem, 3.15vw, 3.8rem); font-weight: 400; line-height: 1.08; letter-spacing: -.025em; }
+.album-hero h1 { margin: 0; font-family: var(--serif); font-size: clamp(2.5rem, 3.6vw, 4.35rem); font-weight: 400; line-height: 1.08; letter-spacing: -.025em; }
 .album-hero h1 span { display: block; white-space: nowrap; }
-.album-hero__subtitle { margin: 24px 0 0; font-family: var(--serif); font-size: clamp(1rem, 1.5vw, 1.35rem); line-height: 1.6; }
+.album-hero__subtitle { margin: 18px 0 0; font-family: var(--serif); font-size: clamp(1.05rem, 1.6vw, 1.75rem); line-height: 1.5; }
 .album-hero__meta { display: flex; align-items: center; gap: 10px; margin: 18px 0 0; font-size: .78rem; letter-spacing: .12em; }
 .album-hero__status { color: var(--album-accent); font-weight: 700; }
 .album-hero__status::before { content: ''; display: inline-block; width: 22px; margin-right: 10px; border-top: 1px solid color-mix(in srgb, var(--album-accent) 68%, transparent); vertical-align: .25em; }
@@ -71,9 +71,9 @@
   .album-hero { display: block; min-height: 100svh; padding: calc(var(--header) + 40svh) 20px 72px; }
   .album-hero__content { margin-top: -4px; }
   .album-hero__eyebrow { margin-bottom: 10px; }
-  .album-hero h1 { font-size: clamp(1.75rem, 8.7vw, 3rem); }
-  .album-hero h1 span { white-space: normal; }
-  .album-hero__subtitle { margin-top: 12px; line-height: 1.4; }
+  .album-hero h1 { font-size: clamp(1.72rem, 8.1vw, 2.4rem); }
+  .album-hero h1 span { white-space: nowrap; }
+  .album-hero__subtitle { margin-top: 10px; font-size: clamp(.9rem, 3.8vw, 1.1rem); line-height: 1.4; }
   .album-hero__meta { margin-top: 10px; }
   .album-hero__link { margin-top: 18px; }
 }

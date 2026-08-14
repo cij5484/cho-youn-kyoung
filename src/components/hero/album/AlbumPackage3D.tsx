@@ -14,6 +14,10 @@ const ROTATION_LIMIT = {
   y: THREE.MathUtils.degToRad(168),
 } as const;
 const AUTO_ROTATION_SPEED = (Math.PI * 2) / 22;
+const BACKGROUND_SOURCES = {
+  desktop: { width: 3840, height: 2160, lineRatio: 1369 / 3840 },
+  mobile: { width: 1440, height: 2560, lineRatio: 720 / 1440 },
+} as const;
 
 type AlbumPackage3DProps = { textures?: AlbumHeroTextures };
 type PackageProps = AlbumPackage3DProps & { scale: number; position: [number, number, number] };
@@ -213,8 +217,6 @@ function Package({ textures, scale, position }: PackageProps) {
 }
 
 export function AlbumPackage3D({ textures }: AlbumPackage3DProps) {
-  const mobile = useMobileViewport();
-
   return (
     <Canvas
       className="album-package-canvas"
@@ -224,6 +226,34 @@ export function AlbumPackage3D({ textures }: AlbumPackage3DProps) {
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       shadows="soft"
     >
+      <AlbumPackageScene textures={textures} />
+    </Canvas>
+  );
+}
+
+function AlbumPackageScene({ textures }: AlbumPackage3DProps) {
+  const mobile = useMobileViewport();
+  const { size, viewport } = useThree();
+  const source = mobile ? BACKGROUND_SOURCES.mobile : BACKGROUND_SOURCES.desktop;
+  const backgroundScale = Math.max(size.width / source.width, size.height / source.height);
+  const renderedWidth = source.width * backgroundScale;
+  const backgroundOffsetX = (size.width - renderedWidth) / 2;
+  const screenLineX = backgroundOffsetX + source.lineRatio * renderedWidth;
+  const packageX = (screenLineX / size.width - 0.5) * viewport.width;
+  const packageScale = mobile ? 0.48 : 0.7;
+
+  // Keep the mobile cover below the header while allowing its size to determine
+  // the natural start of the information block below the visual stage.
+  const mobileHeader = Math.min(80, Math.max(60, size.height * 0.09));
+  const projectedCoverHeight = (PACKAGE_SIZE.height + COVER_OVERHANG * 2) * packageScale
+    / viewport.height * size.height;
+  const mobileCenterY = mobileHeader + 20 + projectedCoverHeight / 2;
+  const packageY = mobile
+    ? (0.5 - mobileCenterY / size.height) * viewport.height
+    : 0.2;
+
+  return (
+    <>
       <ambientLight intensity={0.82} />
       <directionalLight
         position={[4.5, 6, 5.5]}
@@ -241,11 +271,11 @@ export function AlbumPackage3D({ textures }: AlbumPackage3DProps) {
         shadow-radius={8}
       />
       <directionalLight position={[-3.5, 1.5, 3]} intensity={0.28} />
-      <Package textures={textures} scale={mobile ? 0.6 : 0.7} position={mobile ? [0, 1.05, 0] : [-1.35, 0.2, 0]} />
+      <Package textures={textures} scale={packageScale} position={[packageX, packageY, 0]} />
       <mesh position={[0, 0, -0.34]} receiveShadow>
         <planeGeometry args={[12, 10]} />
         <shadowMaterial transparent opacity={0.13} depthWrite={false} />
       </mesh>
-    </Canvas>
+    </>
   );
 }
