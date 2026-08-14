@@ -57,7 +57,7 @@
 - [ ] Album Hero 진입 시 약 22초 단방향 자동 회전, 첫 pointer 조작 시 중단 및 `prefers-reduced-motion` 자동 회전 제외
 - [ ] Album Hero의 회전에 반응하는 부드러운 동적 그림자와 전체 회전 범위 3D 안전 영역
 - [ ] 무광 종이 front/back/spine이 안쪽 반투명 plastic tray보다 조금 돌출되는 실제 디지팩 구조
-- [ ] RECENT WORKS 앨범 카드만 실제 표지에 맞는 1:1 표시이고 비활성·hover·focus·active 상태 및 공연 포스터 비율에 회귀 없음
+- [ ] RECENT WORKS 앨범 카드가 crop 없이 실제 cover 이미지 비율로 표시되고 비활성·hover·focus·active 상태 및 공연 포스터 비율에 회귀 없음
 - [ ] Album Hero를 포함해 390px·360px·320px 가로 스크롤 없음
 - [ ] 모바일 메뉴 ESC·경로 변경 자동 닫기·스크롤 잠금·포커스 복원
 - [ ] reduced motion

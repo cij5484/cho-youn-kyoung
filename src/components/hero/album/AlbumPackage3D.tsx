@@ -9,7 +9,7 @@ const COVER_OVERHANG = 0.035;
 const COVER_DEPTH = 0.025;
 const DEFAULT_ROTATION = { x: -0.06, y: 0.1 };
 const ROTATION_LIMIT = {
-  x: THREE.MathUtils.degToRad(14),
+  x: THREE.MathUtils.degToRad(28),
   y: THREE.MathUtils.degToRad(168),
 } as const;
 const AUTO_ROTATION_SPEED = (Math.PI * 2) / 22;
