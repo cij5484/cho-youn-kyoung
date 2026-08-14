@@ -158,33 +158,38 @@ function Package({ textures }: AlbumPackage3DProps) {
   spineMaterials[1] = materials.spine;
   const coverSize = PACKAGE_SIZE.width + COVER_OVERHANG * 2;
 
+  const interactionProps = {
+    onPointerDown: handlePointerDown,
+    onPointerMove: handlePointerMove,
+    onPointerUp: endDrag,
+    onPointerCancel: endDrag,
+    onLostPointerCapture: () => { drag.current = null; },
+  };
+
   return (
-    <group
-      ref={group}
-      rotation={[DEFAULT_ROTATION.x, DEFAULT_ROTATION.y, 0]}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={endDrag}
-      onPointerCancel={endDrag}
-      onLostPointerCapture={() => { drag.current = null; }}
-    >
-      <mesh material={materials.plastic} castShadow>
-        <boxGeometry args={[PACKAGE_SIZE.width, PACKAGE_SIZE.height, PACKAGE_SIZE.depth]} />
+    <>
+      <group
+        ref={group}
+        rotation={[DEFAULT_ROTATION.x, DEFAULT_ROTATION.y, 0]}
+      >
+        <mesh material={materials.plastic} castShadow>
+          <boxGeometry args={[PACKAGE_SIZE.width, PACKAGE_SIZE.height, PACKAGE_SIZE.depth]} />
+        </mesh>
+        <mesh position={[0, 0, PACKAGE_SIZE.depth / 2 + COVER_DEPTH / 2]} material={faceMaterials(materials.front, 4)} castShadow>
+          <boxGeometry args={[coverSize, coverSize, COVER_DEPTH]} />
+        </mesh>
+        <mesh position={[0, 0, -(PACKAGE_SIZE.depth / 2 + COVER_DEPTH / 2)]} material={faceMaterials(materials.back, 5)} castShadow>
+          <boxGeometry args={[coverSize, coverSize, COVER_DEPTH]} />
+        </mesh>
+        <mesh position={[-coverSize / 2 + COVER_DEPTH / 2, 0, 0]} material={spineMaterials} castShadow>
+          <boxGeometry args={[COVER_DEPTH, coverSize, PACKAGE_SIZE.depth + COVER_DEPTH * 2]} />
+        </mesh>
+      </group>
+      <mesh position={[0, 0, 0.35]} {...interactionProps}>
+        <planeGeometry args={[coverSize * 1.14, coverSize * 1.14]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
       </mesh>
-      <mesh position={[0, 0, PACKAGE_SIZE.depth / 2 + COVER_DEPTH / 2]} material={faceMaterials(materials.front, 4)} castShadow>
-        <boxGeometry args={[coverSize, coverSize, COVER_DEPTH]} />
-      </mesh>
-      <mesh position={[0, 0, -(PACKAGE_SIZE.depth / 2 + COVER_DEPTH / 2)]} material={faceMaterials(materials.back, 5)} castShadow>
-        <boxGeometry args={[coverSize, coverSize, COVER_DEPTH]} />
-      </mesh>
-      <mesh position={[-coverSize / 2 + COVER_DEPTH / 2, 0, 0]} material={spineMaterials} castShadow>
-        <boxGeometry args={[COVER_DEPTH, coverSize, PACKAGE_SIZE.depth + COVER_DEPTH * 2]} />
-      </mesh>
-      <mesh position={[0, 0, PACKAGE_SIZE.depth / 2 + COVER_DEPTH + 0.03]}>
-        <planeGeometry args={[coverSize * 1.18, coverSize * 1.18]} />
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-      </mesh>
-    </group>
+    </>
   );
 }
 
