@@ -152,13 +152,18 @@ HOME RECENT WORKS에는 확정 `releaseDate`가 있거나 위의 `coming-soon` �
 ### Album Detail 3D 공통 제작 원칙
 
 - detail Canvas는 header 아래 viewport 전체를 덮는 **고정 full-stage**다. mode마다 Canvas bounds를 바꾸지 않고 `packageRig`, `BookletRig`, `CdRig`, `trayRig`의 world transform만 보간한다.
+- CLOSED package의 회전 pivot은 front/back cover의 기하학적 정중앙이며 배경 anchor와 같은 screen-space 기준을 유지한다. package rotation pivot과 front-cover hinge pivot은 서로 다른 개념이므로, hinge 좌표계를 package 중앙 회전에 그대로 사용하지 않는다.
+- spine은 fixed assembly member이며 front-cover hinge의 child가 아니다. 실제 `171 / 3000` 폭의 인쇄 면은 닫힘, 열림 도중, 완전 열림에서 계속 중앙 연결부에 남는다.
+- front cover는 음의 Y 방향으로 회전해 먼저 viewer 쪽을 지나 왼쪽 interior/booklet panel로 열리며, 오른쪽 back/tray panel은 고정된다.
 - CLOSED에서는 CD, hub, recess, booklet 같은 내부 부품을 렌더링 순서로 감추지 않는다. 내부는 cover 뒤에 물리적으로 놓고 hinge가 열린 뒤 cover에 가려져 있던 구조가 자연스럽게 드러나야 한다.
 - OPEN 요청은 회전 중단과 front orientation 정렬을 먼저 완료하고 hinge를 약 160° 여는 두 단계로 구성한다. 현재 회전에서 front까지는 shortest rotation path로 감쇠하며 정렬과 hinge opening을 동시에 시작하지 않는다.
 - spine은 artwork의 실제 `171 / 3000` 비율을 사용하고 surface에 극소 offset을 두어 z-fighting만 방지한다. 빈 두꺼운 box를 spine 대용으로 만들지 않는다.
 - booklet geometry는 texture의 native `width / height`에서 계산한다. P1을 source of truth로 한 trim 크기를 유지하며 고정 세로 비율로 모든 페이지를 늘이지 않는다.
 - 하나의 persistent `BookletRig`가 panel 위의 P1 상태에서 떠올라 focus 위치로 이동한다. cover sheet의 앞은 P1, 뒤는 P2이고 오른쪽 base page는 P3이며, 펼침 순서는 `P2/P3 → P4/P5 → P6/P7`이다. BACK도 같은 rig가 P1으로 닫혀 panel에 돌아가는 reverse motion이다.
+- Booklet focus 진입은 **closed P1 lift → closed P1 focus 이동/확대 → 위치 settle 후 cover open**의 순차 transition으로 실행한다. 큰 cover가 화면을 가로질러 이동하는 동안 펼치지 않는다.
 - CD 본체와 label은 거의 불투명하며 label opacity는 1이다. 약한 반투명 plastic은 outer rim과 center-hole rim에만 사용한다. 종이 interior 위에는 별도 frosted tray plate, shallow recess, guide, hub와 edge를 둔다.
 - interior paper, tray, booklet page는 shadow를 받고 booklet/CD는 그림자를 만든다. full-stage 뒤에는 canvas 경계보다 넓은 저농도 `shadowMaterial` receiver를 둔다.
+- PLAYER_FOCUS desktop에서는 3D album/CD 영역과 오른쪽 tracks panel의 viewport 영역을 분리하고 충분한 시각적 gap을 둔다. tracks UI가 CD나 tray 위를 덮도록 배치하지 않는다.
 - core texture는 front/back/spine, 양쪽 interior, CD label, P1까지만 최초 로드한다. P2~P7은 별도 booklet component가 focus에서 mount될 때 lazy-load하며 renderer capability 기반 anisotropy를 core와 detail texture 모두에 적용한다.
 
 ## 검수

@@ -39,7 +39,8 @@ const PAPER_THICKNESS = 0.028;
 const SURFACE_OFFSET = 0.001;
 const FRONT_PANEL_CENTER_Z = HALF_PACKAGE_DEPTH - PAPER_THICKNESS / 2;
 const BACK_PANEL_CENTER_Z = -FRONT_PANEL_CENTER_Z;
-const OPEN_ANGLE = THREE.MathUtils.degToRad(160);
+// Negative Y brings the cover toward the viewer before it settles to the left.
+const OPEN_ANGLE = THREE.MathUtils.degToRad(-160);
 const PAGE_HEIGHT = 2.12;
 const PAGE_TURN_DURATION = 0.86;
 
@@ -324,6 +325,8 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
   const [coverClosed, setCoverClosed] = useState(false);
   const [returning, setReturning] = useState(false);
   const resetPending = useRef(false);
+  const focusElapsed = useRef(0);
+  const focusTransformSettled = useRef(false);
   const previousMode = useRef(mode);
   const p1Width = PAGE_HEIGHT * textureAspect(p1);
   const assignCover = useCallback((node: THREE.Group | null) => {
@@ -333,6 +336,8 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
   useEffect(() => {
     if (mode === 'BOOKLET_FOCUS') {
       resetPending.current = true;
+      focusElapsed.current = 0;
+      focusTransformSettled.current = false;
       queueMicrotask(() => {
         setDetailsMounted(true);
         setMobileReaderReady(false);
@@ -350,12 +355,16 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
   useFrame((_, delta) => {
     if (!rig.current || !cover.current) return;
     const focused = mode === 'BOOKLET_FOCUS';
+    if (focused) focusElapsed.current += reduced ? 1 : delta;
     const holdFocusTransform = focused || (returning && !coverClosed);
     const ease = reduced ? 1 : 1 - Math.exp(-5.5 * delta);
     const targetPosition = new THREE.Vector3(-p1Width / 2, 0, 0.08);
+    if (focused && focusElapsed.current < 0.18) targetPosition.z = 0.2;
     const targetQuaternion = new THREE.Quaternion();
     const targetScale = new THREE.Vector3(0.84, 0.84, 0.84);
-    if (holdFocusTransform && rig.current.parent) {
+    // Lift the closed booklet first; only then carry it to the reader position.
+    const movingToFocus = holdFocusTransform && focusElapsed.current >= 0.18;
+    if (movingToFocus && rig.current.parent) {
       rig.current.parent.updateWorldMatrix(true, false);
       const desiredWorld = new THREE.Matrix4().compose(
         new THREE.Vector3(0, mobile ? 0.35 : 0.08, 1.35),
@@ -368,12 +377,13 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
     rig.current.position.lerp(targetPosition, ease);
     rig.current.quaternion.slerp(targetQuaternion, ease);
     rig.current.scale.lerp(targetScale, ease);
-    const coverTarget = (focused || (returning && !pagesReturned)) && detailsReady ? -Math.PI : 0;
-    cover.current.rotation.y = THREE.MathUtils.lerp(cover.current.rotation.y, coverTarget, ease);
-    cover.current.position.z = THREE.MathUtils.lerp(cover.current.position.z, coverTarget === -Math.PI ? 0 : 0.035, ease);
     const transformError = rig.current.position.distanceTo(targetPosition)
       + rig.current.quaternion.angleTo(targetQuaternion)
       + rig.current.scale.distanceTo(targetScale);
+    if (focused && movingToFocus && transformError < 0.045) focusTransformSettled.current = true;
+    const coverTarget = ((focused && focusTransformSettled.current) || (returning && !pagesReturned)) && detailsReady ? -Math.PI : 0;
+    cover.current.rotation.y = THREE.MathUtils.lerp(cover.current.rotation.y, coverTarget, ease);
+    cover.current.position.z = THREE.MathUtils.lerp(cover.current.position.z, coverTarget === -Math.PI ? 0 : 0.035, ease);
     const coverError = Math.abs(cover.current.rotation.y - coverTarget)
       + Math.abs(cover.current.position.z - (coverTarget === -Math.PI ? 0 : 0.035));
     if (returning && pagesReturned && coverError < 0.025 && !coverClosed) {
@@ -457,9 +467,9 @@ function Scene(props: ExperienceProps) {
     packageRig.current.rotation.y = THREE.MathUtils.lerp(packageRig.current.rotation.y, closed ? rotation.current.y : alignedYaw.current, ease);
     const targetHinge = !closed && aligned.current ? OPEN_ANGLE : 0;
     hinge.current.rotation.y = THREE.MathUtils.lerp(hinge.current.rotation.y, targetHinge, ease);
-    const x = closed ? (mobile ? 0 : -1.15) : mode === 'BOOKLET_FOCUS' ? 0.95 : mode === 'PLAYER_FOCUS' ? (mobile ? 0 : -0.38) : 0;
+    const x = closed ? (mobile ? 0 : -1.15) : mode === 'BOOKLET_FOCUS' ? 0.95 : mode === 'PLAYER_FOCUS' ? (mobile ? 0 : -1.05) : 0;
     const y = mobile ? (closed ? 1.05 : 0.6) : 0.05;
-    const scale = closed ? (mobile ? 1.03 : 1.18) : mode === 'BOOKLET_FOCUS' ? 0.72 : (mobile ? 0.62 : 1.08);
+    const scale = closed ? (mobile ? 1.03 : 1.18) : mode === 'BOOKLET_FOCUS' ? 0.72 : mode === 'PLAYER_FOCUS' ? (mobile ? 0.62 : 0.88) : (mobile ? 0.62 : 1.08);
     packageRig.current.position.x = THREE.MathUtils.lerp(packageRig.current.position.x, x, ease);
     packageRig.current.position.y = THREE.MathUtils.lerp(packageRig.current.position.y, y, ease);
     packageRig.current.position.z = THREE.MathUtils.lerp(packageRig.current.position.z, mode === 'BOOKLET_FOCUS' ? -1 : 0, ease);
@@ -505,6 +515,9 @@ function Scene(props: ExperienceProps) {
     <>
       <group ref={packageRig} position={[mobile ? 0 : -1.15, mobile ? 1.05 : 0.05, 0]} rotation={[-0.1, 0.12, 0]} scale={mobile ? 1.03 : 1.18}
         onPointerDown={down} onPointerMove={move} onPointerUp={(e) => finish(e.pointerId, true)} onPointerCancel={(e) => finish(e.pointerId, false)}>
+        {/* Keep assembly coordinates spine-relative while packageRig rotates at
+            the geometric centre shared by the closed front and back covers. */}
+        <group position={[-HALF_PANEL, 0, 0]}>
         <TrayRig back={textures.back} texture={textures.interiorTray} label={textures.cdLabel} mode={mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={setTraySettled} onDiscSettled={setDiscSettled} />
         <group ref={hinge}>
           <group position={[HALF_PANEL, 0, FRONT_PANEL_CENTER_Z]}>
@@ -515,10 +528,12 @@ function Scene(props: ExperienceProps) {
               <BookletRig album={album} p1={textures.p1} mode={mode} page={page} mobile={mobile} reduced={reduced} onBooklet={onBooklet} onSettled={setBookletSettled} onPageTurnComplete={() => props.onPageTurnComplete?.()} />
             </group>
           </group>
-          <mesh position={[SURFACE_OFFSET, 0, 0]} rotation={[0, Math.PI / 2, 0]}><planeGeometry args={[PACKAGE_DEPTH, PANEL]} /><PaperMaterial texture={textures.spine} /></mesh>
+        </group>
+        {/* The printed spine stays in the fixed assembly as the cover opens. */}
+        <mesh position={[SURFACE_OFFSET, 0, 0]} rotation={[0, Math.PI / 2, 0]} castShadow><planeGeometry args={[PACKAGE_DEPTH, PANEL]} /><PaperMaterial texture={textures.spine} /></mesh>
         </group>
       </group>
-      <mesh position={[0, 0, -0.6]} receiveShadow><planeGeometry args={[16, 12]} /><shadowMaterial transparent opacity={0.11} depthWrite={false} /></mesh>
+      <mesh position={[0, 0, -0.48]} receiveShadow><planeGeometry args={[16, 12]} /><shadowMaterial transparent opacity={0.065} depthWrite={false} /></mesh>
     </>
   );
 }
