@@ -23,6 +23,18 @@ export type AlbumHeroTextures = {
   bottom?: string;
 };
 
+export type AlbumHeroBackgroundAnchor = {
+  sourceWidth: number;
+  sourceHeight: number;
+  x: number;
+};
+
+export type AlbumHeroPackageGeometry = {
+  front: { width: number; height: number };
+  back: { width: number; height: number };
+  spine: { width: number; height: number };
+};
+
 export type AlbumHeroSettings = {
   theme: 'album-package';
   textures: AlbumHeroTextures;
@@ -30,6 +42,11 @@ export type AlbumHeroSettings = {
     desktop: string;
     mobile: string;
   };
+  backgroundAnchor: {
+    desktop: AlbumHeroBackgroundAnchor;
+    mobile: AlbumHeroBackgroundAnchor;
+  };
+  packageGeometry?: AlbumHeroPackageGeometry;
 };
 
 export type AlbumParticipant = {
@@ -116,6 +133,10 @@ export const albums: Album[] = [
         desktop: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/home-hero-desktop.png',
         mobile: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/home-hero-mobile.png',
       },
+      backgroundAnchor: {
+        desktop: { sourceWidth: 3840, sourceHeight: 2160, x: 1369 / 3840 },
+        mobile: { sourceWidth: 1440, sourceHeight: 2560, x: 720 / 1440 },
+      },
       textures: {
         front: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/front.png',
         back: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/back.png',
@@ -141,7 +162,33 @@ export const albums: Album[] = [
     id: 'han-beom-su-haegeum-sanjo-2020',
     title: '조윤경 해금산조－한범수류',
     year: '2020',
+    releaseStatus: 'released',
+    releaseDate: '2020-11-19',
     description: '한범수류 해금산조의 결을 담은 조윤경의 산조 음반.',
+    coverImage: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/front.webp',
+    cdLabelImage: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/cd-label.png',
+    detailsPath: '/album/han-beom-su-haegeum-sanjo-2020',
+    albumHero: {
+      theme: 'album-package',
+      background: {
+        desktop: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/home-hero-desktop.png',
+        mobile: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/home-hero-mobile.png',
+      },
+      backgroundAnchor: {
+        desktop: { sourceWidth: 3840, sourceHeight: 2160, x: 0.43 },
+        mobile: { sourceWidth: 1440, sourceHeight: 2560, x: 0.5 },
+      },
+      packageGeometry: {
+        front: { width: 3320, height: 2946 },
+        back: { width: 3317, height: 2946 },
+        spine: { width: 182, height: 2946 },
+      },
+      textures: {
+        front: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/front.webp',
+        back: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/back.webp',
+        spineLeft: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/spine.webp',
+      },
+    },
     featured: true,
     streamingLinks: [
       {

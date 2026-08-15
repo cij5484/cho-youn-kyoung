@@ -51,6 +51,11 @@
   --works-row-wash: rgba(184, 121, 112, 0.08);
 }
 
+.works-archive__row--han-beom-su-haegeum-sanjo-2020 {
+  --works-row-accent: #7fa9a2;
+  --works-row-wash: rgba(127, 169, 162, 0.08);
+}
+
 .works-archive__row:last-child {
   border-bottom: 1px solid rgba(241, 237, 229, 0.16);
 }

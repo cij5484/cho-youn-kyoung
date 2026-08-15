@@ -1,5 +1,5 @@
 import { performances } from './performances';
-import { albums, type AlbumHeroTextures } from './albums';
+import { albums, type AlbumHeroBackgroundAnchor, type AlbumHeroPackageGeometry, type AlbumHeroTextures } from './albums';
 
 export type HomeHeroTheme = 'haegeum-recital' | 'sanjo-matiere' | 'album-package';
 
@@ -21,6 +21,8 @@ export type HomeHeroSlide = {
   cardSubtitle?: string;
   albumTextures?: AlbumHeroTextures;
   albumBackground?: { desktop: string; mobile: string };
+  albumBackgroundAnchor?: { desktop: AlbumHeroBackgroundAnchor; mobile: AlbumHeroBackgroundAnchor };
+  albumPackageGeometry?: AlbumHeroPackageGeometry;
   trackCount?: number;
 };
 
@@ -61,7 +63,7 @@ const albumHeroSlides: HomeHeroSlide[] = albums.flatMap((album) => {
   const canShowComingSoon = album.releaseStatus === 'coming-soon' && Boolean(album.year);
   if (!album.coverImage || !album.detailsPath || !album.albumHero || (!album.releaseDate && !canShowComingSoon)) return [];
 
-  const [cardTitle, cardSubtitle] = album.title.split(/\s+[–—-]\s+/, 2);
+  const [cardTitle, cardSubtitle] = album.title.split(/\s*[-–—－]\s*/, 2);
   return [{
     id: album.id,
     eyebrow: 'ALBUM',
@@ -79,6 +81,8 @@ const albumHeroSlides: HomeHeroSlide[] = albums.flatMap((album) => {
     cardSubtitle,
     albumTextures: album.albumHero.textures,
     albumBackground: album.albumHero.background,
+    albumBackgroundAnchor: album.albumHero.backgroundAnchor,
+    albumPackageGeometry: album.albumHero.packageGeometry,
     trackCount: album.tracks?.length,
   }];
 });
