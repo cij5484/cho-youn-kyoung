@@ -207,7 +207,7 @@ function CdTray({
         <ringGeometry args={[0.85, 0.94, 64]} />
         <meshPhysicalMaterial color="#e5e2d8" opacity={trayOpacity} roughness={0.72} transparent />
       </mesh>
-      <mesh position={[0, 0, 0.14]}>
+      <mesh position={[0, 0, 0.14]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.16, 0.16, 0.07, 32]} />
         <meshPhysicalMaterial color="#ddd9cf" opacity={trayOpacity + 0.1} roughness={0.65} transparent />
       </mesh>
@@ -286,20 +286,24 @@ function CurledTurningPage({
   direction,
   reduced,
   turnKey,
+  onComplete,
 }: {
   frontTexture: THREE.Texture;
   backTexture: THREE.Texture;
   direction: -1 | 1;
   reduced: boolean;
   turnKey: number;
+  onComplete(): void;
 }) {
   const pivot = useRef<THREE.Group>(null);
   const frontSurface = useRef<THREE.Mesh>(null);
   const backSurface = useRef<THREE.Mesh>(null);
   const elapsed = useRef(0);
+  const completed = useRef(false);
 
   useEffect(() => {
     elapsed.current = 0;
+    completed.current = false;
     if (pivot.current) {
       pivot.current.rotation.y = 0;
       pivot.current.visible = true;
@@ -332,10 +336,11 @@ function CurledTurningPage({
       positions.needsUpdate = true;
     });
 
-    // The destination spread is already the static page pair underneath.
-    // Remove the transient sheet at completion so its source-side texture can
-    // never remain over the destination page.
-    if (linear >= 1) pivot.current.visible = false;
+    if (linear >= 1 && !completed.current) {
+      completed.current = true;
+      pivot.current.visible = false;
+      onComplete();
+    }
   });
 
   const xOffset = direction > 0 ? PAGE_WIDTH / 2 : -PAGE_WIDTH / 2;
@@ -372,8 +377,12 @@ function BookletFocus({
 }) {
   const root = useRef<THREE.Group>(null);
   const previousPage = useRef(page);
+  const [settledPage, setSettledPage] = useState(page);
   const [turn, setTurn] = useState({
     key: 0,
+    active: false,
+    sourcePage: page,
+    targetPage: page,
     frontTexture: textures.booklet[2],
     backTexture: textures.booklet[3],
   });
@@ -388,12 +397,27 @@ function BookletFocus({
       ? textures.booklet[page + 1]
       : textures.booklet[page * 2 + (pageDirection > 0 ? 1 : 2)];
     previousPage.current = page;
+    if (reduced) {
+      queueMicrotask(() => {
+        setSettledPage(page);
+        setTurn((current) => ({ ...current, active: false }));
+      });
+      return;
+    }
     setTurn((current) => ({
       key: current.key + 1,
+      active: true,
+      sourcePage: oldPage,
+      targetPage: page,
       frontTexture,
       backTexture,
     }));
-  }, [mobile, page, pageDirection, textures.booklet]);
+  }, [mobile, page, pageDirection, reduced, textures.booklet]);
+
+  const completeTurn = () => {
+    setSettledPage(turn.targetPage);
+    setTurn((current) => ({ ...current, active: false }));
+  };
 
   useFrame((_, delta) => {
     if (!root.current) return;
@@ -409,18 +433,20 @@ function BookletFocus({
   if (mode !== 'BOOKLET_FOCUS') return null;
 
   if (mobile) {
-    const texture = textures.booklet[page + 1]; // P2 through P7; P1 stays on the album panel.
+    const visiblePage = turn.active ? turn.targetPage : settledPage;
+    const texture = textures.booklet[visiblePage + 1]; // P2 through P7; P1 stays on the album panel.
     return (
       <group ref={root} position={[-1.1, -0.05, -0.5]} scale={0.55}>
         <mesh castShadow>
           <planeGeometry args={[PAGE_WIDTH, PAGE_HEIGHT, 18, 4]} />
           <meshStandardMaterial map={texture} metalness={0} roughness={0.94} />
         </mesh>
-        {pageDirection !== 0 && !reduced && (
+        {turn.active && (
           <CurledTurningPage
             backTexture={turn.backTexture}
             direction={pageDirection}
             frontTexture={turn.frontTexture}
+            onComplete={completeTurn}
             reduced={reduced}
             turnKey={turn.key}
           />
@@ -434,7 +460,15 @@ function BookletFocus({
     [textures.booklet[3], textures.booklet[4]], // P4 / P5
     [textures.booklet[5], textures.booklet[6]], // P6 / P7
   ] as const;
-  const [leftPage, rightPage] = spreads[page];
+  const sourceSpread = spreads[turn.sourcePage];
+  const targetSpread = spreads[turn.targetPage];
+  const settledSpread = spreads[settledPage];
+  const leftPage = turn.active
+    ? (pageDirection > 0 ? sourceSpread[0] : targetSpread[0])
+    : settledSpread[0];
+  const rightPage = turn.active
+    ? (pageDirection > 0 ? targetSpread[1] : sourceSpread[1])
+    : settledSpread[1];
   return (
     <group ref={root} position={[-1.1, -0.05, -0.5]} scale={0.55}>
       <mesh position={[-PAGE_WIDTH / 2, 0, 0]} castShadow>
@@ -445,11 +479,12 @@ function BookletFocus({
         <planeGeometry args={[PAGE_WIDTH, PAGE_HEIGHT, 18, 4]} />
         <meshStandardMaterial map={rightPage} metalness={0} roughness={0.94} />
       </mesh>
-      {pageDirection !== 0 && !reduced && (
+      {turn.active && (
         <CurledTurningPage
           backTexture={turn.backTexture}
           direction={pageDirection}
           frontTexture={turn.frontTexture}
+          onComplete={completeTurn}
           reduced={reduced}
           turnKey={turn.key}
         />
