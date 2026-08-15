@@ -149,6 +149,18 @@ HOME RECENT WORKS에는 확정 `releaseDate`가 있거나 위의 `coming-soon` �
 - `prefers-reduced-motion`에서는 자동 회전, 큰 이동과 page transition을 제거하되 모든 기능을 유지한다. Canvas를 생성할 수 없으면 cover, tracks, credits와 P1~P7 grid를 제공하는 2D fallback을 사용한다.
 - custom detail과 3D scene은 route 진입 뒤 lazy-load되므로 한범수류 generic detail에서 지영희류 scene bundle을 요청하지 않는다. HOME의 `AlbumPackage3D`는 수정하지 않았으며 상세용 articulated engine은 별도 컴포넌트로 유지한다.
 
+### Album Detail 3D 공통 제작 원칙
+
+- detail Canvas는 header 아래 viewport 전체를 덮는 **고정 full-stage**다. mode마다 Canvas bounds를 바꾸지 않고 `packageRig`, `BookletRig`, `CdRig`, `trayRig`의 world transform만 보간한다.
+- CLOSED에서는 CD, hub, recess, booklet 같은 내부 부품을 렌더링 순서로 감추지 않는다. 내부는 cover 뒤에 물리적으로 놓고 hinge가 열린 뒤 cover에 가려져 있던 구조가 자연스럽게 드러나야 한다.
+- OPEN 요청은 회전 중단과 front orientation 정렬을 먼저 완료하고 hinge를 약 160° 여는 두 단계로 구성한다. 현재 회전에서 front까지는 shortest rotation path로 감쇠하며 정렬과 hinge opening을 동시에 시작하지 않는다.
+- spine은 artwork의 실제 `171 / 3000` 비율을 사용하고 surface에 극소 offset을 두어 z-fighting만 방지한다. 빈 두꺼운 box를 spine 대용으로 만들지 않는다.
+- booklet geometry는 texture의 native `width / height`에서 계산한다. P1을 source of truth로 한 trim 크기를 유지하며 고정 세로 비율로 모든 페이지를 늘이지 않는다.
+- 하나의 persistent `BookletRig`가 panel 위의 P1 상태에서 떠올라 focus 위치로 이동한다. cover sheet의 앞은 P1, 뒤는 P2이고 오른쪽 base page는 P3이며, 펼침 순서는 `P2/P3 → P4/P5 → P6/P7`이다. BACK도 같은 rig가 P1으로 닫혀 panel에 돌아가는 reverse motion이다.
+- CD 본체와 label은 거의 불투명하며 label opacity는 1이다. 약한 반투명 plastic은 outer rim과 center-hole rim에만 사용한다. 종이 interior 위에는 별도 frosted tray plate, shallow recess, guide, hub와 edge를 둔다.
+- interior paper, tray, booklet page는 shadow를 받고 booklet/CD는 그림자를 만든다. full-stage 뒤에는 canvas 경계보다 넓은 저농도 `shadowMaterial` receiver를 둔다.
+- core texture는 front/back/spine, 양쪽 interior, CD label, P1까지만 최초 로드한다. P2~P7은 별도 booklet component가 focus에서 mount될 때 lazy-load하며 renderer capability 기반 anisotropy를 core와 detail texture 모두에 적용한다.
+
 ## 검수
 
 - 목록: 앨범 정렬과 대표 앨범 노출을 확인하고, 실제 커버가 있으면 커버가 표시되는지 확인합니다. 커버가 없으면 임시 박스 없이 앨범 정보가 텍스트 단일 열로 표시되는지 확인합니다.
