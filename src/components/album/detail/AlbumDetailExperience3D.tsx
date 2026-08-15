@@ -363,14 +363,12 @@ function CurledTurningPage({
 function BookletFocus({
   textures,
   page,
-  pageDirection,
   mobile,
   mode,
   reduced,
 }: {
   textures: LoadedTextures;
   page: number;
-  pageDirection: -1 | 0 | 1;
   mobile: boolean;
   mode: ExperienceMode;
   reduced: boolean;
@@ -383,6 +381,7 @@ function BookletFocus({
     active: false,
     sourcePage: page,
     targetPage: page,
+    direction: 1 as -1 | 1,
     frontTexture: textures.booklet[2],
     backTexture: textures.booklet[3],
   });
@@ -390,12 +389,13 @@ function BookletFocus({
   useEffect(() => {
     if (previousPage.current === page) return;
     const oldPage = previousPage.current;
+    const direction: -1 | 1 = page > oldPage ? 1 : -1;
     const frontTexture = mobile
       ? textures.booklet[oldPage + 1]
-      : textures.booklet[oldPage * 2 + (pageDirection > 0 ? 2 : 1)];
+      : textures.booklet[oldPage * 2 + (direction > 0 ? 2 : 1)];
     const backTexture = mobile
       ? textures.booklet[page + 1]
-      : textures.booklet[page * 2 + (pageDirection > 0 ? 1 : 2)];
+      : textures.booklet[page * 2 + (direction > 0 ? 1 : 2)];
     previousPage.current = page;
     if (reduced) {
       queueMicrotask(() => {
@@ -409,10 +409,11 @@ function BookletFocus({
       active: true,
       sourcePage: oldPage,
       targetPage: page,
+      direction,
       frontTexture,
       backTexture,
     }));
-  }, [mobile, page, pageDirection, reduced, textures.booklet]);
+  }, [mobile, page, reduced, textures.booklet]);
 
   const completeTurn = () => {
     setSettledPage(turn.targetPage);
@@ -444,7 +445,7 @@ function BookletFocus({
         {turn.active && (
           <CurledTurningPage
             backTexture={turn.backTexture}
-            direction={pageDirection}
+            direction={turn.direction}
             frontTexture={turn.frontTexture}
             onComplete={completeTurn}
             reduced={reduced}
@@ -464,10 +465,10 @@ function BookletFocus({
   const targetSpread = spreads[turn.targetPage];
   const settledSpread = spreads[settledPage];
   const leftPage = turn.active
-    ? (pageDirection > 0 ? sourceSpread[0] : targetSpread[0])
+    ? (turn.direction > 0 ? sourceSpread[0] : targetSpread[0])
     : settledSpread[0];
   const rightPage = turn.active
-    ? (pageDirection > 0 ? targetSpread[1] : sourceSpread[1])
+    ? (turn.direction > 0 ? targetSpread[1] : sourceSpread[1])
     : settledSpread[1];
   return (
     <group ref={root} position={[-1.1, -0.05, -0.5]} scale={0.55}>
@@ -482,7 +483,7 @@ function BookletFocus({
       {turn.active && (
         <CurledTurningPage
           backTexture={turn.backTexture}
-          direction={pageDirection}
+          direction={turn.direction}
           frontTexture={turn.frontTexture}
           onComplete={completeTurn}
           reduced={reduced}
@@ -494,7 +495,7 @@ function BookletFocus({
 }
 
 function ArticulatedAlbum(props: ExperienceProps) {
-  const { album, mode, page, pageDirection, mobile, playing, reduced, onOpen, onBooklet, onPlayer } = props;
+  const { album, mode, page, mobile, playing, reduced, onOpen, onBooklet, onPlayer } = props;
   const textures = useAlbumTextures(album);
   const packageRig = useRef<THREE.Group>(null);
   const drag = useRef<{
@@ -614,7 +615,6 @@ function ArticulatedAlbum(props: ExperienceProps) {
         mobile={mobile}
         mode={mode}
         page={page}
-        pageDirection={pageDirection}
         reduced={reduced}
         textures={textures}
       />
