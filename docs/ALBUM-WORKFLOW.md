@@ -126,7 +126,7 @@ HOME RECENT WORKS에는 확정 `releaseDate`가 있거나 위의 `coming-soon` �
 
 영문명(`englishTitle`), 발매 상태(`releaseStatus`), 앨범 전용 Hero 설정(`albumHero`), CD 라벨(`cdLabelImage`), 트랙별 외부 재생 URL(`webAudioUrl`), 상세 소개(`detailedDescription`)를 선택 필드로 정의했습니다. 공식 플랫폼 `streamingLinks`와 자체 웹 재생 URL은 역할을 분리합니다. 기존 앨범에는 확인되지 않은 값을 채우지 않습니다.
 
-`booklet.previewImages` 배열 순서가 페이지 순서이며 각 항목이 이미지 경로와 대체 텍스트를 보유하므로 8P 자료도 안정적으로 관리할 수 있습니다. 따라서 1차 구조에서는 새 북클릿 타입을 만들지 않습니다. 페이지 넘김 UI와 펼침면 정보는 실제 구현 단계까지 미확정으로 유지합니다.
+`booklet.previewImages` 배열 순서가 페이지 순서이며 각 항목이 이미지 경로와 대체 텍스트를 보유합니다. 지영희류는 확정된 P1~P7만 등록합니다.
 
 ## HOME Album Hero 운영 방향
 
@@ -138,50 +138,23 @@ HOME RECENT WORKS에는 확정 `releaseDate`가 있거나 위의 `coming-soon` �
 - 실제 상세페이지가 없으면 `VIEW ALBUM` 링크를 만들지 않습니다. 검증된 스트리밍 링크가 생긴 뒤 필요할 때만 `LISTEN` 링크를 별도 추가할 수 있습니다.
 - 상세 트랙 목록, 크레딧과 북클릿은 Hero가 아니라 앨범 상세에서 제공합니다.
 
-## Album Detail 구현 상태와 향후 경험
+## Album Detail 구현 상태 (2026-08-15)
 
-공통 `AlbumDetailPage`는 현재 앨범명, 영문명, 연도, 발매 상태, 소개, 커버, 트랙, 크레딧, 공식 스트리밍 링크를 데이터가 있을 때만 표시하는 최소 구조입니다. Virtual CD Player, 웹 음원 재생, CD 회전, Digital Booklet page flip은 구현되지 않았으며 아래 내용은 향후 권장 사항입니다.
+지영희류에는 공통 상세와 분리된 custom interactive detail이 활성화되어 있다. 상태는 `CLOSED / ALBUM_OPEN / BOOKLET_FOCUS / PLAYER_FOCUS` 네 가지이며, booklet과 player focus는 동시에 열리지 않는다. 한범수류는 현재 공통 generic `AlbumDetailPage`를 그대로 사용하며 전용 상세는 후속 작업이다.
 
-지영희류 앨범은 2026년 `COMING SOON` 상태이며 발매일과 스트리밍 링크는 아직 없다. 여섯 트랙, 제공된 Credits, front cover만 상세에 표시하며 R2 음원, CD Player와 Digital Booklet은 구현하지 않았다.
-
-### 앨범별 상세 경험 향후 기획
-
-- 현재 공통 `AlbumDetailPage`는 최소 구조이며 지영희류의 최종 상세 디자인이 아니다. 공연별 상세처럼 앨범도 고유 concept을 사용하고, 지영희류 상세에 8/2 공연 visual system을 재사용하지 않는다.
-- 지영희류는 HOME의 3D digipack을 재사용하되, 닫힌 앞표지가 hinge처럼 열리고 안쪽 translucent tray와 실제 CD가 나타나는 click/tap 경험을 별도 기획한다. 트랙 선택 시 web audio 재생·active state·CD의 느린 회전을 연결하고 pause 시 자연스럽게 감속하는 방향을 검토한다.
-- Desktop과 Mobile interaction을 각각 설계하고 `prefers-reduced-motion`을 지원한다. 음원은 GitHub에 넣지 않으며 Cloudflare R2 같은 외부 object storage를 후보로만 검토한다. 이 항목들은 이번 HOME Hero 작업의 구현 범위가 아니다.
-- 2020 한범수류는 지영희류와 같은 공통 앨범 시스템 위에 실제 앨범·뒷표지·세네카·CD 라벨 스캔을 기준으로 **한범수류 고유** Hero와 detail scene을 향후 만든다. 지영희류 디자인을 복사하지 않는다.
-- 한범수류 전체 앨범 등록이 끝날 때 ABOUT의 음반/경력 영역에도 반영한다. 스캔 binary, 한범수류 Hero/detail, ABOUT 수정은 이번 작업에 포함하지 않는다.
-
-### A. Virtual CD Player
-
-- 실제 CD 라벨 이미지로 가상의 CD를 표현하고 트랙 목록과 함께 배치합니다.
-- 트랙을 선택하면 해당 트랙을 재생합니다.
-- 재생 중에는 CD가 천천히 자연스럽게 회전하고, 일시정지하면 회전도 자연스럽게 정지합니다.
-- CD 회전과 UI는 CSS 및 브라우저 애니메이션을 우선 사용하며, 불필요한 대형 애니메이션 라이브러리를 먼저 도입하지 않습니다.
-- `prefers-reduced-motion` 환경에서는 회전 등 비필수 애니메이션을 줄이거나 제거하되 재생과 트랙 선택 기능은 유지합니다.
-
-### B. Web Audio
-
-- 고음질 또는 웹 감상용 앨범 음원은 GitHub 저장소에 넣지 않는 방향을 기본으로 하며 외부 object storage/CDN 연결을 지원합니다. 현재 우선 검토 대상은 Cloudflare R2이지만 최종 저장소·배포 설정은 **미확정**입니다.
-- 향후 트랙 데이터가 외부 재생 URL을 연결할 수 있도록 설계하되, 실제 필드명과 타입은 코드 작업 단계에서 확정합니다.
-- Spotify, Apple Music, Melon, YouTube Music 등 공식 플랫폼으로 이동하는 링크와 사이트 안에서 재생하는 자체 웹 음원 URL의 역할을 구분합니다.
-- 공식 스트리밍 플랫폼 링크나 웹 음원 URL이 확인되지 않았으면 임의 URL을 생성하지 않습니다.
-- 일반 MEDIA용 로컬 오디오·영상과 앨범 상세용 외부 웹 음원의 저장 원칙은 서로 다릅니다. 구분은 [MEDIA-WORKFLOW.md](./MEDIA-WORKFLOW.md)를 함께 확인합니다.
-
-### C. Digital Booklet
-
-- 실제 CD 북클릿 페이지 이미지를 사용하며 원본 디자인과 내용을 임의로 재해석하지 않습니다.
-- 단순 이미지 목록에 한정하지 않고 실제 종이를 넘기는 듯한 Viewer를 구현할 수 있도록 페이지 순서와 펼침면 정보를 설계합니다.
-- Desktop에서는 실제 책과 같은 펼침면을 제공할 수 있고, Mobile에서는 터치·스와이프로 자연스럽게 페이지를 넘길 수 있어야 합니다.
-- 페이지 넘김은 CSS + JavaScript 기반을 우선 검토하며, 키보드 조작과 `prefers-reduced-motion` 대응도 함께 설계합니다.
-- PDF 다운로드와 디지털 북클릿 Viewer는 별도 역할로 유지할 수 있습니다.
+- 닫힌 디지팩은 느린 자동 회전과 click/drag 구분을 지원하고, 열 때 articulated hinge를 기준으로 front panel이 움직인다. 펼친 구성은 **왼쪽 booklet / 오른쪽 CD tray**다.
+- interior artwork 위에 단순한 반투명 tray, 얕은 recess와 hub를 별도 3D 물성으로 올렸다. CD는 두께가 있는 plastic ring, outer rim, 실제 center hole, 별도 label surface로 구성한다.
+- Digital Booklet은 실제 P1~P7만 사용한다. P1은 닫힌 표지이며 desktop spread는 `P2/P3 → P4/P5 → P6/P7`, mobile은 읽기 쉬운 single-page focus로 P2부터 P7까지 탐색한다. **P8은 의도적으로 존재하지 않는다.** 버튼, 방향키와 mobile swipe를 제공한다.
+- Player는 track 선택, play/pause, 시간, seek와 오류 상태를 갖춘 audio-ready 구조다. 실제 `webAudioUrl`이 있는 트랙만 재생하며 현재 지영희류에는 URL이 없어 Play가 비활성화되고 `AUDIO COMING SOON`을 표시한다. 가짜 재생이나 CD 회전은 없다.
+- `prefers-reduced-motion`에서는 자동 회전, 큰 이동과 page transition을 제거하되 모든 기능을 유지한다. Canvas를 생성할 수 없으면 cover, tracks, credits와 P1~P7 grid를 제공하는 2D fallback을 사용한다.
+- custom detail과 3D scene은 route 진입 뒤 lazy-load되므로 한범수류 generic detail에서 지영희류 scene bundle을 요청하지 않는다. HOME의 `AlbumPackage3D`는 수정하지 않았으며 상세용 articulated engine은 별도 컴포넌트로 유지한다.
 
 ## 검수
 
 - 목록: 앨범 정렬과 대표 앨범 노출을 확인하고, 실제 커버가 있으면 커버가 표시되는지 확인합니다. 커버가 없으면 임시 박스 없이 앨범 정보가 텍스트 단일 열로 표시되는지 확인합니다.
 - 상세: `/album/:id`의 조건부 섹션, 없는 ID의 공통 404, HOME·WORKS 복귀 링크를 확인
-- Player: **미확정**. 향후 상세 UI가 생기면 트랙 선택·재생·일시정지, CD 회전 상태, reduced-motion, 외부 음원 URL 오류 fallback 확인
-- Viewer: **미확정**. 향후 디지털 북클릿이 생기면 이미지 순서, Desktop 펼침면, Mobile touch/swipe, keyboard와 PDF 역할 분리 확인
+- Player: track 선택, 음원 없는 disabled 상태, future `webAudioUrl` 재생·pause·seek, CD 감속, reduced-motion과 audio error fallback 확인
+- Viewer: P1~P7 순서, Desktop 세 펼침면, Mobile P2~P7 touch/swipe, keyboard와 마지막 페이지 경계 확인
 - 다운로드: PDF URL, 파일명, 새 창/다운로드 동작 확인
 - 회귀: 공연 Viewer와 공연 이미지 경로가 영향받지 않는지 확인
 

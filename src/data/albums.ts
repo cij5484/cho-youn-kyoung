@@ -49,6 +49,11 @@ export type AlbumHeroSettings = {
   packageGeometry?: AlbumHeroPackageGeometry;
 };
 
+export type AlbumDetailExperience = {
+  theme: 'ji-young-hee-paper';
+  interior: { bookletPanel: string; trayPanel: string };
+};
+
 export type AlbumParticipant = {
   id?: string;
   name: string;
@@ -107,6 +112,7 @@ export type Album = {
   coverImage?: string;
   cdLabelImage?: string;
   albumHero?: AlbumHeroSettings;
+  detailExperience?: AlbumDetailExperience;
   detailsPath?: string;
   featured?: boolean;
   tracks?: AlbumTrack[];
@@ -127,6 +133,14 @@ export const albums: Album[] = [
     releaseStatus: 'coming-soon',
     description: '지영희류 해금산조 앨범.',
     coverImage: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/front.png',
+    cdLabelImage: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/cd-label.png',
+    detailExperience: {
+      theme: 'ji-young-hee-paper',
+      interior: {
+        bookletPanel: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/interior-booklet.webp',
+        trayPanel: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/interior-tray.webp',
+      },
+    },
     albumHero: {
       theme: 'album-package',
       background: {
@@ -157,6 +171,13 @@ export const albums: Album[] = [
       { role: 'Distribution', names: ['조은뮤직'] },
       { role: 'Design', names: ['Soul.P'] },
     ],
+    booklet: {
+      previewImages: Array.from({ length: 7 }, (_, index) => ({
+        src: `/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/viewer/booklet-0${index + 1}.webp`,
+        alt: `지영희류 북클릿 ${index + 1}페이지`,
+        label: `P${index + 1}`,
+      })),
+    },
   },
   {
     id: 'han-beom-su-haegeum-sanjo-2020',
