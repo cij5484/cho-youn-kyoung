@@ -12,6 +12,7 @@ import type {
 const PACKAGE_SIZE = { width: 2.35, height: 2.35, depth: 0.102 } as const;
 const COVER_OVERHANG = 0.035;
 const COVER_DEPTH = 0.018;
+const SPINE_SURFACE_OFFSET = 0.0015;
 const DEFAULT_ROTATION = { x: -0.06, y: 0.1 };
 const ROTATION_LIMIT = {
   x: THREE.MathUtils.degToRad(28),
@@ -50,6 +51,7 @@ function getPackageDimensions(geometry?: AlbumHeroPackageGeometry) {
     trayWidth: widestCover - COVER_OVERHANG * 2,
     trayHeight: PACKAGE_SIZE.height,
     trayDepth: Math.max(COVER_DEPTH, printedSpineDepth - COVER_DEPTH * 2),
+    printedSpineDepth,
     frontWidth,
     frontHeight: coverHeight,
     backWidth,
@@ -239,9 +241,24 @@ function Package({ textures, geometry, scale, position }: PackageProps) {
         <mesh position={[0, 0, -(dimensions.trayDepth / 2 + COVER_DEPTH / 2)]} material={faceMaterials(materials.back, 5)} castShadow>
           <boxGeometry args={[dimensions.backWidth, dimensions.backHeight, COVER_DEPTH]} />
         </mesh>
-        <mesh position={[-dimensions.frontWidth / 2 + COVER_DEPTH / 2, 0, 0]} material={spineMaterials} castShadow>
-          <boxGeometry args={[COVER_DEPTH, dimensions.frontHeight, dimensions.trayDepth + COVER_DEPTH * 2]} />
-        </mesh>
+        {geometry ? (
+          <mesh
+            position={[
+              -Math.max(dimensions.frontWidth, dimensions.backWidth) / 2 - SPINE_SURFACE_OFFSET,
+              0,
+              0,
+            ]}
+            rotation={[0, -Math.PI / 2, 0]}
+            material={materials.spine}
+            castShadow
+          >
+            <planeGeometry args={[dimensions.printedSpineDepth, dimensions.frontHeight]} />
+          </mesh>
+        ) : (
+          <mesh position={[-dimensions.frontWidth / 2 + COVER_DEPTH / 2, 0, 0]} material={spineMaterials} castShadow>
+            <boxGeometry args={[COVER_DEPTH, dimensions.frontHeight, dimensions.trayDepth + COVER_DEPTH * 2]} />
+          </mesh>
+        )}
       </group>
       <mesh position={[0, 0, 0.35]} {...interactionProps}>
         <planeGeometry args={[Math.max(dimensions.frontWidth, dimensions.backWidth) * 1.14, dimensions.frontHeight * 1.14]} />
