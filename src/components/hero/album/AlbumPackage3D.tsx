@@ -12,6 +12,7 @@ import type {
 const PACKAGE_SIZE = { width: 2.35, height: 2.35, depth: 0.102 } as const;
 const COVER_OVERHANG = 0.035;
 const COVER_DEPTH = 0.018;
+const SPINE_SURFACE_OFFSET = 0.0015;
 const DEFAULT_ROTATION = { x: -0.06, y: 0.1 };
 const ROTATION_LIMIT = {
   x: THREE.MathUtils.degToRad(28),
@@ -242,7 +243,11 @@ function Package({ textures, geometry, scale, position }: PackageProps) {
         </mesh>
         {geometry ? (
           <mesh
-            position={[-dimensions.frontWidth / 2, 0, 0]}
+            position={[
+              -Math.max(dimensions.frontWidth, dimensions.backWidth) / 2 - SPINE_SURFACE_OFFSET,
+              0,
+              0,
+            ]}
             rotation={[0, -Math.PI / 2, 0]}
             material={materials.spine}
             castShadow
