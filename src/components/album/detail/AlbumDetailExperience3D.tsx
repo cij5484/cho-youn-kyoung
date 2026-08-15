@@ -33,7 +33,12 @@ type CoreTextures = {
 
 const PANEL = 2.56;
 const HALF_PANEL = PANEL / 2;
-const SPINE_WIDTH = PANEL * 171 / 3000;
+const PACKAGE_DEPTH = PANEL * 171 / 3000;
+const HALF_PACKAGE_DEPTH = PACKAGE_DEPTH / 2;
+const PAPER_THICKNESS = 0.028;
+const SURFACE_OFFSET = 0.001;
+const FRONT_PANEL_CENTER_Z = HALF_PACKAGE_DEPTH - PAPER_THICKNESS / 2;
+const BACK_PANEL_CENTER_Z = -FRONT_PANEL_CENTER_Z;
 const OPEN_ANGLE = THREE.MathUtils.degToRad(160);
 const PAGE_HEIGHT = 2.12;
 const PAGE_TURN_DURATION = 0.86;
@@ -132,21 +137,22 @@ function TrayRig({ back, texture, label, mode, playing, reduced, onPlayer, onSet
     const ease = reduced ? 1 : 1 - Math.exp(-7 * delta);
     // The complete internal stack remains behind the front cover until the
     // hinge exposes it; this is physical occlusion rather than a visibility pop.
-    rig.current.position.z = THREE.MathUtils.lerp(rig.current.position.z, mode === 'CLOSED' ? -0.16 : 0, ease);
-    onSettled(Math.abs(rig.current.position.z - (mode === 'CLOSED' ? -0.16 : 0)) < 0.012);
+    const closedInternalZ = HALF_PACKAGE_DEPTH - 0.21 - SURFACE_OFFSET;
+    rig.current.position.z = THREE.MathUtils.lerp(rig.current.position.z, mode === 'CLOSED' ? closedInternalZ : 0, ease);
+    onSettled(Math.abs(rig.current.position.z - (mode === 'CLOSED' ? closedInternalZ : 0)) < 0.012);
   });
   return (
     <group position={[HALF_PANEL, 0, 0]}>
-      <mesh position={[0, 0, -0.055]} castShadow receiveShadow>
-        <boxGeometry args={[PANEL, PANEL, 0.08]} />
+      <mesh position={[0, 0, BACK_PANEL_CENTER_Z]} castShadow receiveShadow>
+        <boxGeometry args={[PANEL, PANEL, PAPER_THICKNESS]} />
         <meshStandardMaterial color="#d8d1c5" roughness={0.94} />
       </mesh>
-      <mesh position={[0, 0, -0.096]} rotation={[0, Math.PI, 0]}>
+      <mesh position={[0, 0, -HALF_PACKAGE_DEPTH - SURFACE_OFFSET]} rotation={[0, Math.PI, 0]}>
         <planeGeometry args={[2.5, 2.5]} />
         <PaperMaterial texture={back} />
       </mesh>
-      <mesh position={[0, 0, -0.01]} receiveShadow><planeGeometry args={[2.5, 2.5]} /><PaperMaterial texture={texture} /></mesh>
-      <group ref={rig} position={[0, 0, mode === 'CLOSED' ? -0.16 : 0]}>
+      <mesh position={[0, 0, BACK_PANEL_CENTER_Z + PAPER_THICKNESS / 2 + SURFACE_OFFSET]} receiveShadow><planeGeometry args={[2.5, 2.5]} /><PaperMaterial texture={texture} /></mesh>
+      <group ref={rig} position={[0, 0, mode === 'CLOSED' ? HALF_PACKAGE_DEPTH - 0.21 - SURFACE_OFFSET : 0]}>
         <mesh position={[0, 0, 0.055]} receiveShadow>
           <boxGeometry args={[2.25, 2.25, 0.045]} />
           <meshPhysicalMaterial color="#dedbd2" transparent opacity={plasticOpacity} roughness={0.76} metalness={0} depthWrite />
@@ -168,8 +174,9 @@ function TrayRig({ back, texture, label, mode, playing, reduced, onPlayer, onSet
 
 type PageTurn = { key: number; source: number; target: number; direction: -1 | 1 };
 
-function BookletPages({ album, page, mobile, reduced, coverNode, onReady, onPageTurnComplete }: {
+function BookletPages({ album, page, mobile, reduced, active, mobileReaderReady, resetToken, coverNode, onReady, onPageTurnComplete }: {
   album: Album; page: number; mobile: boolean; reduced: boolean; coverNode: THREE.Group | null;
+  active: boolean; mobileReaderReady: boolean; resetToken: number;
   onReady(): void; onPageTurnComplete(): void;
 }) {
   const { gl } = useThree();
@@ -183,12 +190,21 @@ function BookletPages({ album, page, mobile, reduced, coverNode, onReady, onPage
   const [turn, setTurn] = useState<PageTurn | null>(null);
   useEffect(onReady, [onReady]);
   useEffect(() => {
+    if (resetToken === 0) return;
+    queueMicrotask(() => {
+      previous.current = 0;
+      setSettled(0);
+      setTurn(null);
+    });
+  }, [resetToken]);
+  useEffect(() => {
+    if (!active) return;
     if (previous.current === page) return;
     const source = previous.current;
     previous.current = page;
     if (reduced) { queueMicrotask(() => { setSettled(page); onPageTurnComplete(); }); return; }
     setTurn({ key: Date.now(), source, target: page, direction: page > source ? 1 : -1 });
-  }, [onPageTurnComplete, page, reduced]);
+  }, [active, onPageTurnComplete, page, reduced]);
   const completeTurn = () => {
     if (!turn) return;
     setSettled(turn.target);
@@ -206,8 +222,8 @@ function BookletPages({ album, page, mobile, reduced, coverNode, onReady, onPage
     const base = pages[turn ? turn.target : settled];
     return <>
       {p2Back}
-      <mesh castShadow receiveShadow><planeGeometry args={[PAGE_HEIGHT * textureAspect(base), PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={base} /></mesh>
-      {turn && <MobileTurningPage key={turn.key} source={pages[turn.source]} target={pages[turn.target]} width={width} direction={turn.direction} onDone={completeTurn} />}
+      {mobileReaderReady && <mesh castShadow receiveShadow><planeGeometry args={[PAGE_HEIGHT * textureAspect(base), PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={base} /></mesh>}
+      {mobileReaderReady && turn && <MobileTurningPage key={turn.key} source={pages[turn.source]} target={pages[turn.target]} width={width} direction={turn.direction} onDone={completeTurn} />}
     </>;
   }
   const spreads = [[pages[0], pages[1]], [pages[2], pages[3]], [pages[4], pages[5]]];
@@ -285,13 +301,22 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
   const [coverNode, setCoverNode] = useState<THREE.Group | null>(null);
   const [detailsMounted, setDetailsMounted] = useState(mode === 'BOOKLET_FOCUS');
   const [detailsReady, setDetailsReady] = useState(false);
+  const [mobileReaderReady, setMobileReaderReady] = useState(false);
+  const [resetToken, setResetToken] = useState(0);
+  const resetPending = useRef(false);
   const p1Width = PAGE_HEIGHT * textureAspect(p1);
   const assignCover = useCallback((node: THREE.Group | null) => {
     cover.current = node;
     setCoverNode(node);
   }, []);
   useEffect(() => {
-    if (mode === 'BOOKLET_FOCUS') queueMicrotask(() => setDetailsMounted(true));
+    if (mode === 'BOOKLET_FOCUS') {
+      resetPending.current = true;
+      queueMicrotask(() => {
+        setDetailsMounted(true);
+        setMobileReaderReady(false);
+      });
+    }
   }, [mode]);
   const detailsLoaded = useCallback(() => setDetailsReady(true), []);
   useFrame((_, delta) => {
@@ -322,15 +347,26 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
       + rig.current.scale.distanceTo(targetScale);
     const coverError = Math.abs(cover.current.rotation.y - coverTarget)
       + Math.abs(cover.current.position.z - (focused ? 0 : 0.035));
-    // Mobile resolves the physical P1→P2 opening first, then presents the
-    // loaded P2 surface as the centered single-page reader.
-    cover.current.visible = !(mobile && focused && coverError < 0.025);
-    onSettled(transformError < 0.035 && coverError < 0.025 && (!focused || detailsReady));
+    const geometrySettled = transformError < 0.035 && coverError < 0.025 && (!focused || detailsReady);
+    if (mobile && focused && geometrySettled && !mobileReaderReady) {
+      queueMicrotask(() => setMobileReaderReady(true));
+    }
+    if (!focused && geometrySettled && resetPending.current) {
+      resetPending.current = false;
+      queueMicrotask(() => {
+        setResetToken((value) => value + 1);
+        setMobileReaderReady(false);
+      });
+    }
+    // Switch from the physical P2 backside to the centered reader atomically,
+    // after the gutter-driven P1 opening has completed.
+    cover.current.visible = !(mobile && focused && mobileReaderReady);
+    onSettled(geometrySettled && (!mobile || !focused || mobileReaderReady));
   });
   return (
     <group ref={rig} position={[-p1Width / 2, 0, 0.08]} scale={0.84} onClick={(event) => { event.stopPropagation(); if (mode === 'ALBUM_OPEN') onBooklet(); }}>
-      {detailsMounted && <BookletPages album={album} page={page} mobile={mobile} reduced={reduced} coverNode={coverNode} onReady={detailsLoaded} onPageTurnComplete={onPageTurnComplete} />}
-      <group ref={assignCover} position={[0, 0, 0.035]}>
+      {detailsMounted && <BookletPages album={album} page={page} mobile={mobile} reduced={reduced} active={mode === 'BOOKLET_FOCUS'} mobileReaderReady={mobileReaderReady && mode === 'BOOKLET_FOCUS'} resetToken={resetToken} coverNode={coverNode} onReady={detailsLoaded} onPageTurnComplete={onPageTurnComplete} />}
+      <group ref={assignCover} position={[0, 0, 0.035]} visible={!(mobile && mode === 'BOOKLET_FOCUS' && mobileReaderReady)}>
         <mesh position={[p1Width / 2, 0, 0]} castShadow><planeGeometry args={[p1Width, PAGE_HEIGHT]} /><PaperMaterial texture={p1} /></mesh>
       </group>
     </group>
@@ -436,15 +472,15 @@ function Scene(props: ExperienceProps) {
         onPointerDown={down} onPointerMove={move} onPointerUp={(e) => finish(e.pointerId, true)} onPointerCancel={(e) => finish(e.pointerId, false)}>
         <TrayRig back={textures.back} texture={textures.interiorTray} label={textures.cdLabel} mode={mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={setTraySettled} onDiscSettled={setDiscSettled} />
         <group ref={hinge}>
-          <group position={[HALF_PANEL, 0, 0.1]}>
-            <mesh castShadow receiveShadow><boxGeometry args={[PANEL, PANEL, 0.08]} /><meshStandardMaterial color="#d8d1c5" roughness={0.94} /></mesh>
-            <mesh position={[0, 0, 0.041]}><planeGeometry args={[2.5, 2.5]} /><PaperMaterial texture={textures.front} /></mesh>
-            <mesh position={[0, 0, -0.041]} rotation={[0, Math.PI, 0]} receiveShadow><planeGeometry args={[2.5, 2.5]} /><PaperMaterial texture={textures.interiorBooklet} /></mesh>
-            <group position={[0, 0, 0.035]} rotation={[0, Math.PI, 0]}>
+          <group position={[HALF_PANEL, 0, FRONT_PANEL_CENTER_Z]}>
+            <mesh castShadow receiveShadow><boxGeometry args={[PANEL, PANEL, PAPER_THICKNESS]} /><meshStandardMaterial color="#d8d1c5" roughness={0.94} /></mesh>
+            <mesh position={[0, 0, PAPER_THICKNESS / 2 + SURFACE_OFFSET]}><planeGeometry args={[2.5, 2.5]} /><PaperMaterial texture={textures.front} /></mesh>
+            <mesh position={[0, 0, -PAPER_THICKNESS / 2 - SURFACE_OFFSET]} rotation={[0, Math.PI, 0]} receiveShadow><planeGeometry args={[2.5, 2.5]} /><PaperMaterial texture={textures.interiorBooklet} /></mesh>
+            <group position={[0, 0, 0.064]} rotation={[0, Math.PI, 0]}>
               <BookletRig album={album} p1={textures.p1} mode={mode} page={page} mobile={mobile} reduced={reduced} onBooklet={onBooklet} onSettled={setBookletSettled} onPageTurnComplete={() => props.onPageTurnComplete?.()} />
             </group>
           </group>
-          <mesh position={[0.001, 0, 0.056]} rotation={[0, Math.PI / 2, 0]}><planeGeometry args={[SPINE_WIDTH, PANEL]} /><PaperMaterial texture={textures.spine} /></mesh>
+          <mesh position={[SURFACE_OFFSET, 0, 0]} rotation={[0, Math.PI / 2, 0]}><planeGeometry args={[PACKAGE_DEPTH, PANEL]} /><PaperMaterial texture={textures.spine} /></mesh>
         </group>
       </group>
       <mesh position={[0, 0, -0.6]} receiveShadow><planeGeometry args={[16, 12]} /><shadowMaterial transparent opacity={0.11} depthWrite={false} /></mesh>
