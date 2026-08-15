@@ -281,18 +281,21 @@ function MovingFrontPanel({
 }
 
 function CurledTurningPage({
-  texture,
+  frontTexture,
+  backTexture,
   direction,
   reduced,
   turnKey,
 }: {
-  texture: THREE.Texture;
+  frontTexture: THREE.Texture;
+  backTexture: THREE.Texture;
   direction: -1 | 1;
   reduced: boolean;
   turnKey: number;
 }) {
   const pivot = useRef<THREE.Group>(null);
-  const page = useRef<THREE.Mesh>(null);
+  const frontSurface = useRef<THREE.Mesh>(null);
+  const backSurface = useRef<THREE.Mesh>(null);
   const elapsed = useRef(0);
 
   useEffect(() => {
@@ -300,29 +303,43 @@ function CurledTurningPage({
   }, [turnKey]);
 
   useFrame((_, delta) => {
-    if (!pivot.current || !page.current) return;
+    if (!pivot.current || !frontSurface.current || !backSurface.current) return;
     elapsed.current = Math.min(PAGE_TURN_DURATION, elapsed.current + delta);
     const linear = reduced ? 1 : elapsed.current / PAGE_TURN_DURATION;
     const progress = linear * linear * (3 - 2 * linear);
     pivot.current.rotation.y = direction > 0 ? -Math.PI * progress : Math.PI * (1 - progress);
 
-    const positions = page.current.geometry.attributes.position as THREE.BufferAttribute;
-    for (let index = 0; index < positions.count; index += 1) {
-      const x = positions.getX(index);
-      const normalized = Math.abs(x) / PAGE_WIDTH;
-      const curl = Math.sin(progress * Math.PI) * Math.sin(normalized * Math.PI) * 0.09;
-      positions.setZ(index, curl);
-    }
-    positions.needsUpdate = true;
+    const surfaces: Array<[THREE.Mesh, number]> = [
+      [frontSurface.current, 1],
+      [backSurface.current, -1],
+    ];
+    surfaces.forEach(([surface, localDirection]) => {
+      const positions = surface.geometry.attributes.position as THREE.BufferAttribute;
+      for (let index = 0; index < positions.count; index += 1) {
+        const x = positions.getX(index);
+        const normalized = Math.abs(x) / PAGE_WIDTH;
+        const curl = Math.sin(progress * Math.PI) * Math.sin(normalized * Math.PI) * 0.09;
+        // The back mesh is rotated 180° around Y, so its local curl is inverted
+        // to occupy the same physical paper surface as the front mesh.
+        positions.setZ(index, curl * localDirection);
+      }
+      positions.needsUpdate = true;
+    });
   });
 
   const xOffset = direction > 0 ? PAGE_WIDTH / 2 : -PAGE_WIDTH / 2;
   return (
     <group ref={pivot} position={[0, 0, 0.035]}>
-      <mesh ref={page} position={[xOffset, 0, 0]}>
-        <planeGeometry args={[PAGE_WIDTH, PAGE_HEIGHT, 18, 4]} />
-        <meshStandardMaterial map={texture} roughness={0.94} side={THREE.DoubleSide} />
-      </mesh>
+      <group position={[xOffset, 0, 0]}>
+        <mesh ref={frontSurface} position={[0, 0, 0.001]}>
+          <planeGeometry args={[PAGE_WIDTH, PAGE_HEIGHT, 18, 4]} />
+          <meshStandardMaterial map={frontTexture} roughness={0.94} side={THREE.FrontSide} />
+        </mesh>
+        <mesh ref={backSurface} position={[0, 0, -0.001]} rotation={[0, Math.PI, 0]}>
+          <planeGeometry args={[PAGE_WIDTH, PAGE_HEIGHT, 18, 4]} />
+          <meshStandardMaterial map={backTexture} roughness={0.94} side={THREE.FrontSide} />
+        </mesh>
+      </group>
     </group>
   );
 }
@@ -344,16 +361,27 @@ function BookletFocus({
 }) {
   const root = useRef<THREE.Group>(null);
   const previousPage = useRef(page);
-  const [turn, setTurn] = useState({ key: 0, texture: textures.booklet[2] });
+  const [turn, setTurn] = useState({
+    key: 0,
+    frontTexture: textures.booklet[2],
+    backTexture: textures.booklet[3],
+  });
 
   useEffect(() => {
     if (previousPage.current === page) return;
     const oldPage = previousPage.current;
-    const texture = mobile
+    const frontTexture = mobile
       ? textures.booklet[oldPage + 1]
       : textures.booklet[oldPage * 2 + (pageDirection > 0 ? 2 : 1)];
+    const backTexture = mobile
+      ? textures.booklet[page + 1]
+      : textures.booklet[page * 2 + (pageDirection > 0 ? 1 : 2)];
     previousPage.current = page;
-    setTurn((current) => ({ key: current.key + 1, texture }));
+    setTurn((current) => ({
+      key: current.key + 1,
+      frontTexture,
+      backTexture,
+    }));
   }, [mobile, page, pageDirection, textures.booklet]);
 
   useFrame((_, delta) => {
@@ -379,9 +407,10 @@ function BookletFocus({
         </mesh>
         {pageDirection !== 0 && !reduced && (
           <CurledTurningPage
+            backTexture={turn.backTexture}
             direction={pageDirection}
+            frontTexture={turn.frontTexture}
             reduced={reduced}
-            texture={turn.texture}
             turnKey={turn.key}
           />
         )}
@@ -407,9 +436,10 @@ function BookletFocus({
       </mesh>
       {pageDirection !== 0 && !reduced && (
         <CurledTurningPage
+          backTexture={turn.backTexture}
           direction={pageDirection}
+          frontTexture={turn.frontTexture}
           reduced={reduced}
-          texture={turn.texture}
           turnKey={turn.key}
         />
       )}
