@@ -1,6 +1,6 @@
-import { Canvas, useFrame, useLoader } from '@react-three/fiber';
+import { Canvas, createPortal, useFrame, useLoader, useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import type { Album } from '../../../data/albums';
 import { assetUrl } from '../../../utils/assetUrl';
@@ -11,628 +11,525 @@ type ExperienceProps = {
   album: Album;
   mode: ExperienceMode;
   page: number;
-  pageDirection: -1 | 0 | 1;
   mobile: boolean;
   playing: boolean;
   reduced: boolean;
   onOpen(): void;
   onBooklet(): void;
   onPlayer(): void;
+  onTransitionChange?(transitioning: boolean): void;
+  onPageTurnComplete?(): void;
 };
 
-type LoadedTextures = {
+type CoreTextures = {
   front: THREE.Texture;
   back: THREE.Texture;
   spine: THREE.Texture;
   interiorBooklet: THREE.Texture;
   interiorTray: THREE.Texture;
   cdLabel: THREE.Texture;
-  booklet: THREE.Texture[];
+  p1: THREE.Texture;
 };
 
-const PANEL_WIDTH = 2.56;
-const PANEL_HEIGHT = 2.56;
-const PANEL_CENTER_X = PANEL_WIDTH / 2;
-const OPEN_ANGLE = THREE.MathUtils.degToRad(158);
-const PAGE_WIDTH = 1.72;
-const PAGE_HEIGHT = 2.2;
-const PAGE_TURN_DURATION = 0.82;
+const PANEL = 2.56;
+const HALF_PANEL = PANEL / 2;
+const PACKAGE_DEPTH = PANEL * 171 / 3000;
+const HALF_PACKAGE_DEPTH = PACKAGE_DEPTH / 2;
+const PAPER_THICKNESS = 0.028;
+const SURFACE_OFFSET = 0.001;
+const FRONT_PANEL_CENTER_Z = HALF_PACKAGE_DEPTH - PAPER_THICKNESS / 2;
+const BACK_PANEL_CENTER_Z = -FRONT_PANEL_CENTER_Z;
+const OPEN_ANGLE = THREE.MathUtils.degToRad(160);
+const PAGE_HEIGHT = 2.12;
+const PAGE_TURN_DURATION = 0.86;
 
-function useAlbumTextures(album: Album): LoadedTextures {
-  const hero = album.albumHero!;
-  const detail = album.detailExperience!;
-  const pageUrls = album.booklet!.previewImages.map((image) => image.src);
-  const urls = [
-    hero.textures.front!,
-    hero.textures.back!,
-    hero.textures.spineLeft!,
-    detail.interior.bookletPanel,
-    detail.interior.trayPanel,
-    album.cdLabelImage!,
-    ...pageUrls,
-  ].map((url) => assetUrl(url)!);
-  const loaded = useLoader(THREE.TextureLoader, urls) as THREE.Texture[];
-
-  loaded.forEach((texture) => {
+function configureTextures(textures: THREE.Texture[], maxAnisotropy: number) {
+  textures.forEach((texture) => {
     texture.colorSpace = THREE.SRGBColorSpace;
-    texture.anisotropy = Math.min(8, texture.anisotropy || 8);
+    texture.anisotropy = Math.min(8, maxAnisotropy);
     texture.minFilter = THREE.LinearMipmapLinearFilter;
     texture.generateMipmaps = true;
+    texture.needsUpdate = true;
   });
+}
 
+function textureAspect(texture: THREE.Texture) {
+  const image = texture.image as { width?: number; height?: number } | undefined;
+  return image?.width && image?.height ? image.width / image.height : 1;
+}
+
+function useCoreTextures(album: Album): CoreTextures {
+  const { gl } = useThree();
+  const hero = album.albumHero!;
+  const detail = album.detailExperience!;
+  const urls = [
+    hero.textures.front!, hero.textures.back!, hero.textures.spineLeft!,
+    detail.interior.bookletPanel, detail.interior.trayPanel, album.cdLabelImage!,
+    album.booklet!.previewImages[0].src,
+  ].map((url) => assetUrl(url)!);
+  const loaded = useLoader(THREE.TextureLoader, urls) as THREE.Texture[];
+  useMemo(() => configureTextures(loaded, gl.capabilities.getMaxAnisotropy()), [gl, loaded]);
   return {
-    front: loaded[0],
-    back: loaded[1],
-    spine: loaded[2],
-    interiorBooklet: loaded[3],
-    interiorTray: loaded[4],
-    cdLabel: loaded[5],
-    booklet: loaded.slice(6),
+    front: loaded[0], back: loaded[1], spine: loaded[2], interiorBooklet: loaded[3],
+    interiorTray: loaded[4], cdLabel: loaded[5], p1: loaded[6],
   };
 }
 
-function PrintedSurface({ texture, opacity = 1 }: { texture: THREE.Texture; opacity?: number }) {
-  return (
-    <meshStandardMaterial
-      map={texture}
-      metalness={0}
-      opacity={opacity}
-      roughness={0.9}
-      transparent={opacity < 1}
-    />
-  );
+function PaperMaterial({ texture }: { texture: THREE.Texture }) {
+  return <meshStandardMaterial map={texture} metalness={0} roughness={0.93} />;
 }
 
-function CdDisc({
-  label,
-  mode,
-  playing,
-  reduced,
-  onPlayer,
-}: {
-  label: THREE.Texture;
-  mode: ExperienceMode;
-  playing: boolean;
-  reduced: boolean;
-  onPlayer(): void;
+function CdDisc({ label, mode, playing, reduced, onPlayer, onSettled }: {
+  label: THREE.Texture; mode: ExperienceMode; playing: boolean; reduced: boolean; onPlayer(): void; onSettled(settled: boolean): void;
 }) {
-  const disc = useRef<THREE.Group>(null);
-  const angularVelocity = useRef(0);
-  const shape = useMemo(() => {
-    const result = new THREE.Shape();
-    result.absarc(0, 0, 0.84, 0, Math.PI * 2);
-    const centerHole = new THREE.Path();
-    centerHole.absarc(0, 0, 0.13, 0, Math.PI * 2);
-    result.holes.push(centerHole);
-    return result;
+  const rig = useRef<THREE.Group>(null);
+  const velocity = useRef(0);
+  const discShape = useMemo(() => {
+    const shape = new THREE.Shape();
+    shape.absarc(0, 0, 0.84, 0, Math.PI * 2);
+    const hole = new THREE.Path();
+    hole.absarc(0, 0, 0.13, 0, Math.PI * 2);
+    shape.holes.push(hole);
+    return shape;
   }, []);
-
   useFrame((_, delta) => {
-    if (!disc.current) return;
-    const easing = reduced ? 1 : 1 - Math.exp(-6 * delta);
-    const targetZ = mode === 'PLAYER_FOCUS' ? 0.27 : 0.15;
-    disc.current.position.z = THREE.MathUtils.lerp(disc.current.position.z, targetZ, easing);
-
-    const targetVelocity = playing && !reduced ? (Math.PI * 2) / 18 : 0;
-    angularVelocity.current = THREE.MathUtils.lerp(
-      angularVelocity.current,
-      targetVelocity,
-      1 - Math.exp(-3.5 * delta),
-    );
-    disc.current.rotation.z -= angularVelocity.current * delta;
+    if (!rig.current) return;
+    const ease = reduced ? 1 : 1 - Math.exp(-7 * delta);
+    rig.current.position.z = THREE.MathUtils.lerp(rig.current.position.z, mode === 'PLAYER_FOCUS' ? 0.34 : 0.17, ease);
+    const scale = THREE.MathUtils.lerp(rig.current.scale.x, mode === 'PLAYER_FOCUS' ? 1.06 : 1, ease);
+    rig.current.scale.setScalar(scale);
+    velocity.current = THREE.MathUtils.lerp(velocity.current, playing && !reduced ? Math.PI / 9 : 0, 1 - Math.exp(-3 * delta));
+    rig.current.rotation.z -= velocity.current * delta;
+    const targetZ = mode === 'PLAYER_FOCUS' ? 0.34 : 0.17;
+    const targetScale = mode === 'PLAYER_FOCUS' ? 1.06 : 1;
+    onSettled(Math.abs(rig.current.position.z - targetZ) + Math.abs(rig.current.scale.x - targetScale) < 0.015);
   });
-
   return (
-    <group
-      ref={disc}
-      position={[0, 0, 0.15]}
-      onClick={(event) => {
-        event.stopPropagation();
-        onPlayer();
-      }}
-    >
+    <group ref={rig} position={[0, 0, 0.17]} onClick={(event) => { event.stopPropagation(); onPlayer(); }}>
       <mesh castShadow>
-        <extrudeGeometry
-          args={[shape, { depth: 0.035, bevelEnabled: false, curveSegments: 64 }]}
-        />
-        <meshPhysicalMaterial
-          color="#deddd8"
-          metalness={0}
-          opacity={0.84}
-          roughness={0.42}
-          transparent
-        />
+        <extrudeGeometry args={[discShape, { depth: 0.035, bevelEnabled: false, curveSegments: 64 }]} />
+        <meshStandardMaterial color="#e4e2dc" metalness={0} roughness={0.52} />
       </mesh>
-      <mesh position={[0, 0, 0.038]}>
+      <mesh position={[0, 0, 0.037]} castShadow>
         <ringGeometry args={[0.155, 0.78, 64]} />
-        <meshStandardMaterial map={label} metalness={0} roughness={0.58} transparent />
+        <meshStandardMaterial map={label} transparent={false} metalness={0} roughness={0.58} />
       </mesh>
       <mesh position={[0, 0, 0.039]}>
+        <ringGeometry args={[0.78, 0.84, 64]} />
+        <meshPhysicalMaterial color="#eeeae1" transparent opacity={0.62} roughness={0.65} depthWrite />
+      </mesh>
+      <mesh position={[0, 0, 0.04]}>
         <ringGeometry args={[0.13, 0.155, 64]} />
-        <meshPhysicalMaterial color="#e9e7df" opacity={0.64} roughness={0.5} transparent />
+        <meshPhysicalMaterial color="#eeeae1" transparent opacity={0.62} roughness={0.65} depthWrite />
       </mesh>
     </group>
   );
 }
 
-function CdTray({
-  textures,
-  mode,
-  playing,
-  reduced,
-  onPlayer,
-}: {
-  textures: LoadedTextures;
-  mode: ExperienceMode;
-  playing: boolean;
-  reduced: boolean;
-  onPlayer(): void;
+function TrayRig({ back, texture, label, mode, playing, reduced, onPlayer, onSettled, onDiscSettled }: {
+  back: THREE.Texture; texture: THREE.Texture; label: THREE.Texture; mode: ExperienceMode; playing: boolean; reduced: boolean;
+  onPlayer(): void; onSettled(settled: boolean): void; onDiscSettled(settled: boolean): void;
 }) {
-  const tray = useRef<THREE.Group>(null);
+  const rig = useRef<THREE.Group>(null);
+  const plasticOpacity = mode === 'PLAYER_FOCUS' ? 0.2 : mode === 'BOOKLET_FOCUS' ? 0.24 : 0.5;
   useFrame((_, delta) => {
-    if (!tray.current) return;
-    const easing = reduced ? 1 : 1 - Math.exp(-5 * delta);
-    const targetScale = mode === 'BOOKLET_FOCUS' ? 0.82 : 1;
-    tray.current.scale.setScalar(THREE.MathUtils.lerp(tray.current.scale.x, targetScale, easing));
-    tray.current.position.z = THREE.MathUtils.lerp(
-      tray.current.position.z,
-      mode === 'BOOKLET_FOCUS' ? -0.45 : 0,
-      easing,
-    );
+    if (!rig.current) return;
+    const ease = reduced ? 1 : 1 - Math.exp(-7 * delta);
+    // The complete internal stack remains behind the front cover until the
+    // hinge exposes it; this is physical occlusion rather than a visibility pop.
+    const closedInternalZ = HALF_PACKAGE_DEPTH - 0.21 - SURFACE_OFFSET;
+    rig.current.position.z = THREE.MathUtils.lerp(rig.current.position.z, mode === 'CLOSED' ? closedInternalZ : 0, ease);
+    onSettled(Math.abs(rig.current.position.z - (mode === 'CLOSED' ? closedInternalZ : 0)) < 0.012);
   });
-
-  const trayOpacity = mode === 'PLAYER_FOCUS' ? 0.2 : mode === 'BOOKLET_FOCUS' ? 0.18 : 0.42;
   return (
-    <group ref={tray} position={[PANEL_CENTER_X, 0, 0]}>
-      <mesh position={[0, 0, -0.04]} castShadow>
-        <boxGeometry args={[PANEL_WIDTH, PANEL_HEIGHT, 0.08]} />
-        <PrintedSurface texture={textures.back} />
+    <group position={[HALF_PANEL, 0, 0]}>
+      <mesh position={[0, 0, BACK_PANEL_CENTER_Z]} castShadow receiveShadow>
+        <boxGeometry args={[PANEL, PANEL, PAPER_THICKNESS]} />
+        <meshStandardMaterial color="#d8d1c5" roughness={0.94} />
       </mesh>
-      <mesh position={[0, 0, 0.012]}>
-        <planeGeometry args={[2.48, 2.48]} />
-        <PrintedSurface texture={textures.interiorTray} />
+      <mesh position={[0, 0, -HALF_PACKAGE_DEPTH - SURFACE_OFFSET]} rotation={[0, Math.PI, 0]}>
+        <planeGeometry args={[2.5, 2.5]} />
+        <PaperMaterial texture={back} />
       </mesh>
-      <mesh position={[0, 0, 0.085]}>
-        <boxGeometry args={[2.12, 2.12, 0.045]} />
-        <meshPhysicalMaterial
-          color="#dedbd0"
-          metalness={0}
-          opacity={trayOpacity}
-          roughness={0.68}
-          transparent
-          transmission={0.05}
-        />
-      </mesh>
-      <mesh position={[0, 0, 0.12]}>
-        <ringGeometry args={[0.85, 0.94, 64]} />
-        <meshPhysicalMaterial color="#e5e2d8" opacity={trayOpacity} roughness={0.72} transparent />
-      </mesh>
-      <mesh position={[0, 0, 0.14]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.16, 0.16, 0.07, 32]} />
-        <meshPhysicalMaterial color="#ddd9cf" opacity={trayOpacity + 0.1} roughness={0.65} transparent />
-      </mesh>
-      <CdDisc
-        label={textures.cdLabel}
-        mode={mode}
-        onPlayer={onPlayer}
-        playing={playing}
-        reduced={reduced}
-      />
-    </group>
-  );
-}
-
-function MovingFrontPanel({
-  textures,
-  mode,
-  reduced,
-  onBooklet,
-}: {
-  textures: LoadedTextures;
-  mode: ExperienceMode;
-  reduced: boolean;
-  onBooklet(): void;
-}) {
-  const hinge = useRef<THREE.Group>(null);
-  useFrame((_, delta) => {
-    if (!hinge.current) return;
-    const target = mode === 'CLOSED' ? 0 : OPEN_ANGLE;
-    const easing = reduced ? 1 : 1 - Math.exp(-5 * delta);
-    hinge.current.rotation.y = THREE.MathUtils.lerp(hinge.current.rotation.y, target, easing);
-  });
-
-  return (
-    <group ref={hinge}>
-      <group position={[PANEL_CENTER_X, 0, 0.085]}>
-        <mesh castShadow>
-          <boxGeometry args={[PANEL_WIDTH, PANEL_HEIGHT, 0.08]} />
-          <meshStandardMaterial color="#dfd9ce" metalness={0} roughness={0.94} />
+      <mesh position={[0, 0, BACK_PANEL_CENTER_Z + PAPER_THICKNESS / 2 + SURFACE_OFFSET]} receiveShadow><planeGeometry args={[2.5, 2.5]} /><PaperMaterial texture={texture} /></mesh>
+      <group ref={rig} position={[0, 0, mode === 'CLOSED' ? HALF_PACKAGE_DEPTH - 0.21 - SURFACE_OFFSET : 0]}>
+        <mesh position={[0, 0, 0.055]} receiveShadow>
+          <boxGeometry args={[2.25, 2.25, 0.045]} />
+          <meshPhysicalMaterial color="#dedbd2" transparent opacity={plasticOpacity} roughness={0.76} metalness={0} depthWrite />
         </mesh>
-        <mesh position={[0, 0, 0.041]}>
-          <planeGeometry args={[2.5, 2.5]} />
-          <PrintedSurface texture={textures.front} />
+        <mesh position={[0, 0, 0.082]} receiveShadow>
+          <ringGeometry args={[0.84, 0.94, 64]} />
+          <meshStandardMaterial color="#d9d5cc" transparent opacity={plasticOpacity + 0.08} roughness={0.8} />
         </mesh>
-        <mesh position={[0, 0, -0.041]} rotation={[0, Math.PI, 0]}>
-          <planeGeometry args={[2.5, 2.5]} />
-          <PrintedSurface texture={textures.interiorBooklet} />
+        <mesh position={[0, 0, 0.09]}><ringGeometry args={[0.18, 0.82, 64]} /><meshStandardMaterial color="#e4e0d7" transparent opacity={plasticOpacity * 0.18} roughness={0.85} /></mesh>
+        <mesh position={[0, 0, 0.12]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+          <cylinderGeometry args={[0.16, 0.16, 0.065, 32]} />
+          <meshStandardMaterial color="#d8d4ca" transparent opacity={plasticOpacity + 0.12} roughness={0.75} />
         </mesh>
-        {mode === 'ALBUM_OPEN' && (
-          <group
-            position={[0, 0, -0.09]}
-            rotation={[0, Math.PI, 0]}
-            onClick={(event) => {
-              event.stopPropagation();
-              onBooklet();
-            }}
-          >
-            <mesh castShadow>
-              <boxGeometry args={[1.75, 2.18, 0.055]} />
-              <meshStandardMaterial map={textures.booklet[0]} metalness={0} roughness={0.92} />
-            </mesh>
-          </group>
-        )}
+        <CdDisc label={label} mode={mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={onDiscSettled} />
       </group>
-      <mesh position={[0.001, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
-        <planeGeometry args={[0.08, PANEL_HEIGHT]} />
-        <PrintedSurface texture={textures.spine} />
-      </mesh>
     </group>
   );
 }
 
-function CurledTurningPage({
-  frontTexture,
-  backTexture,
-  direction,
-  reduced,
-  turnKey,
-  onComplete,
-}: {
-  frontTexture: THREE.Texture;
-  backTexture: THREE.Texture;
-  direction: -1 | 1;
-  reduced: boolean;
-  turnKey: number;
-  onComplete(): void;
+type PageTurn = { key: number; source: number; target: number; direction: -1 | 1 };
+
+function BookletPages({ album, page, mobile, reduced, active, returning, mobileReaderReady, resetToken, coverNode, onReady, onPageTurnComplete, onReturnPagesComplete }: {
+  album: Album; page: number; mobile: boolean; reduced: boolean; coverNode: THREE.Group | null;
+  active: boolean; returning: boolean; mobileReaderReady: boolean; resetToken: number;
+  onReady(): void; onPageTurnComplete(): void; onReturnPagesComplete(): void;
+}) {
+  const { gl } = useThree();
+  const urls = album.booklet!.previewImages.slice(1).map(({ src }) => assetUrl(src)!);
+  const pages = useLoader(THREE.TextureLoader, urls) as THREE.Texture[];
+  useMemo(() => configureTextures(pages, gl.capabilities.getMaxAnisotropy()), [gl, pages]);
+  const aspect = textureAspect(pages[0]);
+  const width = PAGE_HEIGHT * aspect;
+  const previous = useRef(page);
+  const [settled, setSettled] = useState(page);
+  const [turn, setTurn] = useState<PageTurn | null>(null);
+  useEffect(onReady, [onReady]);
+  useEffect(() => {
+    if (resetToken === 0) return;
+    queueMicrotask(() => {
+      previous.current = 0;
+      setSettled(0);
+      setTurn(null);
+    });
+  }, [resetToken]);
+  useEffect(() => {
+    if (!active) return;
+    if (previous.current === page) return;
+    const source = previous.current;
+    previous.current = page;
+    if (reduced) { queueMicrotask(() => { setSettled(page); onPageTurnComplete(); }); return; }
+    setTurn({ key: Date.now(), source, target: page, direction: page > source ? 1 : -1 });
+  }, [active, onPageTurnComplete, page, reduced]);
+  useEffect(() => {
+    if (!returning || turn) return;
+    if (settled === 0) {
+      queueMicrotask(onReturnPagesComplete);
+      return;
+    }
+    if (reduced) {
+      queueMicrotask(() => {
+        previous.current = 0;
+        setSettled(0);
+        onReturnPagesComplete();
+      });
+      return;
+    }
+    queueMicrotask(() => setTurn({ key: Date.now(), source: settled, target: settled - 1, direction: -1 }));
+  }, [onReturnPagesComplete, reduced, returning, settled, turn]);
+  const completeTurn = () => {
+    if (!turn) return;
+    previous.current = turn.target;
+    setSettled(turn.target);
+    setTurn(null);
+    onPageTurnComplete();
+  };
+  const p2Back = coverNode ? createPortal(
+    <mesh position={[width / 2, 0, -0.002]} rotation={[0, Math.PI, 0]} castShadow>
+      <planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} />
+      <meshStandardMaterial map={pages[0]} roughness={0.94} side={THREE.FrontSide} />
+    </mesh>,
+    coverNode,
+  ) : null;
+  if (mobile) {
+    const base = pages[turn ? turn.target : settled];
+    return <>
+      {p2Back}
+      {mobileReaderReady && <mesh castShadow receiveShadow><planeGeometry args={[PAGE_HEIGHT * textureAspect(base), PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={base} /></mesh>}
+      {mobileReaderReady && turn && <MobileTurningPage key={turn.key} source={pages[turn.source]} target={pages[turn.target]} width={width} direction={turn.direction} duration={returning ? 0.42 : PAGE_TURN_DURATION} onDone={completeTurn} />}
+    </>;
+  }
+  const spreads = [[pages[0], pages[1]], [pages[2], pages[3]], [pages[4], pages[5]]];
+  const source = spreads[turn ? turn.source : settled];
+  const target = spreads[turn ? turn.target : settled];
+  const left = turn ? (turn.direction > 0 ? source[0] : target[0]) : target[0];
+  const right = turn ? (turn.direction > 0 ? target[1] : source[1]) : target[1];
+  const leftSpreadIndex = turn
+    ? (turn.direction > 0 ? turn.source : turn.target)
+    : settled;
+  const showStaticLeft = leftSpreadIndex > 0;
+  const leftStackZ = 0.006 + leftSpreadIndex * 0.004;
+  return (
+    <group>
+      {p2Back}
+      {showStaticLeft && <mesh position={[-width / 2, 0, leftStackZ]} castShadow receiveShadow><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={left} /></mesh>}
+      <mesh position={[width / 2, 0, 0]} castShadow receiveShadow><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={right} /></mesh>
+      {turn && <TurningPage key={turn.key} pages={pages} width={width} turn={turn} duration={returning ? 0.42 : PAGE_TURN_DURATION} onDone={completeTurn} />}
+      <mesh position={[0, 0, 0.012]}><planeGeometry args={[0.025, PAGE_HEIGHT]} /><meshBasicMaterial color="#7a6f65" transparent opacity={0.18} /></mesh>
+    </group>
+  );
+}
+
+function TurningPage({ pages, width, turn, onDone, frontTexture, backTexture, duration = PAGE_TURN_DURATION }: {
+  pages: THREE.Texture[]; width: number; turn: { source: number; target: number; direction: -1 | 1 }; onDone(): void;
+  frontTexture?: THREE.Texture; backTexture?: THREE.Texture; duration?: number;
 }) {
   const pivot = useRef<THREE.Group>(null);
   const frontSurface = useRef<THREE.Mesh>(null);
   const backSurface = useRef<THREE.Mesh>(null);
   const elapsed = useRef(0);
-  const completed = useRef(false);
-
-  useEffect(() => {
-    elapsed.current = 0;
-    completed.current = false;
-    if (pivot.current) {
-      pivot.current.rotation.y = 0;
-      pivot.current.visible = true;
-    }
-  }, [turnKey]);
-
+  const done = useRef(false);
+  const front = frontTexture ?? (turn.direction > 0 ? pages[turn.source * 2 + 1] : pages[turn.source * 2]);
+  const back = backTexture ?? (turn.direction > 0 ? pages[turn.target * 2] : pages[turn.target * 2 + 1]);
   useFrame((_, delta) => {
     if (!pivot.current || !frontSurface.current || !backSurface.current) return;
-    elapsed.current = Math.min(PAGE_TURN_DURATION, elapsed.current + delta);
-    const linear = reduced ? 1 : elapsed.current / PAGE_TURN_DURATION;
-    const progress = linear * linear * (3 - 2 * linear);
-    // Both turns begin flat on their source side. NEXT folds the right page
-    // leftward; PREVIOUS folds the left page rightward.
-    pivot.current.rotation.y = direction > 0 ? -Math.PI * progress : Math.PI * progress;
-
-    const surfaces: Array<[THREE.Mesh, number]> = [
-      [frontSurface.current, 1],
-      [backSurface.current, -1],
-    ];
-    surfaces.forEach(([surface, localDirection]) => {
-      const positions = surface.geometry.attributes.position as THREE.BufferAttribute;
-      for (let index = 0; index < positions.count; index += 1) {
-        const x = positions.getX(index);
-        const normalized = Math.abs(x) / PAGE_WIDTH;
-        const curl = Math.sin(progress * Math.PI) * Math.sin(normalized * Math.PI) * 0.09;
-        // The back mesh is rotated 180° around Y, so its local curl is inverted
-        // to occupy the same physical paper surface as the front mesh.
-        positions.setZ(index, curl * localDirection);
+    elapsed.current = Math.min(duration, elapsed.current + delta);
+    const t = elapsed.current / duration;
+    const smooth = t * t * (3 - 2 * t);
+    pivot.current.rotation.y = (turn.direction > 0 ? -1 : 1) * Math.PI * smooth;
+    [[frontSurface.current, 1], [backSurface.current, -1]].forEach(([surface, sign]) => {
+      const mesh = surface as THREE.Mesh;
+      const positions = mesh.geometry.attributes.position as THREE.BufferAttribute;
+      for (let i = 0; i < positions.count; i += 1) {
+        const x = positions.getX(i);
+        positions.setZ(i, Math.sin(Math.abs(x / width) * Math.PI) * Math.sin(t * Math.PI) * 0.065 * (sign as number));
       }
       positions.needsUpdate = true;
     });
-
-    if (linear >= 1 && !completed.current) {
-      completed.current = true;
-      pivot.current.visible = false;
-      onComplete();
-    }
+    if (t === 1 && !done.current) { done.current = true; onDone(); }
   });
-
-  const xOffset = direction > 0 ? PAGE_WIDTH / 2 : -PAGE_WIDTH / 2;
   return (
-    <group ref={pivot} position={[0, 0, 0.035]}>
-      <group position={[xOffset, 0, 0]}>
-        <mesh ref={frontSurface} position={[0, 0, 0.001]}>
-          <planeGeometry args={[PAGE_WIDTH, PAGE_HEIGHT, 18, 4]} />
-          <meshStandardMaterial map={frontTexture} roughness={0.94} side={THREE.FrontSide} />
-        </mesh>
-        <mesh ref={backSurface} position={[0, 0, -0.001]} rotation={[0, Math.PI, 0]}>
-          <planeGeometry args={[PAGE_WIDTH, PAGE_HEIGHT, 18, 4]} />
-          <meshStandardMaterial map={backTexture} roughness={0.94} side={THREE.FrontSide} />
-        </mesh>
+    <group ref={pivot} position={[0, 0, 0.025]}>
+      <group position={[turn.direction > 0 ? width / 2 : -width / 2, 0, 0]}>
+        <mesh ref={frontSurface} castShadow><planeGeometry args={[width, PAGE_HEIGHT, 18, 3]} /><meshStandardMaterial map={front} roughness={0.94} side={THREE.FrontSide} /></mesh>
+        <mesh ref={backSurface} rotation={[0, Math.PI, 0]} position={[0, 0, -0.002]} castShadow><planeGeometry args={[width, PAGE_HEIGHT, 18, 3]} /><meshStandardMaterial map={back} roughness={0.94} side={THREE.FrontSide} /></mesh>
       </group>
     </group>
   );
 }
 
-function BookletFocus({
-  textures,
-  page,
-  mobile,
-  mode,
-  reduced,
-}: {
-  textures: LoadedTextures;
-  page: number;
-  mobile: boolean;
-  mode: ExperienceMode;
-  reduced: boolean;
+function MobileTurningPage({ source, target, width, direction, duration, onDone }: {
+  source: THREE.Texture; target: THREE.Texture; width: number; direction: -1 | 1; duration?: number; onDone(): void;
 }) {
-  const root = useRef<THREE.Group>(null);
-  const previousPage = useRef(page);
-  const [settledPage, setSettledPage] = useState(page);
-  const [turn, setTurn] = useState({
-    key: 0,
-    active: false,
-    sourcePage: page,
-    targetPage: page,
-    direction: 1 as -1 | 1,
-    frontTexture: textures.booklet[2],
-    backTexture: textures.booklet[3],
+  const turn: PageTurn = { key: 0, source: 0, target: 0, direction };
+  return <group position={[direction > 0 ? -width / 2 : width / 2, 0, 0]}><TurningPage pages={[]} width={width} turn={turn} frontTexture={source} backTexture={target} duration={duration} onDone={onDone} /></group>;
+}
+
+function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettled, onPageTurnComplete }: {
+  album: Album; p1: THREE.Texture; mode: ExperienceMode; page: number; mobile: boolean; reduced: boolean;
+  onBooklet(): void; onSettled(settled: boolean): void; onPageTurnComplete(): void;
+}) {
+  const rig = useRef<THREE.Group>(null);
+  const cover = useRef<THREE.Group>(null);
+  const [coverNode, setCoverNode] = useState<THREE.Group | null>(null);
+  const [detailsMounted, setDetailsMounted] = useState(mode === 'BOOKLET_FOCUS');
+  const [detailsReady, setDetailsReady] = useState(false);
+  const [mobileReaderReady, setMobileReaderReady] = useState(false);
+  const [resetToken, setResetToken] = useState(0);
+  const [pagesReturned, setPagesReturned] = useState(false);
+  const [coverClosed, setCoverClosed] = useState(false);
+  const [returning, setReturning] = useState(false);
+  const resetPending = useRef(false);
+  const previousMode = useRef(mode);
+  const p1Width = PAGE_HEIGHT * textureAspect(p1);
+  const assignCover = useCallback((node: THREE.Group | null) => {
+    cover.current = node;
+    setCoverNode(node);
+  }, []);
+  useEffect(() => {
+    if (mode === 'BOOKLET_FOCUS') {
+      resetPending.current = true;
+      queueMicrotask(() => {
+        setDetailsMounted(true);
+        setMobileReaderReady(false);
+        setPagesReturned(false);
+        setCoverClosed(false);
+        setReturning(false);
+      });
+    } else if (previousMode.current === 'BOOKLET_FOCUS') {
+      queueMicrotask(() => setReturning(true));
+    }
+    previousMode.current = mode;
+  }, [mode]);
+  const detailsLoaded = useCallback(() => setDetailsReady(true), []);
+  const returnPagesComplete = useCallback(() => setPagesReturned(true), []);
+  useFrame((_, delta) => {
+    if (!rig.current || !cover.current) return;
+    const focused = mode === 'BOOKLET_FOCUS';
+    const holdFocusTransform = focused || (returning && !coverClosed);
+    const ease = reduced ? 1 : 1 - Math.exp(-5.5 * delta);
+    const targetPosition = new THREE.Vector3(-p1Width / 2, 0, 0.08);
+    const targetQuaternion = new THREE.Quaternion();
+    const targetScale = new THREE.Vector3(0.84, 0.84, 0.84);
+    if (holdFocusTransform && rig.current.parent) {
+      rig.current.parent.updateWorldMatrix(true, false);
+      const desiredWorld = new THREE.Matrix4().compose(
+        new THREE.Vector3(0, mobile ? 0.35 : 0.08, 1.35),
+        new THREE.Quaternion().setFromEuler(new THREE.Euler(mobile ? -0.04 : -0.08, 0, 0)),
+        new THREE.Vector3(mobile ? 1.35 : 1.32, mobile ? 1.35 : 1.32, mobile ? 1.35 : 1.32),
+      );
+      const local = rig.current.parent.matrixWorld.clone().invert().multiply(desiredWorld);
+      local.decompose(targetPosition, targetQuaternion, targetScale);
+    }
+    rig.current.position.lerp(targetPosition, ease);
+    rig.current.quaternion.slerp(targetQuaternion, ease);
+    rig.current.scale.lerp(targetScale, ease);
+    const coverTarget = (focused || (returning && !pagesReturned)) && detailsReady ? -Math.PI : 0;
+    cover.current.rotation.y = THREE.MathUtils.lerp(cover.current.rotation.y, coverTarget, ease);
+    cover.current.position.z = THREE.MathUtils.lerp(cover.current.position.z, coverTarget === -Math.PI ? 0 : 0.035, ease);
+    const transformError = rig.current.position.distanceTo(targetPosition)
+      + rig.current.quaternion.angleTo(targetQuaternion)
+      + rig.current.scale.distanceTo(targetScale);
+    const coverError = Math.abs(cover.current.rotation.y - coverTarget)
+      + Math.abs(cover.current.position.z - (coverTarget === -Math.PI ? 0 : 0.035));
+    if (returning && pagesReturned && coverError < 0.025 && !coverClosed) {
+      queueMicrotask(() => setCoverClosed(true));
+    }
+    const geometrySettled = transformError < 0.035 && coverError < 0.025
+      && (!focused || detailsReady) && (!returning || (pagesReturned && coverClosed));
+    if (mobile && focused && geometrySettled && !mobileReaderReady) {
+      queueMicrotask(() => setMobileReaderReady(true));
+    }
+    if (!focused && geometrySettled && resetPending.current) {
+      resetPending.current = false;
+      queueMicrotask(() => {
+        setResetToken((value) => value + 1);
+        setMobileReaderReady(false);
+        setReturning(false);
+      });
+    }
+    // Switch from the physical P2 backside to the centered reader atomically,
+    // after the gutter-driven P1 opening has completed.
+    const mobileReaderVisible = mobileReaderReady && (focused || (returning && !pagesReturned));
+    cover.current.visible = !(mobile && mobileReaderVisible);
+    onSettled(geometrySettled && (!mobile || !focused || mobileReaderReady));
   });
+  return (
+    <group ref={rig} position={[-p1Width / 2, 0, 0.08]} scale={0.84} onClick={(event) => { event.stopPropagation(); if (mode === 'ALBUM_OPEN') onBooklet(); }}>
+      {detailsMounted && <BookletPages album={album} page={page} mobile={mobile} reduced={reduced} active={mode === 'BOOKLET_FOCUS'} returning={returning && !pagesReturned} mobileReaderReady={mobileReaderReady && (mode === 'BOOKLET_FOCUS' || !pagesReturned)} resetToken={resetToken} coverNode={coverNode} onReady={detailsLoaded} onPageTurnComplete={onPageTurnComplete} onReturnPagesComplete={returnPagesComplete} />}
+      <group ref={assignCover} position={[0, 0, 0.035]} visible={!(mobile && mobileReaderReady && (mode === 'BOOKLET_FOCUS' || !pagesReturned))}>
+        <mesh position={[p1Width / 2, 0, 0]} castShadow><planeGeometry args={[p1Width, PAGE_HEIGHT]} /><PaperMaterial texture={p1} /></mesh>
+      </group>
+    </group>
+  );
+}
+
+function Scene(props: ExperienceProps) {
+  const { album, mode, page, mobile, playing, reduced, onOpen, onBooklet, onPlayer, onTransitionChange } = props;
+  const textures = useCoreTextures(album);
+  const packageRig = useRef<THREE.Group>(null);
+  const hinge = useRef<THREE.Group>(null);
+  const drag = useRef<{ id: number; x: number; y: number; startX: number; startY: number; canvas: HTMLCanvasElement } | null>(null);
+  const rotation = useRef({ x: -0.1, y: 0.12 });
+  const autoRotate = useRef(true);
+  const aligned = useRef(mode !== 'CLOSED');
+  const alignedYaw = useRef(0);
+  const previousMode = useRef(mode);
+  const reported = useRef(false);
+  const bookletSettled = useRef(mode === 'CLOSED');
+  const traySettled = useRef(true);
+  const discSettled = useRef(true);
+  const setBookletSettled = useCallback((value: boolean) => { bookletSettled.current = value; }, []);
+  const setTraySettled = useCallback((value: boolean) => { traySettled.current = value; }, []);
+  const setDiscSettled = useCallback((value: boolean) => { discSettled.current = value; }, []);
 
   useEffect(() => {
-    if (previousPage.current === page) return;
-    const oldPage = previousPage.current;
-    const direction: -1 | 1 = page > oldPage ? 1 : -1;
-    const frontTexture = mobile
-      ? textures.booklet[oldPage + 1]
-      : textures.booklet[oldPage * 2 + (direction > 0 ? 2 : 1)];
-    const backTexture = mobile
-      ? textures.booklet[page + 1]
-      : textures.booklet[page * 2 + (direction > 0 ? 1 : 2)];
-    previousPage.current = page;
-    if (reduced) {
-      queueMicrotask(() => {
-        setSettledPage(page);
-        setTurn((current) => ({ ...current, active: false }));
-      });
-      return;
+    const openingFromClosed = previousMode.current === 'CLOSED' && mode !== 'CLOSED';
+    if (openingFromClosed) {
+      autoRotate.current = false;
+      alignedYaw.current = Math.round(rotation.current.y / (Math.PI * 2)) * Math.PI * 2;
+      aligned.current = false;
+    } else if (mode !== 'CLOSED') {
+      aligned.current = true;
+    } else {
+      aligned.current = true;
     }
-    setTurn((current) => ({
-      key: current.key + 1,
-      active: true,
-      sourcePage: oldPage,
-      targetPage: page,
-      direction,
-      frontTexture,
-      backTexture,
-    }));
-  }, [mobile, page, reduced, textures.booklet]);
-
-  const completeTurn = () => {
-    setSettledPage(turn.targetPage);
-    setTurn((current) => ({ ...current, active: false }));
-  };
+    reported.current = false;
+    onTransitionChange?.(true);
+    previousMode.current = mode;
+  }, [mode, onTransitionChange]);
 
   useFrame((_, delta) => {
-    if (!root.current) return;
-    const focused = mode === 'BOOKLET_FOCUS';
-    const easing = reduced ? 1 : 1 - Math.exp(-5 * delta);
-    const targetScale = focused ? (mobile ? 1.42 : 1.18) : 0.55;
-    root.current.scale.setScalar(THREE.MathUtils.lerp(root.current.scale.x, targetScale, easing));
-    root.current.position.x = THREE.MathUtils.lerp(root.current.position.x, focused ? 0 : -1.1, easing);
-    root.current.position.y = THREE.MathUtils.lerp(root.current.position.y, focused ? 0.08 : -0.05, easing);
-    root.current.position.z = THREE.MathUtils.lerp(root.current.position.z, focused ? 1.25 : -0.5, easing);
+    if (!packageRig.current || !hinge.current) return;
+    const closed = mode === 'CLOSED';
+    if (closed && autoRotate.current && !reduced) rotation.current.y += delta * Math.PI / 15;
+    const ease = reduced ? 1 : 1 - Math.exp(-5 * delta);
+    if (!closed && !aligned.current) {
+      rotation.current.x = THREE.MathUtils.lerp(rotation.current.x, -0.1, ease);
+      rotation.current.y = THREE.MathUtils.lerp(rotation.current.y, alignedYaw.current, ease);
+      if (Math.abs(rotation.current.x + 0.1) + Math.abs(rotation.current.y - alignedYaw.current) < 0.018) aligned.current = true;
+    }
+    packageRig.current.rotation.x = THREE.MathUtils.lerp(packageRig.current.rotation.x, closed ? rotation.current.x : -0.1, ease);
+    packageRig.current.rotation.y = THREE.MathUtils.lerp(packageRig.current.rotation.y, closed ? rotation.current.y : alignedYaw.current, ease);
+    const targetHinge = !closed && aligned.current ? OPEN_ANGLE : 0;
+    hinge.current.rotation.y = THREE.MathUtils.lerp(hinge.current.rotation.y, targetHinge, ease);
+    const x = closed ? (mobile ? 0 : -1.15) : mode === 'BOOKLET_FOCUS' ? 0.95 : mode === 'PLAYER_FOCUS' ? (mobile ? 0 : -0.38) : 0;
+    const y = mobile ? (closed ? 1.05 : 0.6) : 0.05;
+    const scale = closed ? (mobile ? 1.03 : 1.18) : mode === 'BOOKLET_FOCUS' ? 0.72 : (mobile ? 0.62 : 1.08);
+    packageRig.current.position.x = THREE.MathUtils.lerp(packageRig.current.position.x, x, ease);
+    packageRig.current.position.y = THREE.MathUtils.lerp(packageRig.current.position.y, y, ease);
+    packageRig.current.position.z = THREE.MathUtils.lerp(packageRig.current.position.z, mode === 'BOOKLET_FOCUS' ? -1 : 0, ease);
+    packageRig.current.scale.setScalar(THREE.MathUtils.lerp(packageRig.current.scale.x, scale, ease));
+    const packageError = Math.abs(packageRig.current.position.x - x)
+      + Math.abs(packageRig.current.position.y - y)
+      + Math.abs(packageRig.current.position.z - (mode === 'BOOKLET_FOCUS' ? -1 : 0))
+      + Math.abs(packageRig.current.scale.x - scale);
+    const complete = aligned.current
+      && Math.abs(hinge.current.rotation.y - targetHinge) < 0.025
+      && packageError < 0.04
+      && bookletSettled.current
+      && traySettled.current
+      && discSettled.current;
+    if (complete && !reported.current) { reported.current = true; onTransitionChange?.(false); }
   });
 
-  if (mode !== 'BOOKLET_FOCUS') return null;
-
-  if (mobile) {
-    const visiblePage = turn.active ? turn.targetPage : settledPage;
-    const texture = textures.booklet[visiblePage + 1]; // P2 through P7; P1 stays on the album panel.
-    return (
-      <group ref={root} position={[-1.1, -0.05, -0.5]} scale={0.55}>
-        <mesh castShadow>
-          <planeGeometry args={[PAGE_WIDTH, PAGE_HEIGHT, 18, 4]} />
-          <meshStandardMaterial map={texture} metalness={0} roughness={0.94} />
-        </mesh>
-        {turn.active && (
-          <CurledTurningPage
-            backTexture={turn.backTexture}
-            direction={turn.direction}
-            frontTexture={turn.frontTexture}
-            onComplete={completeTurn}
-            reduced={reduced}
-            turnKey={turn.key}
-          />
-        )}
-      </group>
-    );
-  }
-
-  const spreads = [
-    [textures.booklet[1], textures.booklet[2]], // P2 / P3
-    [textures.booklet[3], textures.booklet[4]], // P4 / P5
-    [textures.booklet[5], textures.booklet[6]], // P6 / P7
-  ] as const;
-  const sourceSpread = spreads[turn.sourcePage];
-  const targetSpread = spreads[turn.targetPage];
-  const settledSpread = spreads[settledPage];
-  const leftPage = turn.active
-    ? (turn.direction > 0 ? sourceSpread[0] : targetSpread[0])
-    : settledSpread[0];
-  const rightPage = turn.active
-    ? (turn.direction > 0 ? targetSpread[1] : sourceSpread[1])
-    : settledSpread[1];
-  return (
-    <group ref={root} position={[-1.1, -0.05, -0.5]} scale={0.55}>
-      <mesh position={[-PAGE_WIDTH / 2, 0, 0]} castShadow>
-        <planeGeometry args={[PAGE_WIDTH, PAGE_HEIGHT, 18, 4]} />
-        <meshStandardMaterial map={leftPage} metalness={0} roughness={0.94} />
-      </mesh>
-      <mesh position={[PAGE_WIDTH / 2, 0, 0]} castShadow>
-        <planeGeometry args={[PAGE_WIDTH, PAGE_HEIGHT, 18, 4]} />
-        <meshStandardMaterial map={rightPage} metalness={0} roughness={0.94} />
-      </mesh>
-      {turn.active && (
-        <CurledTurningPage
-          backTexture={turn.backTexture}
-          direction={turn.direction}
-          frontTexture={turn.frontTexture}
-          onComplete={completeTurn}
-          reduced={reduced}
-          turnKey={turn.key}
-        />
-      )}
-    </group>
-  );
-}
-
-function ArticulatedAlbum(props: ExperienceProps) {
-  const { album, mode, page, mobile, playing, reduced, onOpen, onBooklet, onPlayer } = props;
-  const textures = useAlbumTextures(album);
-  const packageRig = useRef<THREE.Group>(null);
-  const drag = useRef<{
-    pointerId: number;
-    startX: number;
-    startY: number;
-    lastX: number;
-    lastY: number;
-    movement: number;
-    canvas: HTMLCanvasElement;
-  } | null>(null);
-  const rotation = useRef({ x: -0.12, y: 0.12 });
-  const autoRotating = useRef(true);
-
-  const finishDrag = (pointerId: number, openOnClick: boolean) => {
+  const finish = (id: number, click: boolean) => {
     const active = drag.current;
-    if (!active || active.pointerId !== pointerId) return;
-    if (active.canvas.hasPointerCapture(pointerId)) active.canvas.releasePointerCapture(pointerId);
-    if (openOnClick && active.movement < 7 && mode === 'CLOSED') onOpen();
+    if (!active || active.id !== id) return;
+    if (active.canvas.hasPointerCapture(id)) active.canvas.releasePointerCapture(id);
+    if (click && Math.hypot(active.x - active.startX, active.y - active.startY) < 7) onOpen();
     drag.current = null;
   };
-
   useEffect(() => {
-    const end = (event: PointerEvent) => finishDrag(event.pointerId, event.type === 'pointerup');
-    window.addEventListener('pointerup', end);
-    window.addEventListener('pointercancel', end);
-    return () => {
-      window.removeEventListener('pointerup', end);
-      window.removeEventListener('pointercancel', end);
-      drag.current = null;
-    };
+    const up = (event: PointerEvent) => finish(event.pointerId, event.type === 'pointerup');
+    window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+    return () => { window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); };
   });
-
-  useFrame((_, delta) => {
-    if (!packageRig.current) return;
-    const closed = mode === 'CLOSED';
-    if (closed && autoRotating.current && !reduced) {
-      rotation.current.y += (delta * Math.PI * 2) / 30;
-    }
-    const easing = reduced ? 1 : 1 - Math.exp(-5 * delta);
-    const targetX = mode === 'BOOKLET_FOCUS' ? 1.55 : mode === 'PLAYER_FOCUS' ? -0.82 : 0;
-    const targetZ = mode === 'BOOKLET_FOCUS' ? -1.15 : mode === 'PLAYER_FOCUS' ? 0.25 : 0;
-    const targetScale = mode === 'BOOKLET_FOCUS' ? 0.66 : mode === 'PLAYER_FOCUS' ? 1.02 : 0.9;
-    packageRig.current.position.x = THREE.MathUtils.lerp(packageRig.current.position.x, targetX, easing);
-    packageRig.current.position.z = THREE.MathUtils.lerp(packageRig.current.position.z, targetZ, easing);
-    packageRig.current.scale.setScalar(THREE.MathUtils.lerp(packageRig.current.scale.x, targetScale, easing));
-    packageRig.current.rotation.x = THREE.MathUtils.lerp(
-      packageRig.current.rotation.x,
-      closed ? rotation.current.x : -0.12,
-      easing,
-    );
-    packageRig.current.rotation.y = THREE.MathUtils.lerp(
-      packageRig.current.rotation.y,
-      closed ? rotation.current.y : 0,
-      easing,
-    );
-  });
-
-  const handlePointerDown = (event: ThreeEvent<PointerEvent>) => {
+  const down = (event: ThreeEvent<PointerEvent>) => {
     if (mode !== 'CLOSED') return;
-    event.stopPropagation();
-    autoRotating.current = false;
-    const canvas = event.nativeEvent.currentTarget as HTMLCanvasElement;
-    canvas.setPointerCapture(event.pointerId);
-    drag.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      lastX: event.clientX,
-      lastY: event.clientY,
-      movement: 0,
-      canvas,
-    };
+    event.stopPropagation(); autoRotate.current = false;
+    const canvas = event.nativeEvent.currentTarget as HTMLCanvasElement; canvas.setPointerCapture(event.pointerId);
+    drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY, startX: event.clientX, startY: event.clientY, canvas };
   };
-
-  const handlePointerMove = (event: ThreeEvent<PointerEvent>) => {
-    const active = drag.current;
-    if (!active || active.pointerId !== event.pointerId || mode !== 'CLOSED') return;
-    const dx = event.clientX - active.lastX;
-    const dy = event.clientY - active.lastY;
-    active.lastX = event.clientX;
-    active.lastY = event.clientY;
-    active.movement = Math.hypot(event.clientX - active.startX, event.clientY - active.startY);
-    rotation.current.y += dx * 0.008;
-    rotation.current.x = THREE.MathUtils.clamp(rotation.current.x + dy * 0.006, -0.48, 0.48);
+  const move = (event: ThreeEvent<PointerEvent>) => {
+    const active = drag.current; if (!active || active.id !== event.pointerId || mode !== 'CLOSED') return;
+    rotation.current.y += (event.clientX - active.x) * 0.008;
+    rotation.current.x = THREE.MathUtils.clamp(rotation.current.x + (event.clientY - active.y) * 0.006, -0.48, 0.48);
+    active.x = event.clientX; active.y = event.clientY;
   };
-
   return (
     <>
-      <group
-        ref={packageRig}
-        rotation={[-0.12, 0.12, 0]}
-        scale={0.9}
-        onLostPointerCapture={() => {
-          drag.current = null;
-        }}
-        onPointerCancel={(event) => finishDrag(event.pointerId, false)}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={(event) => finishDrag(event.pointerId, true)}
-      >
-        <CdTray
-          mode={mode}
-          onPlayer={onPlayer}
-          playing={playing}
-          reduced={reduced}
-          textures={textures}
-        />
-        <MovingFrontPanel
-          mode={mode}
-          onBooklet={onBooklet}
-          reduced={reduced}
-          textures={textures}
-        />
+      <group ref={packageRig} position={[mobile ? 0 : -1.15, mobile ? 1.05 : 0.05, 0]} rotation={[-0.1, 0.12, 0]} scale={mobile ? 1.03 : 1.18}
+        onPointerDown={down} onPointerMove={move} onPointerUp={(e) => finish(e.pointerId, true)} onPointerCancel={(e) => finish(e.pointerId, false)}>
+        <TrayRig back={textures.back} texture={textures.interiorTray} label={textures.cdLabel} mode={mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={setTraySettled} onDiscSettled={setDiscSettled} />
+        <group ref={hinge}>
+          <group position={[HALF_PANEL, 0, FRONT_PANEL_CENTER_Z]}>
+            <mesh castShadow receiveShadow><boxGeometry args={[PANEL, PANEL, PAPER_THICKNESS]} /><meshStandardMaterial color="#d8d1c5" roughness={0.94} /></mesh>
+            <mesh position={[0, 0, PAPER_THICKNESS / 2 + SURFACE_OFFSET]}><planeGeometry args={[2.5, 2.5]} /><PaperMaterial texture={textures.front} /></mesh>
+            <mesh position={[0, 0, -PAPER_THICKNESS / 2 - SURFACE_OFFSET]} rotation={[0, Math.PI, 0]} receiveShadow><planeGeometry args={[2.5, 2.5]} /><PaperMaterial texture={textures.interiorBooklet} /></mesh>
+            <group position={[0, 0, 0.064]} rotation={[0, Math.PI, 0]}>
+              <BookletRig album={album} p1={textures.p1} mode={mode} page={page} mobile={mobile} reduced={reduced} onBooklet={onBooklet} onSettled={setBookletSettled} onPageTurnComplete={() => props.onPageTurnComplete?.()} />
+            </group>
+          </group>
+          <mesh position={[SURFACE_OFFSET, 0, 0]} rotation={[0, Math.PI / 2, 0]}><planeGeometry args={[PACKAGE_DEPTH, PANEL]} /><PaperMaterial texture={textures.spine} /></mesh>
+        </group>
       </group>
-      <BookletFocus
-        mobile={mobile}
-        mode={mode}
-        page={page}
-        reduced={reduced}
-        textures={textures}
-      />
+      <mesh position={[0, 0, -0.6]} receiveShadow><planeGeometry args={[16, 12]} /><shadowMaterial transparent opacity={0.11} depthWrite={false} /></mesh>
     </>
   );
 }
 
 export default function AlbumDetailExperience3D(props: ExperienceProps) {
   return (
-    <Canvas
-      aria-label="열고 탐색할 수 있는 지영희류 3D 디지팩"
-      camera={{ position: [0, 0, 7], fov: 42 }}
-      dpr={[1, 2]}
-      shadows
-    >
-      <ambientLight intensity={1.5} />
-      <directionalLight castShadow intensity={2.2} position={[4, 6, 7]} />
-      <ArticulatedAlbum {...props} />
+    <Canvas aria-label="열고 탐색할 수 있는 지영희류 3D 디지팩" camera={{ position: [0, 0, 7], fov: 42 }} dpr={[1, 2]} shadows="soft" gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}>
+      <ambientLight intensity={1.05} />
+      <directionalLight castShadow intensity={1.8} position={[4.5, 6, 7]} shadow-mapSize-width={1024} shadow-mapSize-height={1024} shadow-camera-left={-6} shadow-camera-right={6} shadow-camera-top={5} shadow-camera-bottom={-5} shadow-radius={7} shadow-bias={-0.0002} />
+      <directionalLight intensity={0.25} position={[-3, 1, 4]} />
+      <Scene {...props} />
     </Canvas>
   );
 }

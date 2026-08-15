@@ -28,6 +28,7 @@ function BookletNavigation({
   onBack,
   onNext,
   onPrevious,
+  disabled,
 }: {
   mobile: boolean;
   mobilePage: number;
@@ -35,6 +36,7 @@ function BookletNavigation({
   onBack(): void;
   onNext(): void;
   onPrevious(): void;
+  disabled: boolean;
 }) {
   const atStart = mobile ? mobilePage === 0 : spread === 0;
   const atEnd = mobile ? mobilePage === 5 : spread === 2;
@@ -46,9 +48,9 @@ function BookletNavigation({
     <div className="ji-detail__booklet-ui">
       <p aria-live="polite">{pageLabel}</p>
       <div className="ji-detail__booklet-controls">
-        <button type="button" disabled={atStart} onClick={onPrevious}>PREVIOUS</button>
-        <button type="button" onClick={onBack}>BACK TO ALBUM</button>
-        <button type="button" disabled={atEnd} onClick={onNext}>NEXT</button>
+        <button type="button" disabled={disabled || atStart} onClick={onPrevious}>PREVIOUS</button>
+        <button type="button" disabled={disabled} onClick={onBack}>BACK TO ALBUM</button>
+        <button type="button" disabled={disabled || atEnd} onClick={onNext}>NEXT</button>
       </div>
     </div>
   );
@@ -58,10 +60,12 @@ function PlayerPanel({
   tracks,
   player,
   onBack,
+  disabled,
 }: {
   tracks: NonNullable<Album['tracks']>;
   player: ReturnType<typeof useAlbumAudio>;
   onBack(): void;
+  disabled: boolean;
 }) {
   return (
     <div className="ji-detail__player">
@@ -72,6 +76,7 @@ function PlayerPanel({
             <button
               type="button"
               aria-current={player.selected === index ? 'true' : undefined}
+              disabled={disabled}
               onClick={() => player.select(index)}
             >
               <span>{String(track.number).padStart(2, '0')}</span>
@@ -105,6 +110,7 @@ function PlayerPanel({
       <button
         className="ji-detail__player-back"
         type="button"
+        disabled={disabled}
         onClick={() => {
           player.pause();
           onBack();
@@ -120,7 +126,8 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
   const [mode, setMode] = useState<ExperienceMode>('CLOSED');
   const [spread, setSpread] = useState(0);
   const [mobilePage, setMobilePage] = useState(0);
-  const [pageDirection, setPageDirection] = useState<-1 | 0 | 1>(0);
+  const [sceneTransitioning, setSceneTransitioning] = useState(false);
+  const [pageTurning, setPageTurning] = useState(false);
   const [mobile, setMobile] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [webgl] = useState(canUseWebGL);
@@ -147,27 +154,34 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
   }, []);
 
   const previous = useCallback(() => {
-    setPageDirection(-1);
+    if (pageTurning || sceneTransitioning) return;
+    if ((mobile && mobilePage === 0) || (!mobile && spread === 0)) return;
+    setPageTurning(true);
     if (mobile) setMobilePage((value) => Math.max(0, value - 1));
     else setSpread((value) => Math.max(0, value - 1));
-  }, [mobile]);
+  }, [mobile, mobilePage, pageTurning, sceneTransitioning, spread]);
 
   const next = useCallback(() => {
-    setPageDirection(1);
+    if (pageTurning || sceneTransitioning) return;
+    if ((mobile && mobilePage === 5) || (!mobile && spread === 2)) return;
+    setPageTurning(true);
     if (mobile) setMobilePage((value) => Math.min(5, value + 1));
     else setSpread((value) => Math.min(2, value + 1));
-  }, [mobile]);
+  }, [mobile, mobilePage, pageTurning, sceneTransitioning, spread]);
 
   const openBooklet = () => {
     setSpread(0);
     setMobilePage(0);
-    setPageDirection(0);
+    if (sceneTransitioning) return;
+    setSceneTransitioning(true);
     setMode('BOOKLET_FOCUS');
     stage.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
   };
 
   const backToAlbum = () => {
+    if (sceneTransitioning || pageTurning) return;
     player.pause();
+    setSceneTransitioning(true);
     setMode('ALBUM_OPEN');
   };
 
@@ -227,16 +241,17 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
               mobile={mobile}
               mode={mode}
               page={currentPage}
-              pageDirection={pageDirection}
               playing={player.playing}
               reduced={reduced}
+              onTransitionChange={setSceneTransitioning}
+              onPageTurnComplete={() => setPageTurning(false)}
               onBooklet={openBooklet}
-              onOpen={() => setMode('ALBUM_OPEN')}
-              onPlayer={() => setMode('PLAYER_FOCUS')}
+              onOpen={() => { if (!sceneTransitioning) { setSceneTransitioning(true); setMode('ALBUM_OPEN'); } }}
+              onPlayer={() => { if (!sceneTransitioning) { setSceneTransitioning(true); setMode('PLAYER_FOCUS'); } }}
             />
           </Suspense>
         </div>
-        {mode === 'CLOSED' && (
+        {mode === 'CLOSED' && !sceneTransitioning && (
           <div className="ji-detail__intro">
             <Link to="/works" className="ji-detail__back">← BACK TO WORKS</Link>
             <p>ALBUM · {album.year}</p>
@@ -244,28 +259,29 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
             <h2>지영희류</h2>
             <p className="ji-detail__english">{album.englishTitle}</p>
             {album.releaseStatus && <strong>{statusLabel[album.releaseStatus]}</strong>}
-            <button type="button" onClick={() => setMode('ALBUM_OPEN')}>OPEN ALBUM <span>→</span></button>
+            <button type="button" disabled={sceneTransitioning} onClick={() => { setSceneTransitioning(true); setMode('ALBUM_OPEN'); }}>OPEN ALBUM <span>→</span></button>
           </div>
         )}
-        {mode === 'ALBUM_OPEN' && (
+        {mode === 'ALBUM_OPEN' && !sceneTransitioning && (
           <div className="ji-detail__mode-actions">
-            <button type="button" onClick={openBooklet}>BOOKLET</button>
-            <button type="button" onClick={() => setMode('PLAYER_FOCUS')}>CD / TRACKS</button>
-            <button type="button" onClick={() => setMode('CLOSED')}>CLOSE ALBUM</button>
+            <button type="button" disabled={sceneTransitioning} onClick={openBooklet}>BOOKLET</button>
+            <button type="button" disabled={sceneTransitioning} onClick={() => { setSceneTransitioning(true); setMode('PLAYER_FOCUS'); }}>CD / TRACKS</button>
+            <button type="button" disabled={sceneTransitioning} onClick={() => { setSceneTransitioning(true); setMode('CLOSED'); }}>CLOSE ALBUM</button>
           </div>
         )}
-        {mode === 'BOOKLET_FOCUS' && (
+        {mode === 'BOOKLET_FOCUS' && !sceneTransitioning && (
           <BookletNavigation
             mobile={mobile}
             mobilePage={mobilePage}
             spread={spread}
+            disabled={sceneTransitioning || pageTurning}
             onBack={backToAlbum}
             onNext={next}
             onPrevious={previous}
           />
         )}
-        {mode === 'PLAYER_FOCUS' && (
-          <PlayerPanel tracks={tracks} player={player} onBack={backToAlbum} />
+        {mode === 'PLAYER_FOCUS' && !sceneTransitioning && (
+          <PlayerPanel tracks={tracks} player={player} onBack={backToAlbum} disabled={sceneTransitioning} />
         )}
       </section>
       <Editorial album={album} onBooklet={openBooklet} />
