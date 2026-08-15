@@ -43,6 +43,11 @@ const BACK_PANEL_CENTER_Z = -FRONT_PANEL_CENTER_Z;
 const OPEN_ANGLE = THREE.MathUtils.degToRad(-160);
 const PAGE_HEIGHT = 2.12;
 const PAGE_TURN_DURATION = 0.86;
+const DETAIL_BACKGROUND = {
+  desktop: { sourceWidth: 3840, sourceHeight: 2160, x: 1369 / 3840 },
+  mobile: { sourceWidth: 1440, sourceHeight: 2560, x: 720 / 1440 },
+} as const;
+type OpeningPhase = 'IDLE' | 'ALIGN_CLOSED' | 'POSITION_FOR_OPEN' | 'HINGE_OPEN';
 
 function configureTextures(textures: THREE.Texture[], maxAnisotropy: number) {
   textures.forEach((texture) => {
@@ -96,30 +101,30 @@ function CdDisc({ label, mode, playing, reduced, onPlayer, onSettled }: {
   useFrame((_, delta) => {
     if (!rig.current) return;
     const ease = reduced ? 1 : 1 - Math.exp(-7 * delta);
-    rig.current.position.z = THREE.MathUtils.lerp(rig.current.position.z, mode === 'PLAYER_FOCUS' ? 0.34 : 0.17, ease);
-    const scale = THREE.MathUtils.lerp(rig.current.scale.x, mode === 'PLAYER_FOCUS' ? 1.06 : 1, ease);
+    rig.current.position.z = THREE.MathUtils.lerp(rig.current.position.z, mode === 'PLAYER_FOCUS' ? 0.205 : 0.135, ease);
+    const scale = THREE.MathUtils.lerp(rig.current.scale.x, mode === 'PLAYER_FOCUS' ? 1.025 : 1, ease);
     rig.current.scale.setScalar(scale);
     velocity.current = THREE.MathUtils.lerp(velocity.current, playing && !reduced ? Math.PI / 9 : 0, 1 - Math.exp(-3 * delta));
     rig.current.rotation.z -= velocity.current * delta;
-    const targetZ = mode === 'PLAYER_FOCUS' ? 0.34 : 0.17;
-    const targetScale = mode === 'PLAYER_FOCUS' ? 1.06 : 1;
+    const targetZ = mode === 'PLAYER_FOCUS' ? 0.205 : 0.135;
+    const targetScale = mode === 'PLAYER_FOCUS' ? 1.025 : 1;
     onSettled(Math.abs(rig.current.position.z - targetZ) + Math.abs(rig.current.scale.x - targetScale) < 0.015);
   });
   return (
-    <group ref={rig} position={[0, 0, 0.17]} onClick={(event) => { event.stopPropagation(); onPlayer(); }}>
+    <group ref={rig} position={[0, 0, 0.135]} onClick={(event) => { event.stopPropagation(); onPlayer(); }}>
       <mesh castShadow>
-        <extrudeGeometry args={[discShape, { depth: 0.035, bevelEnabled: false, curveSegments: 64 }]} />
+        <extrudeGeometry args={[discShape, { depth: 0.014, bevelEnabled: false, curveSegments: 64 }]} />
         <meshStandardMaterial color="#e4e2dc" metalness={0} roughness={0.52} />
       </mesh>
-      <mesh position={[0, 0, 0.037]} castShadow>
+      <mesh position={[0, 0, 0.016]} castShadow>
         <ringGeometry args={[0.155, 0.78, 64]} />
         <meshStandardMaterial map={label} transparent={false} metalness={0} roughness={0.58} />
       </mesh>
-      <mesh position={[0, 0, 0.039]}>
+      <mesh position={[0, 0, 0.017]}>
         <ringGeometry args={[0.78, 0.84, 64]} />
         <meshPhysicalMaterial color="#eeeae1" transparent opacity={0.62} roughness={0.65} depthWrite />
       </mesh>
-      <mesh position={[0, 0, 0.04]}>
+      <mesh position={[0, 0, 0.018]}>
         <ringGeometry args={[0.13, 0.155, 64]} />
         <meshPhysicalMaterial color="#eeeae1" transparent opacity={0.62} roughness={0.65} depthWrite />
       </mesh>
@@ -154,17 +159,17 @@ function TrayRig({ back, texture, label, mode, playing, reduced, onPlayer, onSet
       </mesh>
       <mesh position={[0, 0, BACK_PANEL_CENTER_Z + PAPER_THICKNESS / 2 + SURFACE_OFFSET]} receiveShadow><planeGeometry args={[2.5, 2.5]} /><PaperMaterial texture={texture} /></mesh>
       <group ref={rig} position={[0, 0, mode === 'CLOSED' ? HALF_PACKAGE_DEPTH - 0.21 - SURFACE_OFFSET : 0]}>
-        <mesh position={[0, 0, 0.055]} receiveShadow>
-          <boxGeometry args={[2.25, 2.25, 0.045]} />
-          <meshPhysicalMaterial color="#dedbd2" transparent opacity={plasticOpacity} roughness={0.76} metalness={0} depthWrite />
+        <mesh position={[0, 0, 0.045]} receiveShadow>
+          <boxGeometry args={[2.25, 2.25, 0.028]} />
+          <meshPhysicalMaterial color="#dedbd2" transparent opacity={plasticOpacity} roughness={0.88} metalness={0} clearcoat={0.04} depthWrite />
         </mesh>
         <mesh position={[0, 0, 0.082]} receiveShadow>
           <ringGeometry args={[0.84, 0.94, 64]} />
           <meshStandardMaterial color="#d9d5cc" transparent opacity={plasticOpacity + 0.08} roughness={0.8} />
         </mesh>
         <mesh position={[0, 0, 0.09]}><ringGeometry args={[0.18, 0.82, 64]} /><meshStandardMaterial color="#e4e0d7" transparent opacity={plasticOpacity * 0.18} roughness={0.85} /></mesh>
-        <mesh position={[0, 0, 0.12]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-          <cylinderGeometry args={[0.16, 0.16, 0.065, 32]} />
+        <mesh position={[0, 0, 0.105]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+          <cylinderGeometry args={[0.16, 0.145, 0.045, 32]} />
           <meshStandardMaterial color="#d8d4ca" transparent opacity={plasticOpacity + 0.12} roughness={0.75} />
         </mesh>
         <CdDisc label={label} mode={mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={onDiscSettled} />
@@ -269,7 +274,6 @@ function TurningPage({ pages, width, turn, onDone, frontTexture, backTexture, du
   pages: THREE.Texture[]; width: number; turn: { source: number; target: number; direction: -1 | 1 }; onDone(): void;
   frontTexture?: THREE.Texture; backTexture?: THREE.Texture; duration?: number;
 }) {
-  const pivot = useRef<THREE.Group>(null);
   const frontSurface = useRef<THREE.Mesh>(null);
   const backSurface = useRef<THREE.Mesh>(null);
   const elapsed = useRef(0);
@@ -277,28 +281,34 @@ function TurningPage({ pages, width, turn, onDone, frontTexture, backTexture, du
   const front = frontTexture ?? (turn.direction > 0 ? pages[turn.source * 2 + 1] : pages[turn.source * 2]);
   const back = backTexture ?? (turn.direction > 0 ? pages[turn.target * 2] : pages[turn.target * 2 + 1]);
   useFrame((_, delta) => {
-    if (!pivot.current || !frontSurface.current || !backSurface.current) return;
+    if (!frontSurface.current || !backSurface.current) return;
     elapsed.current = Math.min(duration, elapsed.current + delta);
     const t = elapsed.current / duration;
-    const smooth = t * t * (3 - 2 * t);
-    pivot.current.rotation.y = (turn.direction > 0 ? -1 : 1) * Math.PI * smooth;
+    const side = turn.direction > 0 ? 1 : -1;
     [[frontSurface.current, 1], [backSurface.current, -1]].forEach(([surface, sign]) => {
       const mesh = surface as THREE.Mesh;
       const positions = mesh.geometry.attributes.position as THREE.BufferAttribute;
       for (let i = 0; i < positions.count; i += 1) {
-        const x = positions.getX(i);
-        positions.setZ(i, Math.sin(Math.abs(x / width) * Math.PI) * Math.sin(t * Math.PI) * 0.065 * (sign as number));
+        const originalX = (mesh.geometry.userData.original as Float32Array)[i];
+        const normalized = THREE.MathUtils.clamp(side > 0 ? originalX / width + 0.5 : 0.5 - originalX / width, 0, 1);
+        const local = THREE.MathUtils.clamp((t - normalized * 0.2) / 0.8, 0, 1);
+        const paperEase = local * local * (3 - 2 * local);
+        const distance = normalized * width;
+        positions.setX(i, side * distance * (1 - 2 * paperEase));
+        positions.setZ(i, Math.sin(Math.PI * paperEase) * Math.sin(Math.PI * normalized) * 0.055 * (sign as number));
       }
       positions.needsUpdate = true;
     });
     if (t === 1 && !done.current) { done.current = true; onDone(); }
   });
   return (
-    <group ref={pivot} position={[0, 0, 0.025]}>
-      <group position={[turn.direction > 0 ? width / 2 : -width / 2, 0, 0]}>
-        <mesh ref={frontSurface} castShadow><planeGeometry args={[width, PAGE_HEIGHT, 18, 3]} /><meshStandardMaterial map={front} roughness={0.94} side={THREE.FrontSide} /></mesh>
-        <mesh ref={backSurface} rotation={[0, Math.PI, 0]} position={[0, 0, -0.002]} castShadow><planeGeometry args={[width, PAGE_HEIGHT, 18, 3]} /><meshStandardMaterial map={back} roughness={0.94} side={THREE.FrontSide} /></mesh>
-      </group>
+    <group position={[0, 0, 0.025]}>
+      <mesh ref={(node) => { frontSurface.current = node; if (node && !node.geometry.userData.original) node.geometry.userData.original = Float32Array.from(Array.from({ length: node.geometry.attributes.position.count }, (_, i) => (node.geometry.attributes.position as THREE.BufferAttribute).getX(i))); }} castShadow>
+        <planeGeometry args={[width, PAGE_HEIGHT, 28, 3]} /><meshStandardMaterial map={front} roughness={0.96} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh ref={(node) => { backSurface.current = node; if (node && !node.geometry.userData.original) node.geometry.userData.original = Float32Array.from(Array.from({ length: node.geometry.attributes.position.count }, (_, i) => (node.geometry.attributes.position as THREE.BufferAttribute).getX(i))); }} position={[0, 0, -0.002]} castShadow>
+        <planeGeometry args={[width, PAGE_HEIGHT, 28, 3]} /><meshStandardMaterial map={back} roughness={0.96} side={THREE.DoubleSide} />
+      </mesh>
     </group>
   );
 }
@@ -307,7 +317,7 @@ function MobileTurningPage({ source, target, width, direction, duration, onDone 
   source: THREE.Texture; target: THREE.Texture; width: number; direction: -1 | 1; duration?: number; onDone(): void;
 }) {
   const turn: PageTurn = { key: 0, source: 0, target: 0, direction };
-  return <group position={[direction > 0 ? -width / 2 : width / 2, 0, 0]}><TurningPage pages={[]} width={width} turn={turn} frontTexture={source} backTexture={target} duration={duration} onDone={onDone} /></group>;
+  return <TurningPage pages={[]} width={width} turn={turn} frontTexture={source} backTexture={target} duration={duration} onDone={onDone} />;
 }
 
 function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettled, onPageTurnComplete }: {
@@ -367,9 +377,9 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
     if (movingToFocus && rig.current.parent) {
       rig.current.parent.updateWorldMatrix(true, false);
       const desiredWorld = new THREE.Matrix4().compose(
-        new THREE.Vector3(0, mobile ? 0.35 : 0.08, 1.35),
+        new THREE.Vector3(0, mobile ? 0.35 : 0.08, 0.82),
         new THREE.Quaternion().setFromEuler(new THREE.Euler(mobile ? -0.04 : -0.08, 0, 0)),
-        new THREE.Vector3(mobile ? 1.35 : 1.32, mobile ? 1.35 : 1.32, mobile ? 1.35 : 1.32),
+        new THREE.Vector3(mobile ? 1.2 : 1.12, mobile ? 1.2 : 1.12, mobile ? 1.2 : 1.12),
       );
       const local = rig.current.parent.matrixWorld.clone().invert().multiply(desiredWorld);
       local.decompose(targetPosition, targetQuaternion, targetScale);
@@ -421,6 +431,7 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
 function Scene(props: ExperienceProps) {
   const { album, mode, page, mobile, playing, reduced, onOpen, onBooklet, onPlayer, onTransitionChange } = props;
   const textures = useCoreTextures(album);
+  const { size, viewport } = useThree();
   const packageRig = useRef<THREE.Group>(null);
   const hinge = useRef<THREE.Group>(null);
   const drag = useRef<{ id: number; x: number; y: number; startX: number; startY: number; canvas: HTMLCanvasElement } | null>(null);
@@ -428,6 +439,8 @@ function Scene(props: ExperienceProps) {
   const autoRotate = useRef(true);
   const aligned = useRef(mode !== 'CLOSED');
   const alignedYaw = useRef(0);
+  const [openingPhase, setOpeningPhase] = useState<OpeningPhase>('IDLE');
+  const openingPhaseRef = useRef<OpeningPhase>('IDLE');
   const previousMode = useRef(mode);
   const reported = useRef(false);
   const bookletSettled = useRef(mode === 'CLOSED');
@@ -443,11 +456,15 @@ function Scene(props: ExperienceProps) {
       autoRotate.current = false;
       alignedYaw.current = Math.round(rotation.current.y / (Math.PI * 2)) * Math.PI * 2;
       aligned.current = false;
+      openingPhaseRef.current = 'ALIGN_CLOSED';
     } else if (mode !== 'CLOSED') {
       aligned.current = true;
+      openingPhaseRef.current = 'IDLE';
     } else {
       aligned.current = true;
+      openingPhaseRef.current = 'IDLE';
     }
+    queueMicrotask(() => setOpeningPhase(openingPhaseRef.current));
     reported.current = false;
     onTransitionChange?.(true);
     previousMode.current = mode;
@@ -461,15 +478,28 @@ function Scene(props: ExperienceProps) {
     if (!closed && !aligned.current) {
       rotation.current.x = THREE.MathUtils.lerp(rotation.current.x, -0.1, ease);
       rotation.current.y = THREE.MathUtils.lerp(rotation.current.y, alignedYaw.current, ease);
-      if (Math.abs(rotation.current.x + 0.1) + Math.abs(rotation.current.y - alignedYaw.current) < 0.018) aligned.current = true;
+      if (Math.abs(rotation.current.x + 0.1) + Math.abs(rotation.current.y - alignedYaw.current) < 0.018) {
+        aligned.current = true;
+        openingPhaseRef.current = 'POSITION_FOR_OPEN';
+        setOpeningPhase('POSITION_FOR_OPEN');
+      }
     }
     packageRig.current.rotation.x = THREE.MathUtils.lerp(packageRig.current.rotation.x, closed ? rotation.current.x : -0.1, ease);
     packageRig.current.rotation.y = THREE.MathUtils.lerp(packageRig.current.rotation.y, closed ? rotation.current.y : alignedYaw.current, ease);
-    const targetHinge = !closed && aligned.current ? OPEN_ANGLE : 0;
+    const positioning = openingPhaseRef.current === 'POSITION_FOR_OPEN';
+    const opening = openingPhaseRef.current === 'HINGE_OPEN' || (!closed && openingPhaseRef.current === 'IDLE');
+    const targetHinge = opening ? OPEN_ANGLE : 0;
     hinge.current.rotation.y = THREE.MathUtils.lerp(hinge.current.rotation.y, targetHinge, ease);
-    const x = closed ? (mobile ? 0 : -1.15) : mode === 'BOOKLET_FOCUS' ? 0.95 : mode === 'PLAYER_FOCUS' ? (mobile ? 0 : -1.05) : 0;
-    const y = mobile ? (closed ? 1.05 : 0.6) : 0.05;
-    const scale = closed ? (mobile ? 1.03 : 1.18) : mode === 'BOOKLET_FOCUS' ? 0.72 : mode === 'PLAYER_FOCUS' ? (mobile ? 0.62 : 0.88) : (mobile ? 0.62 : 1.08);
+    const source = mobile ? album.albumHero?.backgroundAnchor?.mobile ?? DETAIL_BACKGROUND.mobile : album.albumHero?.backgroundAnchor?.desktop ?? DETAIL_BACKGROUND.desktop;
+    const backgroundScale = Math.max(size.width / source.sourceWidth, (size.height + (mobile ? 0 : 0)) / source.sourceHeight);
+    const renderedWidth = source.sourceWidth * backgroundScale;
+    const backgroundOffsetX = (size.width - renderedWidth) / 2;
+    const screenLineX = backgroundOffsetX + source.x * renderedWidth;
+    const closedX = (screenLineX / size.width - 0.5) * viewport.width;
+    const keepClosedTransform = closed || openingPhaseRef.current === 'ALIGN_CLOSED';
+    const x = keepClosedTransform ? closedX : mode === 'BOOKLET_FOCUS' ? 1.05 : mode === 'PLAYER_FOCUS' ? (mobile ? 0 : 0.62) : (mobile ? 0 : HALF_PANEL);
+    const y = mobile ? (keepClosedTransform ? 1.05 : 0.72) : 0.05;
+    const scale = keepClosedTransform ? (mobile ? 1.03 : 1.18) : mode === 'BOOKLET_FOCUS' ? 0.76 : mode === 'PLAYER_FOCUS' ? (mobile ? 0.62 : 1.01) : (mobile ? 0.62 : 1.08);
     packageRig.current.position.x = THREE.MathUtils.lerp(packageRig.current.position.x, x, ease);
     packageRig.current.position.y = THREE.MathUtils.lerp(packageRig.current.position.y, y, ease);
     packageRig.current.position.z = THREE.MathUtils.lerp(packageRig.current.position.z, mode === 'BOOKLET_FOCUS' ? -1 : 0, ease);
@@ -478,6 +508,10 @@ function Scene(props: ExperienceProps) {
       + Math.abs(packageRig.current.position.y - y)
       + Math.abs(packageRig.current.position.z - (mode === 'BOOKLET_FOCUS' ? -1 : 0))
       + Math.abs(packageRig.current.scale.x - scale);
+    if (positioning && packageError < 0.035) {
+      openingPhaseRef.current = 'HINGE_OPEN';
+      setOpeningPhase('HINGE_OPEN');
+    }
     const complete = aligned.current
       && Math.abs(hinge.current.rotation.y - targetHinge) < 0.025
       && packageError < 0.04
@@ -513,12 +547,12 @@ function Scene(props: ExperienceProps) {
   };
   return (
     <>
-      <group ref={packageRig} position={[mobile ? 0 : -1.15, mobile ? 1.05 : 0.05, 0]} rotation={[-0.1, 0.12, 0]} scale={mobile ? 1.03 : 1.18}
+      <group ref={packageRig} position={[0, mobile ? 1.05 : 0.05, 0]} rotation={[-0.1, 0.12, 0]} scale={mobile ? 1.03 : 1.18}
         onPointerDown={down} onPointerMove={move} onPointerUp={(e) => finish(e.pointerId, true)} onPointerCancel={(e) => finish(e.pointerId, false)}>
         {/* Keep assembly coordinates spine-relative while packageRig rotates at
             the geometric centre shared by the closed front and back covers. */}
         <group position={[-HALF_PANEL, 0, 0]}>
-        <TrayRig back={textures.back} texture={textures.interiorTray} label={textures.cdLabel} mode={mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={setTraySettled} onDiscSettled={setDiscSettled} />
+        <TrayRig back={textures.back} texture={textures.interiorTray} label={textures.cdLabel} mode={openingPhase === 'ALIGN_CLOSED' || openingPhase === 'POSITION_FOR_OPEN' ? 'CLOSED' : mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={setTraySettled} onDiscSettled={setDiscSettled} />
         <group ref={hinge}>
           <group position={[HALF_PANEL, 0, FRONT_PANEL_CENTER_Z]}>
             <mesh castShadow receiveShadow><boxGeometry args={[PANEL, PANEL, PAPER_THICKNESS]} /><meshStandardMaterial color="#d8d1c5" roughness={0.94} /></mesh>
