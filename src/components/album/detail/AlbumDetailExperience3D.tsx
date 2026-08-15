@@ -300,6 +300,10 @@ function CurledTurningPage({
 
   useEffect(() => {
     elapsed.current = 0;
+    if (pivot.current) {
+      pivot.current.rotation.y = 0;
+      pivot.current.visible = true;
+    }
   }, [turnKey]);
 
   useFrame((_, delta) => {
@@ -307,7 +311,9 @@ function CurledTurningPage({
     elapsed.current = Math.min(PAGE_TURN_DURATION, elapsed.current + delta);
     const linear = reduced ? 1 : elapsed.current / PAGE_TURN_DURATION;
     const progress = linear * linear * (3 - 2 * linear);
-    pivot.current.rotation.y = direction > 0 ? -Math.PI * progress : Math.PI * (1 - progress);
+    // Both turns begin flat on their source side. NEXT folds the right page
+    // leftward; PREVIOUS folds the left page rightward.
+    pivot.current.rotation.y = direction > 0 ? -Math.PI * progress : Math.PI * progress;
 
     const surfaces: Array<[THREE.Mesh, number]> = [
       [frontSurface.current, 1],
@@ -325,6 +331,11 @@ function CurledTurningPage({
       }
       positions.needsUpdate = true;
     });
+
+    // The destination spread is already the static page pair underneath.
+    // Remove the transient sheet at completion so its source-side texture can
+    // never remain over the destination page.
+    if (linear >= 1) pivot.current.visible = false;
   });
 
   const xOffset = direction > 0 ? PAGE_WIDTH / 2 : -PAGE_WIDTH / 2;
