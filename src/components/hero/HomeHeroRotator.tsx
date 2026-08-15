@@ -32,17 +32,22 @@ export function HomeHeroRotator() {
   const works = useMemo(() => getRecentWorks(homeHeroSlides), []);
   const [activeIndex, setActiveIndex] = useState(() => getDefaultHomeHeroIndex(works));
   const activeTheme = works[activeIndex]?.theme;
+  const activeWorkId = works[activeIndex]?.id;
 
   useEffect(() => {
-    if (!activeTheme) return undefined;
+    if (!activeTheme || !activeWorkId) return undefined;
     document.documentElement.dataset.homeHeroTheme = activeTheme;
-    return () => { delete document.documentElement.dataset.homeHeroTheme; };
-  }, [activeTheme]);
+    document.documentElement.dataset.homeHeroWork = activeWorkId;
+    return () => {
+      delete document.documentElement.dataset.homeHeroTheme;
+      delete document.documentElement.dataset.homeHeroWork;
+    };
+  }, [activeTheme, activeWorkId]);
 
   if (works.length === 0) return null;
 
   return (
-    <div className="home-hero-rotator" data-theme={activeTheme}>
+    <div className="home-hero-rotator" data-theme={activeTheme} data-work-id={activeWorkId}>
       <div className="home-hero-rotator__stage" aria-live="polite">
         {works.map((slide, index) => {
           const isActive = index === activeIndex;

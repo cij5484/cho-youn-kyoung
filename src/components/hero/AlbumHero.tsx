@@ -11,7 +11,7 @@ export function AlbumHero({ slide }: AlbumHeroProps) {
   const [year, status] = slide.displayDate.split(' · ');
 
   return (
-    <section className="album-hero" aria-labelledby={`${slide.id}-hero-title`}>
+    <section className={`album-hero album-hero--${slide.id}`} data-album-id={slide.id} aria-labelledby={`${slide.id}-hero-title`}>
       {slide.albumBackground ? (
         <picture className="album-hero__background" aria-hidden="true">
           <source media="(max-width: 700px)" srcSet={slide.albumBackground.mobile} />
@@ -19,7 +19,7 @@ export function AlbumHero({ slide }: AlbumHeroProps) {
         </picture>
       ) : null}
       <div className="album-hero__stage" role="img" aria-label={`${slide.title} 디지팩 3D 미리보기`}>
-        <AlbumPackage3D textures={slide.albumTextures} />
+        <AlbumPackage3D textures={slide.albumTextures} backgroundAnchor={slide.albumBackgroundAnchor} geometry={slide.albumPackageGeometry} />
       </div>
       <div className="album-hero__content">
         <p className="album-hero__eyebrow">{slide.eyebrow || 'ALBUM'}</p>

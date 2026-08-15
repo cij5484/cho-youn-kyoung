@@ -19,6 +19,18 @@
 }
 .album-hero__background img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
+.album-hero--han-beom-su-haegeum-sanjo-2020 {
+  --album-accent: #9db9b1;
+  background: #172724;
+  color: #f2eee5;
+}
+
+.album-hero--han-beom-su-haegeum-sanjo-2020 .album-hero__subtitle,
+.album-hero--han-beom-su-haegeum-sanjo-2020 .album-hero__meta,
+.album-hero--han-beom-su-haegeum-sanjo-2020 .album-hero__tracks {
+  color: rgba(242, 238, 229, .72);
+}
+
 .album-hero-loading { min-height: 100svh; background: #eeeae0; }
 
 .album-hero__stage {

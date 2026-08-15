@@ -1,6 +1,6 @@
 # HOME Hero와 RECENT WORKS 운영 워크플로
 
-- 마지막 확인 날짜: 2026-08-14
+- 마지막 확인 날짜: 2026-08-15
 
 ## 역할과 대표 Work 선정
 
@@ -86,3 +86,11 @@ RECENT WORKS는 작품을 선택하는 계층일 뿐 각 작품의 디자인을 
 - `haegeum-recital`은 공연 정보 전체를 하나의 `.hero-content` block으로 유지하면서 eyebrow가 viewport 상단 약 25%에서 시작하도록 flex 정렬과 유동적인 top padding을 사용한다. 낮은 화면에서는 header 아래 최소 여백을 보장하고 큰 화면에서는 이동량을 제한한다.
 - `sanjo-matiere`의 공연 정보와 오른쪽 text composition은 기존 Mobile 위치를 유지한다. 두 theme에 공통으로 적용되는 Mobile 변경은 Creative Credit의 오른쪽 하단 배치뿐이다.
 - 공연 정보, Creative Credit, RECENT WORKS의 stacking과 hit area를 분리하여 RECENT WORKS trigger, panel, horizontal swipe, card tap 및 scroll snap을 방해하지 않는다.
+
+## 2020 한범수류 활성화 (2026-08-15)
+
+- 한범수류 앨범은 실제 front/back/spine과 desktop 3840×2160, mobile 1440×2560 배경을 사용해 HOME Album Hero 및 RECENT WORKS에 활성화했다. CD label 경로도 앨범 데이터에 보관하지만 HOME Scene은 이를 로드하지 않는다.
+- 앨범별 `backgroundAnchor`의 원본 크기와 x 비율을 이용해 `object-fit: cover` scale 및 crop offset 이후의 screen-space 위치를 계산한다. 지영희류의 기존 값은 desktop `1369 / 3840`, mobile `720 / 1440`; 한범수류는 desktop `0.43`, mobile `0.50`이다.
+- 선택적 `packageGeometry`는 native front/back/spine 비율을 공용 `AlbumPackage3D`에 전달한다. 한범수류의 비정사각 artwork는 왜곡하지 않으며 지영희류는 기존 package geometry와 위치를 유지한다.
+- 한범수류는 dark teal painterly 배경, warm ivory 전경, desaturated teal accent를 사용한다. active work ID를 HTML과 rotator data attribute에 반영해 GNB, Creative Credit, RECENT WORKS를 dark Hero에 맞추되 다른 Hero의 색을 바꾸지 않는다.
+- mobile 레이아웃은 지영희류와 같은 상단 패키지/하단 정보 구조이고 자동 순환은 추가하지 않는다. 한범수류 최종 detail 경험과 ABOUT 반영은 후속 작업이다.

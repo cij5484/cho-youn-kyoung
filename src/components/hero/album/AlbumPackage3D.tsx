@@ -2,7 +2,11 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import type { ThreeEvent } from '@react-three/fiber';
-import type { AlbumHeroTextures } from '../../../data/albums';
+import type {
+  AlbumHeroBackgroundAnchor,
+  AlbumHeroPackageGeometry,
+  AlbumHeroTextures,
+} from '../../../data/albums';
 
 // spine.png is 171 × 3000: its 0.057 width/height ratio defines the printed spine.
 const PACKAGE_SIZE = { width: 2.35, height: 2.35, depth: 0.102 } as const;
@@ -14,13 +18,44 @@ const ROTATION_LIMIT = {
   y: THREE.MathUtils.degToRad(168),
 } as const;
 const AUTO_ROTATION_SPEED = (Math.PI * 2) / 22;
-const BACKGROUND_SOURCES = {
-  desktop: { width: 3840, height: 2160, lineRatio: 1369 / 3840 },
-  mobile: { width: 1440, height: 2560, lineRatio: 720 / 1440 },
+const DEFAULT_BACKGROUND_ANCHORS = {
+  desktop: { sourceWidth: 3840, sourceHeight: 2160, x: 1369 / 3840 },
+  mobile: { sourceWidth: 1440, sourceHeight: 2560, x: 720 / 1440 },
 } as const;
 
-type AlbumPackage3DProps = { textures?: AlbumHeroTextures };
+type AlbumPackage3DProps = {
+  textures?: AlbumHeroTextures;
+  backgroundAnchor?: { desktop: AlbumHeroBackgroundAnchor; mobile: AlbumHeroBackgroundAnchor };
+  geometry?: AlbumHeroPackageGeometry;
+};
 type PackageProps = AlbumPackage3DProps & { scale: number; position: [number, number, number] };
+
+function getPackageDimensions(geometry?: AlbumHeroPackageGeometry) {
+  if (!geometry) return {
+    trayWidth: PACKAGE_SIZE.width,
+    trayHeight: PACKAGE_SIZE.height,
+    trayDepth: PACKAGE_SIZE.depth,
+    frontWidth: PACKAGE_SIZE.width + COVER_OVERHANG * 2,
+    frontHeight: PACKAGE_SIZE.height + COVER_OVERHANG * 2,
+    backWidth: PACKAGE_SIZE.width + COVER_OVERHANG * 2,
+    backHeight: PACKAGE_SIZE.height + COVER_OVERHANG * 2,
+  };
+
+  const coverHeight = PACKAGE_SIZE.height + COVER_OVERHANG * 2;
+  const frontWidth = coverHeight * geometry.front.width / geometry.front.height;
+  const backWidth = coverHeight * geometry.back.width / geometry.back.height;
+  const widestCover = Math.max(frontWidth, backWidth);
+  const printedSpineDepth = coverHeight * geometry.spine.width / geometry.spine.height;
+  return {
+    trayWidth: widestCover - COVER_OVERHANG * 2,
+    trayHeight: PACKAGE_SIZE.height,
+    trayDepth: Math.max(COVER_DEPTH, printedSpineDepth - COVER_DEPTH * 2),
+    frontWidth,
+    frontHeight: coverHeight,
+    backWidth,
+    backHeight: coverHeight,
+  };
+}
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -101,7 +136,7 @@ function usePackageMaterials(textures?: AlbumHeroTextures) {
   }, [maps]);
 }
 
-function Package({ textures, scale, position }: PackageProps) {
+function Package({ textures, geometry, scale, position }: PackageProps) {
   const group = useRef<THREE.Group>(null);
   const drag = useRef<{ pointerId: number; x: number; y: number } | null>(null);
   const target = useRef({ ...DEFAULT_ROTATION });
@@ -178,7 +213,7 @@ function Package({ textures, scale, position }: PackageProps) {
   };
   const spineMaterials: THREE.Material[] = Array(6).fill(materials.paper);
   spineMaterials[1] = materials.spine;
-  const coverSize = PACKAGE_SIZE.width + COVER_OVERHANG * 2;
+  const dimensions = getPackageDimensions(geometry);
 
   const interactionProps = {
     onPointerDown: handlePointerDown,
@@ -196,27 +231,27 @@ function Package({ textures, scale, position }: PackageProps) {
         scale={scale}
       >
         <mesh material={materials.plastic} castShadow>
-          <boxGeometry args={[PACKAGE_SIZE.width, PACKAGE_SIZE.height, PACKAGE_SIZE.depth]} />
+          <boxGeometry args={[dimensions.trayWidth, dimensions.trayHeight, dimensions.trayDepth]} />
         </mesh>
-        <mesh position={[0, 0, PACKAGE_SIZE.depth / 2 + COVER_DEPTH / 2]} material={faceMaterials(materials.front, 4)} castShadow>
-          <boxGeometry args={[coverSize, coverSize, COVER_DEPTH]} />
+        <mesh position={[0, 0, dimensions.trayDepth / 2 + COVER_DEPTH / 2]} material={faceMaterials(materials.front, 4)} castShadow>
+          <boxGeometry args={[dimensions.frontWidth, dimensions.frontHeight, COVER_DEPTH]} />
         </mesh>
-        <mesh position={[0, 0, -(PACKAGE_SIZE.depth / 2 + COVER_DEPTH / 2)]} material={faceMaterials(materials.back, 5)} castShadow>
-          <boxGeometry args={[coverSize, coverSize, COVER_DEPTH]} />
+        <mesh position={[0, 0, -(dimensions.trayDepth / 2 + COVER_DEPTH / 2)]} material={faceMaterials(materials.back, 5)} castShadow>
+          <boxGeometry args={[dimensions.backWidth, dimensions.backHeight, COVER_DEPTH]} />
         </mesh>
-        <mesh position={[-coverSize / 2 + COVER_DEPTH / 2, 0, 0]} material={spineMaterials} castShadow>
-          <boxGeometry args={[COVER_DEPTH, coverSize, PACKAGE_SIZE.depth + COVER_DEPTH * 2]} />
+        <mesh position={[-dimensions.frontWidth / 2 + COVER_DEPTH / 2, 0, 0]} material={spineMaterials} castShadow>
+          <boxGeometry args={[COVER_DEPTH, dimensions.frontHeight, dimensions.trayDepth + COVER_DEPTH * 2]} />
         </mesh>
       </group>
       <mesh position={[0, 0, 0.35]} {...interactionProps}>
-        <planeGeometry args={[coverSize * 1.14, coverSize * 1.14]} />
+        <planeGeometry args={[Math.max(dimensions.frontWidth, dimensions.backWidth) * 1.14, dimensions.frontHeight * 1.14]} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
       </mesh>
     </group>
   );
 }
 
-export function AlbumPackage3D({ textures }: AlbumPackage3DProps) {
+export function AlbumPackage3D({ textures, backgroundAnchor, geometry }: AlbumPackage3DProps) {
   return (
     <Canvas
       className="album-package-canvas"
@@ -226,26 +261,28 @@ export function AlbumPackage3D({ textures }: AlbumPackage3DProps) {
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       shadows="soft"
     >
-      <AlbumPackageScene textures={textures} />
+      <AlbumPackageScene textures={textures} backgroundAnchor={backgroundAnchor} geometry={geometry} />
     </Canvas>
   );
 }
 
-function AlbumPackageScene({ textures }: AlbumPackage3DProps) {
+function AlbumPackageScene({ textures, backgroundAnchor, geometry }: AlbumPackage3DProps) {
   const mobile = useMobileViewport();
   const { size, viewport } = useThree();
-  const source = mobile ? BACKGROUND_SOURCES.mobile : BACKGROUND_SOURCES.desktop;
-  const backgroundScale = Math.max(size.width / source.width, size.height / source.height);
-  const renderedWidth = source.width * backgroundScale;
+  const source = mobile
+    ? backgroundAnchor?.mobile ?? DEFAULT_BACKGROUND_ANCHORS.mobile
+    : backgroundAnchor?.desktop ?? DEFAULT_BACKGROUND_ANCHORS.desktop;
+  const backgroundScale = Math.max(size.width / source.sourceWidth, size.height / source.sourceHeight);
+  const renderedWidth = source.sourceWidth * backgroundScale;
   const backgroundOffsetX = (size.width - renderedWidth) / 2;
-  const screenLineX = backgroundOffsetX + source.lineRatio * renderedWidth;
+  const screenLineX = backgroundOffsetX + source.x * renderedWidth;
   const packageX = (screenLineX / size.width - 0.5) * viewport.width;
   const packageScale = mobile ? 0.48 : 0.7;
 
   // Keep the mobile cover below the header while allowing its size to determine
   // the natural start of the information block below the visual stage.
   const mobileHeader = Math.min(80, Math.max(60, size.height * 0.09));
-  const projectedCoverHeight = (PACKAGE_SIZE.height + COVER_OVERHANG * 2) * packageScale
+  const projectedCoverHeight = getPackageDimensions(geometry).frontHeight * packageScale
     / viewport.height * size.height;
   const mobileCenterY = mobileHeader + 20 + projectedCoverHeight / 2;
   const packageY = mobile
@@ -271,7 +308,7 @@ function AlbumPackageScene({ textures }: AlbumPackage3DProps) {
         shadow-radius={8}
       />
       <directionalLight position={[-3.5, 1.5, 3]} intensity={0.28} />
-      <Package textures={textures} scale={packageScale} position={[packageX, packageY, 0]} />
+      <Package textures={textures} geometry={geometry} scale={packageScale} position={[packageX, packageY, 0]} />
       <mesh position={[0, 0, -0.34]} receiveShadow>
         <planeGeometry args={[12, 10]} />
         <shadowMaterial transparent opacity={0.13} depthWrite={false} />

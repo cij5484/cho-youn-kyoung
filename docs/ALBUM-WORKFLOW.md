@@ -1,6 +1,6 @@
 # 앨범 등록 워크플로
 
-- 마지막 확인 날짜: 2026-08-14
+- 마지막 확인 날짜: 2026-08-15
 
 앨범 작업도 공연 작업과 동일하게 원본 자료를 먼저 확인하고, 확정·권장·미확정 정보를 구분합니다. 아직 저장소에서 확정되지 않은 앨범 목록·상세·Viewer UI나 픽셀 규격은 **미확정**으로 표시합니다.
 
@@ -184,3 +184,13 @@ HOME RECENT WORKS에는 확정 `releaseDate`가 있거나 위의 `coming-soon` �
 - Viewer: **미확정**. 향후 디지털 북클릿이 생기면 이미지 순서, Desktop 펼침면, Mobile touch/swipe, keyboard와 PDF 역할 분리 확인
 - 다운로드: PDF URL, 파일명, 새 창/다운로드 동작 확인
 - 회귀: 공연 Viewer와 공연 이미지 경로가 영향받지 않는지 확인
+
+## 2020 한범수류 HOME Hero 연결 (2026-08-15)
+
+- `han-beom-su-haegeum-sanjo-2020`은 2020-11-19 발매 앨범으로 HOME 3D Hero, RECENT WORKS, 공통 `/album/:id` 최소 상세 경로에 연결했다. 최종 한범수류 상세 디자인과 ABOUT 반영은 아직 미완성이며 별도 작업으로 진행한다.
+- 실제 자산은 `public/assets/albums/han-beom-su-haegeum-sanjo-2020/web/`의 `front.webp`(3320×2946), `back.webp`(3317×2946), `spine.webp`(182×2946), `cd-label.png`(2883×2883)를 사용한다. CD label은 데이터 경로만 등록하며 HOME에서는 로드하거나 표시하지 않는다.
+- HOME 배경은 같은 폴더의 `home-hero-desktop.png`(3840×2160), `home-hero-mobile.png`(1440×2560)를 원본 그대로 사용한다. 배경에 filter, crop, 재압축을 적용하지 않는다.
+- 한범수류는 muted warm ivory 전경과 desaturated teal accent를 쓰는 dark teal painterly visual system이다. 지영희류의 oxblood 밝은 테마와 분리한다.
+- `AlbumHeroSettings.backgroundAnchor`는 원본 배경 크기와 x anchor를 앨범별로 보관한다. `object-fit: cover`의 scale과 crop offset을 screen-space에서 계산하며 한범수류는 desktop `0.43`, mobile `0.50`을 사용한다.
+- 선택적 `packageGeometry`는 front/back/spine의 native pixel dimensions를 기록한다. 공용 Scene은 이를 같은 cover 높이로 정규화해 각 면의 실제 가로세로 비율과 spine 깊이를 보존한다. 값이 없는 지영희류는 기존 geometry를 그대로 사용해 회귀를 막는다.
+- mobile은 지영희류와 동일하게 위쪽 3D 패키지, 아래쪽 정보가 하나의 연속 배경 위에 놓이는 구조다.
