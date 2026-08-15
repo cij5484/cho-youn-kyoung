@@ -1351,3 +1351,13 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .home-creative-credit
 .site-header--sanjo-detail .mobile-menu a.active {
   color: #1f4f7a;
 }
+.site-header--ji-album-detail {
+  background: linear-gradient(180deg, rgba(238, 233, 223, .96), rgba(238, 233, 223, .7) 70%, transparent);
+}
+.site-header--ji-album-detail .brand,
+.site-header--ji-album-detail .desktop-nav a,
+.site-header--ji-album-detail .menu-button { color:#252525; }
+.site-header--ji-album-detail .desktop-nav a.active,
+.site-header--ji-album-detail .desktop-nav a:hover,
+.site-header--ji-album-detail .desktop-nav a:focus-visible { color:#70453f; }
+.site-header--ji-album-detail .menu-button span { background:currentColor; }

@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { SafeImage } from '../components/common/SafeImage';
 import { albums } from '../data/albums';
@@ -9,12 +10,16 @@ const releaseStatusLabels = {
   'coming-soon': 'COMING SOON',
   released: 'RELEASED',
 } as const;
+const JiYoungHeeAlbumDetail = lazy(() => import('../components/album/detail/JiYoungHeeAlbumDetail'));
 
 export function AlbumDetailPage() {
   const { id } = useParams();
   const album = albums.find((item) => item.id === id);
 
   if (!album) return <NotFoundPage />;
+  if (album.id === 'ji-young-hee-ryu-haegeum-sanjo-2026') {
+    return <Suspense fallback={<div className="ji-detail__loading">앨범을 준비하고 있습니다.</div>}><JiYoungHeeAlbumDetail album={album} /></Suspense>;
+  }
 
   return (
     <article className="album-detail">
