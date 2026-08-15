@@ -196,7 +196,7 @@ function BookletPages({ album, page, mobile, reduced, coverNode, onReady, onPage
     onPageTurnComplete();
   };
   const p2Back = coverNode ? createPortal(
-    <mesh position={[0, 0, -0.002]} rotation={[0, Math.PI, 0]} castShadow>
+    <mesh position={[width / 2, 0, -0.002]} rotation={[0, Math.PI, 0]} castShadow>
       <planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} />
       <meshStandardMaterial map={pages[0]} roughness={0.94} side={THREE.FrontSide} />
     </mesh>,
@@ -215,10 +215,15 @@ function BookletPages({ album, page, mobile, reduced, coverNode, onReady, onPage
   const target = spreads[turn ? turn.target : settled];
   const left = turn ? (turn.direction > 0 ? source[0] : target[0]) : target[0];
   const right = turn ? (turn.direction > 0 ? target[1] : source[1]) : target[1];
+  const leftSpreadIndex = turn
+    ? (turn.direction > 0 ? turn.source : turn.target)
+    : settled;
+  const showStaticLeft = leftSpreadIndex > 0;
+  const leftStackZ = 0.006 + leftSpreadIndex * 0.004;
   return (
     <group>
       {p2Back}
-      {(settled > 0 || turn) && <mesh position={[-width / 2, 0, 0]} castShadow receiveShadow><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={left} /></mesh>}
+      {showStaticLeft && <mesh position={[-width / 2, 0, leftStackZ]} castShadow receiveShadow><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={left} /></mesh>}
       <mesh position={[width / 2, 0, 0]} castShadow receiveShadow><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={right} /></mesh>
       {turn && <TurningPage key={turn.key} pages={pages} width={width} turn={turn} onDone={completeTurn} />}
       <mesh position={[0, 0, 0.012]}><planeGeometry args={[0.025, PAGE_HEIGHT]} /><meshBasicMaterial color="#7a6f65" transparent opacity={0.18} /></mesh>
@@ -311,10 +316,12 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
     rig.current.scale.lerp(targetScale, ease);
     const coverTarget = focused && detailsReady ? -Math.PI : 0;
     cover.current.rotation.y = THREE.MathUtils.lerp(cover.current.rotation.y, coverTarget, ease);
+    cover.current.position.z = THREE.MathUtils.lerp(cover.current.position.z, focused ? 0 : 0.035, ease);
     const transformError = rig.current.position.distanceTo(targetPosition)
       + rig.current.quaternion.angleTo(targetQuaternion)
       + rig.current.scale.distanceTo(targetScale);
-    const coverError = Math.abs(cover.current.rotation.y - coverTarget);
+    const coverError = Math.abs(cover.current.rotation.y - coverTarget)
+      + Math.abs(cover.current.position.z - (focused ? 0 : 0.035));
     // Mobile resolves the physical P1→P2 opening first, then presents the
     // loaded P2 surface as the centered single-page reader.
     cover.current.visible = !(mobile && focused && coverError < 0.025);
@@ -323,8 +330,8 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
   return (
     <group ref={rig} position={[-p1Width / 2, 0, 0.08]} scale={0.84} onClick={(event) => { event.stopPropagation(); if (mode === 'ALBUM_OPEN') onBooklet(); }}>
       {detailsMounted && <BookletPages album={album} page={page} mobile={mobile} reduced={reduced} coverNode={coverNode} onReady={detailsLoaded} onPageTurnComplete={onPageTurnComplete} />}
-      <group ref={assignCover} position={[p1Width / 2, 0, 0.035]}>
-        <mesh position={[0, 0, 0]} castShadow><planeGeometry args={[p1Width, PAGE_HEIGHT]} /><PaperMaterial texture={p1} /></mesh>
+      <group ref={assignCover} position={[0, 0, 0.035]}>
+        <mesh position={[p1Width / 2, 0, 0]} castShadow><planeGeometry args={[p1Width, PAGE_HEIGHT]} /><PaperMaterial texture={p1} /></mesh>
       </group>
     </group>
   );
