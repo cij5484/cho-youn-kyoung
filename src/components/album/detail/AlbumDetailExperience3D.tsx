@@ -174,10 +174,10 @@ function TrayRig({ back, texture, label, mode, playing, reduced, onPlayer, onSet
 
 type PageTurn = { key: number; source: number; target: number; direction: -1 | 1 };
 
-function BookletPages({ album, page, mobile, reduced, active, mobileReaderReady, resetToken, coverNode, onReady, onPageTurnComplete }: {
+function BookletPages({ album, page, mobile, reduced, active, returning, mobileReaderReady, resetToken, coverNode, onReady, onPageTurnComplete, onReturnPagesComplete }: {
   album: Album; page: number; mobile: boolean; reduced: boolean; coverNode: THREE.Group | null;
-  active: boolean; mobileReaderReady: boolean; resetToken: number;
-  onReady(): void; onPageTurnComplete(): void;
+  active: boolean; returning: boolean; mobileReaderReady: boolean; resetToken: number;
+  onReady(): void; onPageTurnComplete(): void; onReturnPagesComplete(): void;
 }) {
   const { gl } = useThree();
   const urls = album.booklet!.previewImages.slice(1).map(({ src }) => assetUrl(src)!);
@@ -205,8 +205,25 @@ function BookletPages({ album, page, mobile, reduced, active, mobileReaderReady,
     if (reduced) { queueMicrotask(() => { setSettled(page); onPageTurnComplete(); }); return; }
     setTurn({ key: Date.now(), source, target: page, direction: page > source ? 1 : -1 });
   }, [active, onPageTurnComplete, page, reduced]);
+  useEffect(() => {
+    if (!returning || turn) return;
+    if (settled === 0) {
+      queueMicrotask(onReturnPagesComplete);
+      return;
+    }
+    if (reduced) {
+      queueMicrotask(() => {
+        previous.current = 0;
+        setSettled(0);
+        onReturnPagesComplete();
+      });
+      return;
+    }
+    queueMicrotask(() => setTurn({ key: Date.now(), source: settled, target: settled - 1, direction: -1 }));
+  }, [onReturnPagesComplete, reduced, returning, settled, turn]);
   const completeTurn = () => {
     if (!turn) return;
+    previous.current = turn.target;
     setSettled(turn.target);
     setTurn(null);
     onPageTurnComplete();
@@ -223,7 +240,7 @@ function BookletPages({ album, page, mobile, reduced, active, mobileReaderReady,
     return <>
       {p2Back}
       {mobileReaderReady && <mesh castShadow receiveShadow><planeGeometry args={[PAGE_HEIGHT * textureAspect(base), PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={base} /></mesh>}
-      {mobileReaderReady && turn && <MobileTurningPage key={turn.key} source={pages[turn.source]} target={pages[turn.target]} width={width} direction={turn.direction} onDone={completeTurn} />}
+      {mobileReaderReady && turn && <MobileTurningPage key={turn.key} source={pages[turn.source]} target={pages[turn.target]} width={width} direction={turn.direction} duration={returning ? 0.42 : PAGE_TURN_DURATION} onDone={completeTurn} />}
     </>;
   }
   const spreads = [[pages[0], pages[1]], [pages[2], pages[3]], [pages[4], pages[5]]];
@@ -241,15 +258,15 @@ function BookletPages({ album, page, mobile, reduced, active, mobileReaderReady,
       {p2Back}
       {showStaticLeft && <mesh position={[-width / 2, 0, leftStackZ]} castShadow receiveShadow><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={left} /></mesh>}
       <mesh position={[width / 2, 0, 0]} castShadow receiveShadow><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={right} /></mesh>
-      {turn && <TurningPage key={turn.key} pages={pages} width={width} turn={turn} onDone={completeTurn} />}
+      {turn && <TurningPage key={turn.key} pages={pages} width={width} turn={turn} duration={returning ? 0.42 : PAGE_TURN_DURATION} onDone={completeTurn} />}
       <mesh position={[0, 0, 0.012]}><planeGeometry args={[0.025, PAGE_HEIGHT]} /><meshBasicMaterial color="#7a6f65" transparent opacity={0.18} /></mesh>
     </group>
   );
 }
 
-function TurningPage({ pages, width, turn, onDone, frontTexture, backTexture }: {
+function TurningPage({ pages, width, turn, onDone, frontTexture, backTexture, duration = PAGE_TURN_DURATION }: {
   pages: THREE.Texture[]; width: number; turn: { source: number; target: number; direction: -1 | 1 }; onDone(): void;
-  frontTexture?: THREE.Texture; backTexture?: THREE.Texture;
+  frontTexture?: THREE.Texture; backTexture?: THREE.Texture; duration?: number;
 }) {
   const pivot = useRef<THREE.Group>(null);
   const frontSurface = useRef<THREE.Mesh>(null);
@@ -260,8 +277,8 @@ function TurningPage({ pages, width, turn, onDone, frontTexture, backTexture }: 
   const back = backTexture ?? (turn.direction > 0 ? pages[turn.target * 2] : pages[turn.target * 2 + 1]);
   useFrame((_, delta) => {
     if (!pivot.current || !frontSurface.current || !backSurface.current) return;
-    elapsed.current = Math.min(PAGE_TURN_DURATION, elapsed.current + delta);
-    const t = elapsed.current / PAGE_TURN_DURATION;
+    elapsed.current = Math.min(duration, elapsed.current + delta);
+    const t = elapsed.current / duration;
     const smooth = t * t * (3 - 2 * t);
     pivot.current.rotation.y = (turn.direction > 0 ? -1 : 1) * Math.PI * smooth;
     [[frontSurface.current, 1], [backSurface.current, -1]].forEach(([surface, sign]) => {
@@ -285,11 +302,11 @@ function TurningPage({ pages, width, turn, onDone, frontTexture, backTexture }: 
   );
 }
 
-function MobileTurningPage({ source, target, width, direction, onDone }: {
-  source: THREE.Texture; target: THREE.Texture; width: number; direction: -1 | 1; onDone(): void;
+function MobileTurningPage({ source, target, width, direction, duration, onDone }: {
+  source: THREE.Texture; target: THREE.Texture; width: number; direction: -1 | 1; duration?: number; onDone(): void;
 }) {
   const turn: PageTurn = { key: 0, source: 0, target: 0, direction };
-  return <group position={[direction > 0 ? -width / 2 : width / 2, 0, 0]}><TurningPage pages={[]} width={width} turn={turn} frontTexture={source} backTexture={target} onDone={onDone} /></group>;
+  return <group position={[direction > 0 ? -width / 2 : width / 2, 0, 0]}><TurningPage pages={[]} width={width} turn={turn} frontTexture={source} backTexture={target} duration={duration} onDone={onDone} /></group>;
 }
 
 function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettled, onPageTurnComplete }: {
@@ -303,7 +320,11 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
   const [detailsReady, setDetailsReady] = useState(false);
   const [mobileReaderReady, setMobileReaderReady] = useState(false);
   const [resetToken, setResetToken] = useState(0);
+  const [pagesReturned, setPagesReturned] = useState(false);
+  const [coverClosed, setCoverClosed] = useState(false);
+  const [returning, setReturning] = useState(false);
   const resetPending = useRef(false);
+  const previousMode = useRef(mode);
   const p1Width = PAGE_HEIGHT * textureAspect(p1);
   const assignCover = useCallback((node: THREE.Group | null) => {
     cover.current = node;
@@ -315,18 +336,26 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
       queueMicrotask(() => {
         setDetailsMounted(true);
         setMobileReaderReady(false);
+        setPagesReturned(false);
+        setCoverClosed(false);
+        setReturning(false);
       });
+    } else if (previousMode.current === 'BOOKLET_FOCUS') {
+      queueMicrotask(() => setReturning(true));
     }
+    previousMode.current = mode;
   }, [mode]);
   const detailsLoaded = useCallback(() => setDetailsReady(true), []);
+  const returnPagesComplete = useCallback(() => setPagesReturned(true), []);
   useFrame((_, delta) => {
     if (!rig.current || !cover.current) return;
     const focused = mode === 'BOOKLET_FOCUS';
+    const holdFocusTransform = focused || (returning && !coverClosed);
     const ease = reduced ? 1 : 1 - Math.exp(-5.5 * delta);
     const targetPosition = new THREE.Vector3(-p1Width / 2, 0, 0.08);
     const targetQuaternion = new THREE.Quaternion();
     const targetScale = new THREE.Vector3(0.84, 0.84, 0.84);
-    if (focused && rig.current.parent) {
+    if (holdFocusTransform && rig.current.parent) {
       rig.current.parent.updateWorldMatrix(true, false);
       const desiredWorld = new THREE.Matrix4().compose(
         new THREE.Vector3(0, mobile ? 0.35 : 0.08, 1.35),
@@ -339,15 +368,19 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
     rig.current.position.lerp(targetPosition, ease);
     rig.current.quaternion.slerp(targetQuaternion, ease);
     rig.current.scale.lerp(targetScale, ease);
-    const coverTarget = focused && detailsReady ? -Math.PI : 0;
+    const coverTarget = (focused || (returning && !pagesReturned)) && detailsReady ? -Math.PI : 0;
     cover.current.rotation.y = THREE.MathUtils.lerp(cover.current.rotation.y, coverTarget, ease);
-    cover.current.position.z = THREE.MathUtils.lerp(cover.current.position.z, focused ? 0 : 0.035, ease);
+    cover.current.position.z = THREE.MathUtils.lerp(cover.current.position.z, coverTarget === -Math.PI ? 0 : 0.035, ease);
     const transformError = rig.current.position.distanceTo(targetPosition)
       + rig.current.quaternion.angleTo(targetQuaternion)
       + rig.current.scale.distanceTo(targetScale);
     const coverError = Math.abs(cover.current.rotation.y - coverTarget)
-      + Math.abs(cover.current.position.z - (focused ? 0 : 0.035));
-    const geometrySettled = transformError < 0.035 && coverError < 0.025 && (!focused || detailsReady);
+      + Math.abs(cover.current.position.z - (coverTarget === -Math.PI ? 0 : 0.035));
+    if (returning && pagesReturned && coverError < 0.025 && !coverClosed) {
+      queueMicrotask(() => setCoverClosed(true));
+    }
+    const geometrySettled = transformError < 0.035 && coverError < 0.025
+      && (!focused || detailsReady) && (!returning || (pagesReturned && coverClosed));
     if (mobile && focused && geometrySettled && !mobileReaderReady) {
       queueMicrotask(() => setMobileReaderReady(true));
     }
@@ -356,17 +389,19 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
       queueMicrotask(() => {
         setResetToken((value) => value + 1);
         setMobileReaderReady(false);
+        setReturning(false);
       });
     }
     // Switch from the physical P2 backside to the centered reader atomically,
     // after the gutter-driven P1 opening has completed.
-    cover.current.visible = !(mobile && focused && mobileReaderReady);
+    const mobileReaderVisible = mobileReaderReady && (focused || (returning && !pagesReturned));
+    cover.current.visible = !(mobile && mobileReaderVisible);
     onSettled(geometrySettled && (!mobile || !focused || mobileReaderReady));
   });
   return (
     <group ref={rig} position={[-p1Width / 2, 0, 0.08]} scale={0.84} onClick={(event) => { event.stopPropagation(); if (mode === 'ALBUM_OPEN') onBooklet(); }}>
-      {detailsMounted && <BookletPages album={album} page={page} mobile={mobile} reduced={reduced} active={mode === 'BOOKLET_FOCUS'} mobileReaderReady={mobileReaderReady && mode === 'BOOKLET_FOCUS'} resetToken={resetToken} coverNode={coverNode} onReady={detailsLoaded} onPageTurnComplete={onPageTurnComplete} />}
-      <group ref={assignCover} position={[0, 0, 0.035]} visible={!(mobile && mode === 'BOOKLET_FOCUS' && mobileReaderReady)}>
+      {detailsMounted && <BookletPages album={album} page={page} mobile={mobile} reduced={reduced} active={mode === 'BOOKLET_FOCUS'} returning={returning && !pagesReturned} mobileReaderReady={mobileReaderReady && (mode === 'BOOKLET_FOCUS' || !pagesReturned)} resetToken={resetToken} coverNode={coverNode} onReady={detailsLoaded} onPageTurnComplete={onPageTurnComplete} onReturnPagesComplete={returnPagesComplete} />}
+      <group ref={assignCover} position={[0, 0, 0.035]} visible={!(mobile && mobileReaderReady && (mode === 'BOOKLET_FOCUS' || !pagesReturned))}>
         <mesh position={[p1Width / 2, 0, 0]} castShadow><planeGeometry args={[p1Width, PAGE_HEIGHT]} /><PaperMaterial texture={p1} /></mesh>
       </group>
     </group>

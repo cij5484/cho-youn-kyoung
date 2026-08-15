@@ -251,7 +251,7 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
             />
           </Suspense>
         </div>
-        {mode === 'CLOSED' && (
+        {mode === 'CLOSED' && !sceneTransitioning && (
           <div className="ji-detail__intro">
             <Link to="/works" className="ji-detail__back">← BACK TO WORKS</Link>
             <p>ALBUM · {album.year}</p>
@@ -262,14 +262,14 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
             <button type="button" disabled={sceneTransitioning} onClick={() => { setSceneTransitioning(true); setMode('ALBUM_OPEN'); }}>OPEN ALBUM <span>→</span></button>
           </div>
         )}
-        {mode === 'ALBUM_OPEN' && (
+        {mode === 'ALBUM_OPEN' && !sceneTransitioning && (
           <div className="ji-detail__mode-actions">
             <button type="button" disabled={sceneTransitioning} onClick={openBooklet}>BOOKLET</button>
             <button type="button" disabled={sceneTransitioning} onClick={() => { setSceneTransitioning(true); setMode('PLAYER_FOCUS'); }}>CD / TRACKS</button>
             <button type="button" disabled={sceneTransitioning} onClick={() => { setSceneTransitioning(true); setMode('CLOSED'); }}>CLOSE ALBUM</button>
           </div>
         )}
-        {mode === 'BOOKLET_FOCUS' && (
+        {mode === 'BOOKLET_FOCUS' && !sceneTransitioning && (
           <BookletNavigation
             mobile={mobile}
             mobilePage={mobilePage}
@@ -280,7 +280,7 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
             onPrevious={previous}
           />
         )}
-        {mode === 'PLAYER_FOCUS' && (
+        {mode === 'PLAYER_FOCUS' && !sceneTransitioning && (
           <PlayerPanel tracks={tracks} player={player} onBack={backToAlbum} disabled={sceneTransitioning} />
         )}
       </section>
