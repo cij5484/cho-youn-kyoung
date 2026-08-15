@@ -165,6 +165,7 @@ HOME RECENT WORKS에는 확정 `releaseDate`가 있거나 위의 `coming-soon` �
 - Booklet focus 진입은 **closed P1 lift → closed P1 focus 이동/확대 → 위치 settle 후 cover open**의 순차 transition으로 실행한다. 큰 cover가 화면을 가로질러 이동하는 동안 펼치지 않는다.
 - BOOKLET_FOCUS에서도 open digipack과 오른쪽 tray/CD를 축소·후퇴한 배경 context로 남겨, 별도 문서 viewer가 아니라 앨범에서 booklet을 꺼낸 공간 관계를 유지한다.
 - page turn은 page 전체 pivot을 rigid 180° 회전하는 방식으로 만들지 않는다. segmented plane의 gutter column부터 outer edge까지 지연된 local progress를 적용하고 X 이동과 작은 Z curl을 변형해 종이처럼 넘긴다. reverse turn에도 같은 deformation을 사용하며 카메라 쪽 과도한 돌출을 금지한다.
+- turning page의 front/back은 동일한 deformed sheet shape를 공유한다. 두 면은 paper thickness만큼만 떨어뜨리고 `FrontSide`/`BackSide`를 각각 사용하며, backside 전용 UV를 적용해 겹침·flicker·mirror를 방지한다.
 - CD 본체와 label은 거의 불투명하며 label opacity는 1이다. 약한 반투명 plastic은 outer rim과 center-hole rim에만 사용한다. 종이 interior 위에는 별도 frosted tray plate, shallow recess, guide, hub와 edge를 둔다.
 - interior paper, tray, booklet page는 shadow를 받고 booklet/CD는 그림자를 만든다. full-stage 뒤에는 canvas 경계보다 넓은 저농도 `shadowMaterial` receiver를 둔다.
 - PLAYER_FOCUS desktop에서는 3D album/CD 영역과 오른쪽 tracks panel의 viewport 영역을 분리하고 충분한 시각적 gap을 둔다. tracks UI가 CD나 tray 위를 덮도록 배치하지 않는다.

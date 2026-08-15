@@ -278,6 +278,7 @@ function TurningPage({ pages, width, turn, onDone, frontTexture, backTexture, du
   const backSurface = useRef<THREE.Mesh>(null);
   const elapsed = useRef(0);
   const done = useRef(false);
+  const arc = useRef({ x: new Float32Array(29), z: new Float32Array(29) });
   const front = frontTexture ?? (turn.direction > 0 ? pages[turn.source * 2 + 1] : pages[turn.source * 2]);
   const back = backTexture ?? (turn.direction > 0 ? pages[turn.target * 2] : pages[turn.target * 2 + 1]);
   useFrame((_, delta) => {
@@ -285,17 +286,33 @@ function TurningPage({ pages, width, turn, onDone, frontTexture, backTexture, du
     elapsed.current = Math.min(duration, elapsed.current + delta);
     const t = elapsed.current / duration;
     const side = turn.direction > 0 ? 1 : -1;
-    [[frontSurface.current, 1], [backSurface.current, -1]].forEach(([surface, sign]) => {
-      const mesh = surface as THREE.Mesh;
+    const segmentLength = width / 28;
+    const arcX = arc.current.x;
+    const arcZ = arc.current.z;
+    arcX[0] = 0;
+    arcZ[0] = 0;
+    // Integrating each column's tangent preserves the sheet's width while the
+    // gutter leads and the outer edge follows. It avoids collapsing every
+    // vertex through x=0 as a linear horizontal reflection would.
+    for (let column = 1; column <= 28; column += 1) {
+      const previousNormalized = (column - 1) / 28;
+      const normalized = column / 28;
+      const previousLocal = THREE.MathUtils.clamp((t - previousNormalized * 0.2) / 0.8, 0, 1);
+      const local = THREE.MathUtils.clamp((t - normalized * 0.2) / 0.8, 0, 1);
+      const previousEase = previousLocal * previousLocal * (3 - 2 * previousLocal);
+      const paperEase = local * local * (3 - 2 * local);
+      const tangentAngle = Math.PI * (previousEase + paperEase) / 2;
+      arcX[column] = arcX[column - 1] + Math.cos(tangentAngle) * segmentLength;
+      arcZ[column] = arcZ[column - 1] + Math.sin(tangentAngle) * segmentLength * 0.16;
+    }
+    [frontSurface.current, backSurface.current].forEach((mesh) => {
       const positions = mesh.geometry.attributes.position as THREE.BufferAttribute;
       for (let i = 0; i < positions.count; i += 1) {
         const originalX = (mesh.geometry.userData.original as Float32Array)[i];
         const normalized = THREE.MathUtils.clamp(side > 0 ? originalX / width + 0.5 : 0.5 - originalX / width, 0, 1);
-        const local = THREE.MathUtils.clamp((t - normalized * 0.2) / 0.8, 0, 1);
-        const paperEase = local * local * (3 - 2 * local);
-        const distance = normalized * width;
-        positions.setX(i, side * distance * (1 - 2 * paperEase));
-        positions.setZ(i, Math.sin(Math.PI * paperEase) * Math.sin(Math.PI * normalized) * 0.055 * (sign as number));
+        const column = Math.round(normalized * 28);
+        positions.setX(i, side * arcX[column]);
+        positions.setZ(i, arcZ[column]);
       }
       positions.needsUpdate = true;
     });
@@ -304,10 +321,10 @@ function TurningPage({ pages, width, turn, onDone, frontTexture, backTexture, du
   return (
     <group position={[0, 0, 0.025]}>
       <mesh ref={(node) => { frontSurface.current = node; if (node && !node.geometry.userData.original) node.geometry.userData.original = Float32Array.from(Array.from({ length: node.geometry.attributes.position.count }, (_, i) => (node.geometry.attributes.position as THREE.BufferAttribute).getX(i))); }} castShadow>
-        <planeGeometry args={[width, PAGE_HEIGHT, 28, 3]} /><meshStandardMaterial map={front} roughness={0.96} side={THREE.DoubleSide} />
+        <planeGeometry args={[width, PAGE_HEIGHT, 28, 3]} /><meshStandardMaterial map={front} roughness={0.96} side={THREE.FrontSide} />
       </mesh>
-      <mesh ref={(node) => { backSurface.current = node; if (node && !node.geometry.userData.original) node.geometry.userData.original = Float32Array.from(Array.from({ length: node.geometry.attributes.position.count }, (_, i) => (node.geometry.attributes.position as THREE.BufferAttribute).getX(i))); }} position={[0, 0, -0.002]} castShadow>
-        <planeGeometry args={[width, PAGE_HEIGHT, 28, 3]} /><meshStandardMaterial map={back} roughness={0.96} side={THREE.DoubleSide} />
+      <mesh ref={(node) => { backSurface.current = node; if (node && !node.geometry.userData.original) { node.geometry.userData.original = Float32Array.from(Array.from({ length: node.geometry.attributes.position.count }, (_, i) => (node.geometry.attributes.position as THREE.BufferAttribute).getX(i))); const uv = node.geometry.attributes.uv as THREE.BufferAttribute; for (let i = 0; i < uv.count; i += 1) uv.setX(i, 1 - uv.getX(i)); uv.needsUpdate = true; } }} position={[0, 0, -0.002]} castShadow>
+        <planeGeometry args={[width, PAGE_HEIGHT, 28, 3]} /><meshStandardMaterial map={back} roughness={0.96} side={THREE.BackSide} />
       </mesh>
     </group>
   );
@@ -512,7 +529,11 @@ function Scene(props: ExperienceProps) {
       openingPhaseRef.current = 'HINGE_OPEN';
       setOpeningPhase('HINGE_OPEN');
     }
+    const openingFromClosedComplete = closed || openingPhaseRef.current === 'IDLE'
+      || (openingPhaseRef.current === 'HINGE_OPEN'
+        && Math.abs(hinge.current.rotation.y - OPEN_ANGLE) < 0.025);
     const complete = aligned.current
+      && openingFromClosedComplete
       && Math.abs(hinge.current.rotation.y - targetHinge) < 0.025
       && packageError < 0.04
       && bookletSettled.current
