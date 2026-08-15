@@ -1,61 +1,562 @@
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import type { ThreeEvent } from '@react-three/fiber';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import type { Album } from '../../../data/albums';
 import { assetUrl } from '../../../utils/assetUrl';
 
 export type ExperienceMode = 'CLOSED' | 'ALBUM_OPEN' | 'BOOKLET_FOCUS' | 'PLAYER_FOCUS';
-type Props = { album: Album; mode: ExperienceMode; page: number; playing: boolean; reduced: boolean; onOpen(): void; onBooklet(): void; onPlayer(): void };
 
-function ArticulatedAlbum({ album, mode, page, playing, reduced, onOpen, onBooklet, onPlayer }: Props) {
-  const hero = album.albumHero!; const detail = album.detailExperience!; const pages = album.booklet!.previewImages;
-  const urls: string[] = [hero.textures.front!, hero.textures.back!, hero.textures.spineLeft!, detail.interior.bookletPanel, detail.interior.trayPanel, album.cdLabelImage!, ...pages.map((p) => p.src)].map((url) => assetUrl(url!)!);
-  const textures = useLoader(THREE.TextureLoader, urls) as THREE.Texture[];
-  textures.forEach((texture) => { texture.colorSpace = THREE.SRGBColorSpace; texture.anisotropy = 8; });
-  const root = useRef<THREE.Group>(null); const hinge = useRef<THREE.Group>(null); const disc = useRef<THREE.Group>(null);
-  const dragging = useRef<{ x: number; y: number; moved: number } | undefined>(undefined); const rotation = useRef({ x: -0.12, y: 0.12 }); const auto = useRef(true);
-  const discShape = useMemo(() => { const shape = new THREE.Shape(); shape.absarc(0, 0, .82, 0, Math.PI * 2); const hole = new THREE.Path(); hole.absarc(0, 0, .13, 0, Math.PI * 2); shape.holes.push(hole); return shape; }, []);
-  useFrame((_, delta) => {
-    if (!root.current || !hinge.current || !disc.current) return;
-    const open = mode !== 'CLOSED'; const ease = reduced ? 1 : 1 - Math.exp(-5 * delta);
-    if (!open && auto.current && !reduced) rotation.current.y += delta * Math.PI * 2 / 30;
-    const focusX = mode === 'BOOKLET_FOCUS' ? 1.2 : mode === 'PLAYER_FOCUS' ? -1 : 0;
-    root.current.position.x = THREE.MathUtils.lerp(root.current.position.x, focusX, ease);
-    root.current.rotation.x = THREE.MathUtils.lerp(root.current.rotation.x, open ? -0.14 : rotation.current.x, ease);
-    root.current.rotation.y = THREE.MathUtils.lerp(root.current.rotation.y, open ? 0 : rotation.current.y, ease);
-    root.current.scale.setScalar(THREE.MathUtils.lerp(root.current.scale.x, mode === 'BOOKLET_FOCUS' ? .82 : open ? .9 : 1, ease));
-    hinge.current.rotation.y = THREE.MathUtils.lerp(hinge.current.rotation.y, open ? -Math.PI * .88 : 0, ease);
-    disc.current.position.z = THREE.MathUtils.lerp(disc.current.position.z, mode === 'PLAYER_FOCUS' ? .23 : .13, ease);
-    if (playing && !reduced) disc.current.rotation.z -= delta * Math.PI * 2 / 18;
+type ExperienceProps = {
+  album: Album;
+  mode: ExperienceMode;
+  page: number;
+  pageDirection: -1 | 0 | 1;
+  mobile: boolean;
+  playing: boolean;
+  reduced: boolean;
+  onOpen(): void;
+  onBooklet(): void;
+  onPlayer(): void;
+};
+
+type LoadedTextures = {
+  front: THREE.Texture;
+  back: THREE.Texture;
+  spine: THREE.Texture;
+  interiorBooklet: THREE.Texture;
+  interiorTray: THREE.Texture;
+  cdLabel: THREE.Texture;
+  booklet: THREE.Texture[];
+};
+
+const PANEL_WIDTH = 2.56;
+const PANEL_HEIGHT = 2.56;
+const PANEL_CENTER_X = PANEL_WIDTH / 2;
+const OPEN_ANGLE = THREE.MathUtils.degToRad(158);
+const PAGE_WIDTH = 1.72;
+const PAGE_HEIGHT = 2.2;
+const PAGE_TURN_DURATION = 0.82;
+
+function useAlbumTextures(album: Album): LoadedTextures {
+  const hero = album.albumHero!;
+  const detail = album.detailExperience!;
+  const pageUrls = album.booklet!.previewImages.map((image) => image.src);
+  const urls = [
+    hero.textures.front!,
+    hero.textures.back!,
+    hero.textures.spineLeft!,
+    detail.interior.bookletPanel,
+    detail.interior.trayPanel,
+    album.cdLabelImage!,
+    ...pageUrls,
+  ].map((url) => assetUrl(url)!);
+  const loaded = useLoader(THREE.TextureLoader, urls) as THREE.Texture[];
+
+  loaded.forEach((texture) => {
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = Math.min(8, texture.anisotropy || 8);
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.generateMipmaps = true;
   });
-  const down = (e: { clientX: number; clientY: number; stopPropagation(): void }) => { e.stopPropagation(); auto.current = false; dragging.current = { x: e.clientX, y: e.clientY, moved: 0 }; };
-  const move = (e: { clientX: number; clientY: number }) => { const d = dragging.current; if (!d || mode !== 'CLOSED') return; const dx=e.clientX-d.x,dy=e.clientY-d.y; d.moved += Math.hypot(dx,dy); d.x=e.clientX;d.y=e.clientY;rotation.current.y+=dx*.008;rotation.current.x=THREE.MathUtils.clamp(rotation.current.x+dy*.006,-.48,.48); };
-  const up = () => { if (dragging.current && dragging.current.moved < 7 && mode === 'CLOSED') onOpen(); dragging.current=undefined; };
-  const mat = (map: THREE.Texture) => <meshStandardMaterial map={map} roughness={.9} />;
-  return <group ref={root} rotation={[-.12,.12,0]} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
-    <group position={[1.32,0,0]}>
-      <mesh position={[0,0,-.04]} castShadow>{<boxGeometry args={[2.55,2.55,.08]}/>} {mat(textures[1])}</mesh>
-      <mesh position={[0,0,.015]}>{<planeGeometry args={[2.48,2.48]}/>} {mat(textures[4])}</mesh>
-      <mesh position={[0,0,.09]}><boxGeometry args={[2.12,2.12,.05]}/><meshPhysicalMaterial color="#dedbd0" transparent opacity={mode==='PLAYER_FOCUS'?.2:.42} roughness={.65} transmission={.08}/></mesh>
-      <mesh position={[0,0,.125]}><ringGeometry args={[.83,.94,64]}/><meshPhysicalMaterial color="#e5e2d8" transparent opacity={.35} roughness={.7}/></mesh>
-      <mesh position={[0,0,.15]}><cylinderGeometry args={[.16,.16,.08,32]}/><meshPhysicalMaterial color="#ddd9cf" transparent opacity={.5} roughness={.6}/></mesh>
-      <group ref={disc} position={[0,0,.13]} rotation={[0,0,0]} onClick={(e)=>{e.stopPropagation();onPlayer();}}>
-        <mesh rotation={[Math.PI/2,0,0]} castShadow><extrudeGeometry args={[discShape,{depth:.035,bevelEnabled:false,curveSegments:64}]}/><meshPhysicalMaterial color="#dedede" transparent opacity={.82} roughness={.4}/></mesh>
-        <mesh position={[0,0,.045]}><ringGeometry args={[.15,.78,64]}/><meshStandardMaterial map={textures[5]} roughness={.55} transparent/></mesh>
-      </group>
-    </group>
-    <group ref={hinge} position={[0,0,.02]}>
-      <mesh position={[-1.32,0,0]} castShadow><boxGeometry args={[2.55,2.55,.08]}/>{mat(textures[0])}</mesh>
-      <mesh position={[-1.32,0,.046]}><planeGeometry args={[2.48,2.48]}/>{mat(textures[3])}</mesh>
-      <mesh position={[-1.32,0,.11]} onClick={(e)=>{e.stopPropagation();onBooklet();}} castShadow><boxGeometry args={[1.75,2.18,.055]}/>{mat(mode==='BOOKLET_FOCUS'?textures[page+6]:textures[6])}</mesh>
-      <mesh position={[-.015,0,0]} rotation={[0,Math.PI/2,0]}><planeGeometry args={[.1,2.55]}/>{mat(textures[2])}</mesh>
-    </group>
-  </group>;
+
+  return {
+    front: loaded[0],
+    back: loaded[1],
+    spine: loaded[2],
+    interiorBooklet: loaded[3],
+    interiorTray: loaded[4],
+    cdLabel: loaded[5],
+    booklet: loaded.slice(6),
+  };
 }
 
-export default function AlbumDetailExperience3D(props: Props) {
-  return <Canvas dpr={[1,2]} camera={{ position:[0,0,7], fov:42 }} shadows aria-label="열고 탐색할 수 있는 지영희류 3D 디지팩">
-    <ambientLight intensity={1.5}/><directionalLight position={[4,6,7]} intensity={2.2} castShadow/>
-    <ArticulatedAlbum {...props}/>
-  </Canvas>;
+function PrintedSurface({ texture, opacity = 1 }: { texture: THREE.Texture; opacity?: number }) {
+  return (
+    <meshStandardMaterial
+      map={texture}
+      metalness={0}
+      opacity={opacity}
+      roughness={0.9}
+      transparent={opacity < 1}
+    />
+  );
+}
+
+function CdDisc({
+  label,
+  mode,
+  playing,
+  reduced,
+  onPlayer,
+}: {
+  label: THREE.Texture;
+  mode: ExperienceMode;
+  playing: boolean;
+  reduced: boolean;
+  onPlayer(): void;
+}) {
+  const disc = useRef<THREE.Group>(null);
+  const angularVelocity = useRef(0);
+  const shape = useMemo(() => {
+    const result = new THREE.Shape();
+    result.absarc(0, 0, 0.84, 0, Math.PI * 2);
+    const centerHole = new THREE.Path();
+    centerHole.absarc(0, 0, 0.13, 0, Math.PI * 2);
+    result.holes.push(centerHole);
+    return result;
+  }, []);
+
+  useFrame((_, delta) => {
+    if (!disc.current) return;
+    const easing = reduced ? 1 : 1 - Math.exp(-6 * delta);
+    const targetZ = mode === 'PLAYER_FOCUS' ? 0.27 : 0.15;
+    disc.current.position.z = THREE.MathUtils.lerp(disc.current.position.z, targetZ, easing);
+
+    const targetVelocity = playing && !reduced ? (Math.PI * 2) / 18 : 0;
+    angularVelocity.current = THREE.MathUtils.lerp(
+      angularVelocity.current,
+      targetVelocity,
+      1 - Math.exp(-3.5 * delta),
+    );
+    disc.current.rotation.z -= angularVelocity.current * delta;
+  });
+
+  return (
+    <group
+      ref={disc}
+      position={[0, 0, 0.15]}
+      onClick={(event) => {
+        event.stopPropagation();
+        onPlayer();
+      }}
+    >
+      <mesh castShadow>
+        <extrudeGeometry
+          args={[shape, { depth: 0.035, bevelEnabled: false, curveSegments: 64 }]}
+        />
+        <meshPhysicalMaterial
+          color="#deddd8"
+          metalness={0}
+          opacity={0.84}
+          roughness={0.42}
+          transparent
+        />
+      </mesh>
+      <mesh position={[0, 0, 0.038]}>
+        <ringGeometry args={[0.155, 0.78, 64]} />
+        <meshStandardMaterial map={label} metalness={0} roughness={0.58} transparent />
+      </mesh>
+      <mesh position={[0, 0, 0.039]}>
+        <ringGeometry args={[0.13, 0.155, 64]} />
+        <meshPhysicalMaterial color="#e9e7df" opacity={0.64} roughness={0.5} transparent />
+      </mesh>
+    </group>
+  );
+}
+
+function CdTray({
+  textures,
+  mode,
+  playing,
+  reduced,
+  onPlayer,
+}: {
+  textures: LoadedTextures;
+  mode: ExperienceMode;
+  playing: boolean;
+  reduced: boolean;
+  onPlayer(): void;
+}) {
+  const tray = useRef<THREE.Group>(null);
+  useFrame((_, delta) => {
+    if (!tray.current) return;
+    const easing = reduced ? 1 : 1 - Math.exp(-5 * delta);
+    const targetScale = mode === 'BOOKLET_FOCUS' ? 0.82 : 1;
+    tray.current.scale.setScalar(THREE.MathUtils.lerp(tray.current.scale.x, targetScale, easing));
+    tray.current.position.z = THREE.MathUtils.lerp(
+      tray.current.position.z,
+      mode === 'BOOKLET_FOCUS' ? -0.45 : 0,
+      easing,
+    );
+  });
+
+  const trayOpacity = mode === 'PLAYER_FOCUS' ? 0.2 : mode === 'BOOKLET_FOCUS' ? 0.18 : 0.42;
+  return (
+    <group ref={tray} position={[PANEL_CENTER_X, 0, 0]}>
+      <mesh position={[0, 0, -0.04]} castShadow>
+        <boxGeometry args={[PANEL_WIDTH, PANEL_HEIGHT, 0.08]} />
+        <PrintedSurface texture={textures.back} />
+      </mesh>
+      <mesh position={[0, 0, 0.012]}>
+        <planeGeometry args={[2.48, 2.48]} />
+        <PrintedSurface texture={textures.interiorTray} />
+      </mesh>
+      <mesh position={[0, 0, 0.085]}>
+        <boxGeometry args={[2.12, 2.12, 0.045]} />
+        <meshPhysicalMaterial
+          color="#dedbd0"
+          metalness={0}
+          opacity={trayOpacity}
+          roughness={0.68}
+          transparent
+          transmission={0.05}
+        />
+      </mesh>
+      <mesh position={[0, 0, 0.12]}>
+        <ringGeometry args={[0.85, 0.94, 64]} />
+        <meshPhysicalMaterial color="#e5e2d8" opacity={trayOpacity} roughness={0.72} transparent />
+      </mesh>
+      <mesh position={[0, 0, 0.14]}>
+        <cylinderGeometry args={[0.16, 0.16, 0.07, 32]} />
+        <meshPhysicalMaterial color="#ddd9cf" opacity={trayOpacity + 0.1} roughness={0.65} transparent />
+      </mesh>
+      <CdDisc
+        label={textures.cdLabel}
+        mode={mode}
+        onPlayer={onPlayer}
+        playing={playing}
+        reduced={reduced}
+      />
+    </group>
+  );
+}
+
+function MovingFrontPanel({
+  textures,
+  mode,
+  reduced,
+  onBooklet,
+}: {
+  textures: LoadedTextures;
+  mode: ExperienceMode;
+  reduced: boolean;
+  onBooklet(): void;
+}) {
+  const hinge = useRef<THREE.Group>(null);
+  useFrame((_, delta) => {
+    if (!hinge.current) return;
+    const target = mode === 'CLOSED' ? 0 : OPEN_ANGLE;
+    const easing = reduced ? 1 : 1 - Math.exp(-5 * delta);
+    hinge.current.rotation.y = THREE.MathUtils.lerp(hinge.current.rotation.y, target, easing);
+  });
+
+  return (
+    <group ref={hinge}>
+      <group position={[PANEL_CENTER_X, 0, 0.085]}>
+        <mesh castShadow>
+          <boxGeometry args={[PANEL_WIDTH, PANEL_HEIGHT, 0.08]} />
+          <meshStandardMaterial color="#dfd9ce" metalness={0} roughness={0.94} />
+        </mesh>
+        <mesh position={[0, 0, 0.041]}>
+          <planeGeometry args={[2.5, 2.5]} />
+          <PrintedSurface texture={textures.front} />
+        </mesh>
+        <mesh position={[0, 0, -0.041]} rotation={[0, Math.PI, 0]}>
+          <planeGeometry args={[2.5, 2.5]} />
+          <PrintedSurface texture={textures.interiorBooklet} />
+        </mesh>
+        {mode === 'ALBUM_OPEN' && (
+          <group
+            position={[0, 0, -0.09]}
+            rotation={[0, Math.PI, 0]}
+            onClick={(event) => {
+              event.stopPropagation();
+              onBooklet();
+            }}
+          >
+            <mesh castShadow>
+              <boxGeometry args={[1.75, 2.18, 0.055]} />
+              <meshStandardMaterial map={textures.booklet[0]} metalness={0} roughness={0.92} />
+            </mesh>
+          </group>
+        )}
+      </group>
+      <mesh position={[0.001, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
+        <planeGeometry args={[0.08, PANEL_HEIGHT]} />
+        <PrintedSurface texture={textures.spine} />
+      </mesh>
+    </group>
+  );
+}
+
+function CurledTurningPage({
+  texture,
+  direction,
+  reduced,
+  turnKey,
+}: {
+  texture: THREE.Texture;
+  direction: -1 | 1;
+  reduced: boolean;
+  turnKey: number;
+}) {
+  const pivot = useRef<THREE.Group>(null);
+  const page = useRef<THREE.Mesh>(null);
+  const elapsed = useRef(0);
+
+  useEffect(() => {
+    elapsed.current = 0;
+  }, [turnKey]);
+
+  useFrame((_, delta) => {
+    if (!pivot.current || !page.current) return;
+    elapsed.current = Math.min(PAGE_TURN_DURATION, elapsed.current + delta);
+    const linear = reduced ? 1 : elapsed.current / PAGE_TURN_DURATION;
+    const progress = linear * linear * (3 - 2 * linear);
+    pivot.current.rotation.y = direction > 0 ? -Math.PI * progress : Math.PI * (1 - progress);
+
+    const positions = page.current.geometry.attributes.position as THREE.BufferAttribute;
+    for (let index = 0; index < positions.count; index += 1) {
+      const x = positions.getX(index);
+      const normalized = Math.abs(x) / PAGE_WIDTH;
+      const curl = Math.sin(progress * Math.PI) * Math.sin(normalized * Math.PI) * 0.09;
+      positions.setZ(index, curl);
+    }
+    positions.needsUpdate = true;
+  });
+
+  const xOffset = direction > 0 ? PAGE_WIDTH / 2 : -PAGE_WIDTH / 2;
+  return (
+    <group ref={pivot} position={[0, 0, 0.035]}>
+      <mesh ref={page} position={[xOffset, 0, 0]}>
+        <planeGeometry args={[PAGE_WIDTH, PAGE_HEIGHT, 18, 4]} />
+        <meshStandardMaterial map={texture} roughness={0.94} side={THREE.DoubleSide} />
+      </mesh>
+    </group>
+  );
+}
+
+function BookletFocus({
+  textures,
+  page,
+  pageDirection,
+  mobile,
+  mode,
+  reduced,
+}: {
+  textures: LoadedTextures;
+  page: number;
+  pageDirection: -1 | 0 | 1;
+  mobile: boolean;
+  mode: ExperienceMode;
+  reduced: boolean;
+}) {
+  const root = useRef<THREE.Group>(null);
+  const previousPage = useRef(page);
+  const [turn, setTurn] = useState({ key: 0, texture: textures.booklet[2] });
+
+  useEffect(() => {
+    if (previousPage.current === page) return;
+    const oldPage = previousPage.current;
+    const texture = mobile
+      ? textures.booklet[oldPage + 1]
+      : textures.booklet[oldPage * 2 + (pageDirection > 0 ? 2 : 1)];
+    previousPage.current = page;
+    setTurn((current) => ({ key: current.key + 1, texture }));
+  }, [mobile, page, pageDirection, textures.booklet]);
+
+  useFrame((_, delta) => {
+    if (!root.current) return;
+    const focused = mode === 'BOOKLET_FOCUS';
+    const easing = reduced ? 1 : 1 - Math.exp(-5 * delta);
+    const targetScale = focused ? (mobile ? 1.42 : 1.18) : 0.55;
+    root.current.scale.setScalar(THREE.MathUtils.lerp(root.current.scale.x, targetScale, easing));
+    root.current.position.x = THREE.MathUtils.lerp(root.current.position.x, focused ? 0 : -1.1, easing);
+    root.current.position.y = THREE.MathUtils.lerp(root.current.position.y, focused ? 0.08 : -0.05, easing);
+    root.current.position.z = THREE.MathUtils.lerp(root.current.position.z, focused ? 1.25 : -0.5, easing);
+  });
+
+  if (mode !== 'BOOKLET_FOCUS') return null;
+
+  if (mobile) {
+    const texture = textures.booklet[page + 1]; // P2 through P7; P1 stays on the album panel.
+    return (
+      <group ref={root} position={[-1.1, -0.05, -0.5]} scale={0.55}>
+        <mesh castShadow>
+          <planeGeometry args={[PAGE_WIDTH, PAGE_HEIGHT, 18, 4]} />
+          <meshStandardMaterial map={texture} metalness={0} roughness={0.94} />
+        </mesh>
+        {pageDirection !== 0 && !reduced && (
+          <CurledTurningPage
+            direction={pageDirection}
+            reduced={reduced}
+            texture={turn.texture}
+            turnKey={turn.key}
+          />
+        )}
+      </group>
+    );
+  }
+
+  const spreads = [
+    [textures.booklet[1], textures.booklet[2]], // P2 / P3
+    [textures.booklet[3], textures.booklet[4]], // P4 / P5
+    [textures.booklet[5], textures.booklet[6]], // P6 / P7
+  ] as const;
+  const [leftPage, rightPage] = spreads[page];
+  return (
+    <group ref={root} position={[-1.1, -0.05, -0.5]} scale={0.55}>
+      <mesh position={[-PAGE_WIDTH / 2, 0, 0]} castShadow>
+        <planeGeometry args={[PAGE_WIDTH, PAGE_HEIGHT, 18, 4]} />
+        <meshStandardMaterial map={leftPage} metalness={0} roughness={0.94} />
+      </mesh>
+      <mesh position={[PAGE_WIDTH / 2, 0, 0]} castShadow>
+        <planeGeometry args={[PAGE_WIDTH, PAGE_HEIGHT, 18, 4]} />
+        <meshStandardMaterial map={rightPage} metalness={0} roughness={0.94} />
+      </mesh>
+      {pageDirection !== 0 && !reduced && (
+        <CurledTurningPage
+          direction={pageDirection}
+          reduced={reduced}
+          texture={turn.texture}
+          turnKey={turn.key}
+        />
+      )}
+    </group>
+  );
+}
+
+function ArticulatedAlbum(props: ExperienceProps) {
+  const { album, mode, page, pageDirection, mobile, playing, reduced, onOpen, onBooklet, onPlayer } = props;
+  const textures = useAlbumTextures(album);
+  const packageRig = useRef<THREE.Group>(null);
+  const drag = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    lastX: number;
+    lastY: number;
+    movement: number;
+    canvas: HTMLCanvasElement;
+  } | null>(null);
+  const rotation = useRef({ x: -0.12, y: 0.12 });
+  const autoRotating = useRef(true);
+
+  const finishDrag = (pointerId: number, openOnClick: boolean) => {
+    const active = drag.current;
+    if (!active || active.pointerId !== pointerId) return;
+    if (active.canvas.hasPointerCapture(pointerId)) active.canvas.releasePointerCapture(pointerId);
+    if (openOnClick && active.movement < 7 && mode === 'CLOSED') onOpen();
+    drag.current = null;
+  };
+
+  useEffect(() => {
+    const end = (event: PointerEvent) => finishDrag(event.pointerId, event.type === 'pointerup');
+    window.addEventListener('pointerup', end);
+    window.addEventListener('pointercancel', end);
+    return () => {
+      window.removeEventListener('pointerup', end);
+      window.removeEventListener('pointercancel', end);
+      drag.current = null;
+    };
+  });
+
+  useFrame((_, delta) => {
+    if (!packageRig.current) return;
+    const closed = mode === 'CLOSED';
+    if (closed && autoRotating.current && !reduced) {
+      rotation.current.y += (delta * Math.PI * 2) / 30;
+    }
+    const easing = reduced ? 1 : 1 - Math.exp(-5 * delta);
+    const targetX = mode === 'BOOKLET_FOCUS' ? 1.55 : mode === 'PLAYER_FOCUS' ? -0.82 : 0;
+    const targetZ = mode === 'BOOKLET_FOCUS' ? -1.15 : mode === 'PLAYER_FOCUS' ? 0.25 : 0;
+    const targetScale = mode === 'BOOKLET_FOCUS' ? 0.66 : mode === 'PLAYER_FOCUS' ? 1.02 : 0.9;
+    packageRig.current.position.x = THREE.MathUtils.lerp(packageRig.current.position.x, targetX, easing);
+    packageRig.current.position.z = THREE.MathUtils.lerp(packageRig.current.position.z, targetZ, easing);
+    packageRig.current.scale.setScalar(THREE.MathUtils.lerp(packageRig.current.scale.x, targetScale, easing));
+    packageRig.current.rotation.x = THREE.MathUtils.lerp(
+      packageRig.current.rotation.x,
+      closed ? rotation.current.x : -0.12,
+      easing,
+    );
+    packageRig.current.rotation.y = THREE.MathUtils.lerp(
+      packageRig.current.rotation.y,
+      closed ? rotation.current.y : 0,
+      easing,
+    );
+  });
+
+  const handlePointerDown = (event: ThreeEvent<PointerEvent>) => {
+    if (mode !== 'CLOSED') return;
+    event.stopPropagation();
+    autoRotating.current = false;
+    const canvas = event.nativeEvent.currentTarget as HTMLCanvasElement;
+    canvas.setPointerCapture(event.pointerId);
+    drag.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      lastX: event.clientX,
+      lastY: event.clientY,
+      movement: 0,
+      canvas,
+    };
+  };
+
+  const handlePointerMove = (event: ThreeEvent<PointerEvent>) => {
+    const active = drag.current;
+    if (!active || active.pointerId !== event.pointerId || mode !== 'CLOSED') return;
+    const dx = event.clientX - active.lastX;
+    const dy = event.clientY - active.lastY;
+    active.lastX = event.clientX;
+    active.lastY = event.clientY;
+    active.movement = Math.hypot(event.clientX - active.startX, event.clientY - active.startY);
+    rotation.current.y += dx * 0.008;
+    rotation.current.x = THREE.MathUtils.clamp(rotation.current.x + dy * 0.006, -0.48, 0.48);
+  };
+
+  return (
+    <>
+      <group
+        ref={packageRig}
+        rotation={[-0.12, 0.12, 0]}
+        scale={0.9}
+        onLostPointerCapture={() => {
+          drag.current = null;
+        }}
+        onPointerCancel={(event) => finishDrag(event.pointerId, false)}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={(event) => finishDrag(event.pointerId, true)}
+      >
+        <CdTray
+          mode={mode}
+          onPlayer={onPlayer}
+          playing={playing}
+          reduced={reduced}
+          textures={textures}
+        />
+        <MovingFrontPanel
+          mode={mode}
+          onBooklet={onBooklet}
+          reduced={reduced}
+          textures={textures}
+        />
+      </group>
+      <BookletFocus
+        mobile={mobile}
+        mode={mode}
+        page={page}
+        pageDirection={pageDirection}
+        reduced={reduced}
+        textures={textures}
+      />
+    </>
+  );
+}
+
+export default function AlbumDetailExperience3D(props: ExperienceProps) {
+  return (
+    <Canvas
+      aria-label="열고 탐색할 수 있는 지영희류 3D 디지팩"
+      camera={{ position: [0, 0, 7], fov: 42 }}
+      dpr={[1, 2]}
+      shadows
+    >
+      <ambientLight intensity={1.5} />
+      <directionalLight castShadow intensity={2.2} position={[4, 6, 7]} />
+      <ArticulatedAlbum {...props} />
+    </Canvas>
+  );
 }
