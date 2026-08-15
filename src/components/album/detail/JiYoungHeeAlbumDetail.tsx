@@ -155,23 +155,19 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
 
   const previous = useCallback(() => {
     if (pageTurning || sceneTransitioning) return;
+    if ((mobile && mobilePage === 0) || (!mobile && spread === 0)) return;
     setPageTurning(true);
     if (mobile) setMobilePage((value) => Math.max(0, value - 1));
     else setSpread((value) => Math.max(0, value - 1));
-  }, [mobile, pageTurning, sceneTransitioning]);
+  }, [mobile, mobilePage, pageTurning, sceneTransitioning, spread]);
 
   const next = useCallback(() => {
     if (pageTurning || sceneTransitioning) return;
+    if ((mobile && mobilePage === 5) || (!mobile && spread === 2)) return;
     setPageTurning(true);
     if (mobile) setMobilePage((value) => Math.min(5, value + 1));
     else setSpread((value) => Math.min(2, value + 1));
-  }, [mobile, pageTurning, sceneTransitioning]);
-
-  useEffect(() => {
-    if (!pageTurning) return undefined;
-    const timer = window.setTimeout(() => setPageTurning(false), reduced ? 0 : 900);
-    return () => window.clearTimeout(timer);
-  }, [pageTurning, reduced]);
+  }, [mobile, mobilePage, pageTurning, sceneTransitioning, spread]);
 
   const openBooklet = () => {
     setSpread(0);
@@ -248,6 +244,7 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
               playing={player.playing}
               reduced={reduced}
               onTransitionChange={setSceneTransitioning}
+              onPageTurnComplete={() => setPageTurning(false)}
               onBooklet={openBooklet}
               onOpen={() => { if (!sceneTransitioning) { setSceneTransitioning(true); setMode('ALBUM_OPEN'); } }}
               onPlayer={() => { if (!sceneTransitioning) { setSceneTransitioning(true); setMode('PLAYER_FOCUS'); } }}
