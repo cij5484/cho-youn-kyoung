@@ -185,6 +185,13 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
     else setSpread((value) => Math.min(2, value + 1));
   }, [mobile, mobilePage, pageTurning, sceneTransitioning, spread]);
 
+  const openAlbum = useCallback(() => {
+    if (sceneTransitioning || mode !== 'CLOSED') return;
+    setOpeningFromClosed(true);
+    setSceneTransitioning(true);
+    setMode('ALBUM_OPEN');
+  }, [mode, sceneTransitioning]);
+
   const openBooklet = () => {
     setSpread(0);
     setMobilePage(0);
@@ -264,7 +271,7 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
               onTransitionChange={handleTransitionChange}
               onPageTurnComplete={() => setPageTurning(false)}
               onBooklet={openBooklet}
-              onOpen={() => { if (!sceneTransitioning) { setOpeningFromClosed(true); setSceneTransitioning(true); setMode('ALBUM_OPEN'); } }}
+              onOpen={openAlbum}
               onPlayer={() => { if (!sceneTransitioning) { setSceneTransitioning(true); setMode('PLAYER_FOCUS'); } }}
             />
           </Suspense>
@@ -277,7 +284,7 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
             <h2>지영희류</h2>
             <p className="ji-detail__english">{album.englishTitle}</p>
             {album.releaseStatus && <strong>{statusLabel[album.releaseStatus]}</strong>}
-            <button type="button" disabled={sceneTransitioning} onClick={() => { setSceneTransitioning(true); setMode('ALBUM_OPEN'); }}>OPEN ALBUM <span>→</span></button>
+            <button type="button" disabled={sceneTransitioning} onClick={openAlbum}>OPEN ALBUM <span>→</span></button>
           </div>
         )}
         {mode === 'ALBUM_OPEN' && !sceneTransitioning && (
