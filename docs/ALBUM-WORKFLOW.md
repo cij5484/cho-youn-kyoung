@@ -156,7 +156,7 @@ HOME RECENT WORKS에는 확정 `releaseDate`가 있거나 위의 `coming-soon` �
 - spine은 fixed assembly member이며 front-cover hinge의 child가 아니다. 실제 `171 / 3000` 폭의 인쇄 면은 닫힘, 열림 도중, 완전 열림에서 계속 중앙 연결부에 남는다.
 - front cover는 음의 Y 방향으로 회전해 먼저 viewer 쪽을 지나 왼쪽 interior/booklet panel로 열리며, 오른쪽 back/tray panel은 고정된다.
 - CLOSED에서는 CD, hub, recess, booklet 같은 내부 부품을 렌더링 순서로 감추지 않는다. 내부는 cover 뒤에 물리적으로 놓고 hinge가 열린 뒤 cover에 가려져 있던 구조가 자연스럽게 드러나야 한다.
-- Detail CLOSED 위치는 HOME과 동일하게 배경 원본 anchor, `object-fit: cover` scale/crop, viewport를 screen-space에서 계산해 world X로 변환한다. 고정 world X로 배경과의 관계를 흉내 내지 않는다.
+- Detail CLOSED 위치는 HOME과 동일하게 배경 원본 anchor와 `object-fit: cover` scale/crop을 screen-space에서 계산해 world X로 변환한다. 배경은 header를 포함한 stage, Canvas는 header 아래 영역이므로 `ResizeObserver`로 측정한 실제 stage width/height를 cover 계산의 source of truth로 사용하며, 고정 world X나 Canvas height로 배경 관계를 흉내 내지 않는다.
 - OPEN 요청은 **`ALIGN_CLOSED → POSITION_FOR_OPEN → HINGE_OPEN`** 세 단계다. 현재 회전에서 front까지 shortest path로 정렬하는 동안에는 closed position/scale과 모든 internal rig를 그대로 유지하고, 정렬 뒤 닫힌 package 전체만 open framing으로 옮긴 다음에만 hinge를 약 160° 연다.
 - CLOSED package center와 펼친 spread의 실제 bounding center는 별도로 계산한다. OPEN framing을 CLOSED pivot이나 배경 anchor를 이동시켜 보정하지 않는다.
 - spine은 artwork의 실제 `171 / 3000` 비율을 사용하고 surface에 극소 offset을 두어 z-fighting만 방지한다. 빈 두꺼운 box를 spine 대용으로 만들지 않는다.

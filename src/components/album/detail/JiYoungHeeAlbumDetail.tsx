@@ -127,15 +127,21 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
   const [spread, setSpread] = useState(0);
   const [mobilePage, setMobilePage] = useState(0);
   const [sceneTransitioning, setSceneTransitioning] = useState(false);
+  const [openingFromClosed, setOpeningFromClosed] = useState(false);
   const [pageTurning, setPageTurning] = useState(false);
   const [mobile, setMobile] = useState(false);
   const [reduced, setReduced] = useState(false);
+  const [backgroundSize, setBackgroundSize] = useState({ width: 0, height: 0 });
   const [webgl] = useState(canUseWebGL);
   const stage = useRef<HTMLElement>(null);
   const swipe = useRef<number | undefined>(undefined);
   const pages = album.booklet?.previewImages ?? [];
   const tracks = album.tracks ?? [];
   const player = useAlbumAudio(tracks);
+  const handleTransitionChange = useCallback((transitioning: boolean) => {
+    setSceneTransitioning(transitioning);
+    if (!transitioning) setOpeningFromClosed(false);
+  }, []);
 
   useEffect(() => {
     const mobileQuery = matchMedia('(max-width: 700px)');
@@ -151,6 +157,16 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
       mobileQuery.removeEventListener('change', update);
       motionQuery.removeEventListener('change', update);
     };
+  }, []);
+
+  useEffect(() => {
+    const element = stage.current;
+    if (!element) return undefined;
+    const update = () => setBackgroundSize({ width: element.clientWidth, height: element.clientHeight });
+    queueMicrotask(update);
+    const observer = new ResizeObserver(update);
+    observer.observe(element);
+    return () => observer.disconnect();
   }, []);
 
   const previous = useCallback(() => {
@@ -238,15 +254,17 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
           <Suspense fallback={<p className="ji-detail__loading">3D 앨범을 준비하고 있습니다.</p>}>
             <Experience3D
               album={album}
+              backgroundSize={backgroundSize}
+              openingFromClosed={openingFromClosed}
               mobile={mobile}
               mode={mode}
               page={currentPage}
               playing={player.playing}
               reduced={reduced}
-              onTransitionChange={setSceneTransitioning}
+              onTransitionChange={handleTransitionChange}
               onPageTurnComplete={() => setPageTurning(false)}
               onBooklet={openBooklet}
-              onOpen={() => { if (!sceneTransitioning) { setSceneTransitioning(true); setMode('ALBUM_OPEN'); } }}
+              onOpen={() => { if (!sceneTransitioning) { setOpeningFromClosed(true); setSceneTransitioning(true); setMode('ALBUM_OPEN'); } }}
               onPlayer={() => { if (!sceneTransitioning) { setSceneTransitioning(true); setMode('PLAYER_FOCUS'); } }}
             />
           </Suspense>
