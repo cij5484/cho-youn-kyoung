@@ -46,6 +46,12 @@ function BookletNavigation({
 
   return (
     <div className="ji-detail__booklet-ui">
+      {!mobile && (
+        <div className="ji-detail__page-hit-areas" aria-label="북클릿 페이지 클릭 탐색">
+          <button type="button" aria-label="이전 펼침면" disabled={disabled || atStart} onClick={onPrevious} />
+          <button type="button" aria-label="다음 펼침면" disabled={disabled || atEnd} onClick={onNext} />
+        </div>
+      )}
       <p aria-live="polite">{pageLabel}</p>
       <div className="ji-detail__booklet-controls">
         <button type="button" disabled={disabled || atStart} onClick={onPrevious}>PREVIOUS</button>
@@ -272,7 +278,12 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
               onPageTurnComplete={() => setPageTurning(false)}
               onBooklet={openBooklet}
               onOpen={openAlbum}
-              onPlayer={() => { if (!sceneTransitioning) { setSceneTransitioning(true); setMode('PLAYER_FOCUS'); } }}
+              onPlayer={() => {
+                if (!sceneTransitioning && mode === 'ALBUM_OPEN') {
+                  setSceneTransitioning(true);
+                  setMode('PLAYER_FOCUS');
+                }
+              }}
             />
           </Suspense>
         </div>

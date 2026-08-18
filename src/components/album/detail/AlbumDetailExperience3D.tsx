@@ -113,7 +113,10 @@ function CdDisc({ label, mode, playing, reduced, onPlayer, onSettled }: {
     onSettled(Math.abs(rig.current.position.z - targetZ) + Math.abs(rig.current.scale.x - targetScale) < 0.015);
   });
   return (
-    <group ref={rig} position={[0, 0, 0.135]} onClick={(event) => { event.stopPropagation(); onPlayer(); }}>
+    <group ref={rig} position={[0, 0, 0.135]} onClick={(event) => {
+      event.stopPropagation();
+      if (mode === 'ALBUM_OPEN') onPlayer();
+    }}>
       <mesh castShadow>
         <extrudeGeometry args={[discShape, { depth: 0.014, bevelEnabled: false, curveSegments: 64 }]} />
         <meshStandardMaterial color="#e4e2dc" metalness={0} roughness={0.52} />
@@ -139,6 +142,7 @@ function TrayRig({ back, texture, label, mode, playing, reduced, onPlayer, onSet
   onPlayer(): void; onSettled(settled: boolean): void; onDiscSettled(settled: boolean): void;
 }) {
   const rig = useRef<THREE.Group>(null);
+  const trayContext = useRef<THREE.Group>(null);
   const plasticOpacity = mode === 'PLAYER_FOCUS' ? 0.2 : mode === 'BOOKLET_FOCUS' ? 0.24 : 0.5;
   useFrame((_, delta) => {
     if (!rig.current) return;
@@ -147,6 +151,20 @@ function TrayRig({ back, texture, label, mode, playing, reduced, onPlayer, onSet
     // hinge exposes it; this is physical occlusion rather than a visibility pop.
     const closedInternalZ = HALF_PACKAGE_DEPTH - 0.21 - SURFACE_OFFSET;
     rig.current.position.z = THREE.MathUtils.lerp(rig.current.position.z, mode === 'CLOSED' ? closedInternalZ : 0, ease);
+    if (trayContext.current) {
+      const contextScale = mode === 'PLAYER_FOCUS' ? 0.94 : 1;
+      trayContext.current.scale.setScalar(THREE.MathUtils.lerp(trayContext.current.scale.x, contextScale, ease));
+      trayContext.current.position.y = THREE.MathUtils.lerp(trayContext.current.position.y, mode === 'PLAYER_FOCUS' ? -0.08 : 0, ease);
+      trayContext.current.traverse((object) => {
+        if (!(object instanceof THREE.Mesh)) return;
+        const material = object.material as THREE.Material & { opacity: number };
+        if (object.userData.baseOpacity === undefined) object.userData.baseOpacity = material.opacity;
+        const targetOpacity = mode === 'PLAYER_FOCUS' ? 0 : Number(object.userData.baseOpacity);
+        material.transparent = true;
+        material.opacity = THREE.MathUtils.lerp(material.opacity, targetOpacity, ease);
+        material.depthWrite = material.opacity > 0.08;
+      });
+    }
     onSettled(Math.abs(rig.current.position.z - (mode === 'CLOSED' ? closedInternalZ : 0)) < 0.012);
   });
   return (
@@ -161,6 +179,7 @@ function TrayRig({ back, texture, label, mode, playing, reduced, onPlayer, onSet
       </mesh>
       <mesh position={[0, 0, BACK_PANEL_CENTER_Z + PAPER_THICKNESS / 2 + SURFACE_OFFSET]} receiveShadow><planeGeometry args={[2.5, 2.5]} /><PaperMaterial texture={texture} /></mesh>
       <group ref={rig} position={[0, 0, mode === 'CLOSED' ? HALF_PACKAGE_DEPTH - 0.21 - SURFACE_OFFSET : 0]}>
+        <group ref={trayContext}>
         <mesh position={[0, 0, 0.045]} receiveShadow>
           <boxGeometry args={[2.25, 2.25, 0.028]} />
           <meshPhysicalMaterial color="#dedbd2" transparent opacity={plasticOpacity} roughness={0.88} metalness={0} clearcoat={0.04} depthWrite />
@@ -174,6 +193,7 @@ function TrayRig({ back, texture, label, mode, playing, reduced, onPlayer, onSet
           <cylinderGeometry args={[0.16, 0.145, 0.045, 32]} />
           <meshStandardMaterial color="#d8d4ca" transparent opacity={plasticOpacity + 0.12} roughness={0.75} />
         </mesh>
+        </group>
         <CdDisc label={label} mode={mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={onDiscSettled} />
       </group>
     </group>
@@ -214,21 +234,16 @@ function BookletPages({ album, page, mobile, reduced, active, returning, mobileR
     setTurn({ key: Date.now(), source, target: page, direction: page > source ? 1 : -1 });
   }, [active, onPageTurnComplete, page, reduced]);
   useEffect(() => {
-    if (!returning || turn) return;
-    if (settled === 0) {
-      queueMicrotask(onReturnPagesComplete);
-      return;
-    }
-    if (reduced) {
-      queueMicrotask(() => {
-        previous.current = 0;
-        setSettled(0);
-        onReturnPagesComplete();
-      });
-      return;
-    }
-    queueMicrotask(() => setTurn({ key: Date.now(), source: settled, target: settled - 1, direction: -1 }));
-  }, [onReturnPagesComplete, reduced, returning, settled, turn]);
+    if (!returning) return;
+    // Collapse the current composition at once instead of replaying every
+    // previously viewed spread in reverse.
+    queueMicrotask(() => {
+      previous.current = 0;
+      setSettled(0);
+      setTurn(null);
+      onReturnPagesComplete();
+    });
+  }, [onReturnPagesComplete, returning]);
   const completeTurn = () => {
     if (!turn) return;
     previous.current = turn.target;
@@ -388,10 +403,11 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
     if (focused) focusElapsed.current += reduced ? 1 : delta;
     const holdFocusTransform = focused || (returning && !coverClosed);
     const ease = reduced ? 1 : 1 - Math.exp(-5.5 * delta);
-    const targetPosition = new THREE.Vector3(-p1Width / 2, 0, 0.08);
+    const targetPosition = new THREE.Vector3(-p1Width / 2, 0, mode === 'PLAYER_FOCUS' ? -0.12 : 0.08);
     if (focused && focusElapsed.current < 0.18) targetPosition.z = 0.2;
     const targetQuaternion = new THREE.Quaternion();
-    const targetScale = new THREE.Vector3(0.84, 0.84, 0.84);
+    const restingScale = mode === 'PLAYER_FOCUS' ? 0.01 : 0.84;
+    const targetScale = new THREE.Vector3(restingScale, restingScale, restingScale);
     // Lift the closed booklet first; only then carry it to the reader position.
     const movingToFocus = holdFocusTransform && focusElapsed.current >= 0.18;
     if (movingToFocus && rig.current.parent) {
