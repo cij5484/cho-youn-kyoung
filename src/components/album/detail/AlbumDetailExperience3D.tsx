@@ -53,6 +53,8 @@ const RECESS_Z = TRAY_PLATE_Z + TRAY_THICKNESS / 2 + SURFACE_OFFSET;
 const HUB_Z = RECESS_Z + 0.009;
 const CD_MOUNT_Z = RECESS_Z + 0.012;
 const CD_PLAYER_LIFT = 0.16;
+const MOBILE_CLOSED_WIDTH = 0.69;
+const getMobileClosedScale = (viewportWidth: number) => viewportWidth * MOBILE_CLOSED_WIDTH / PANEL_WIDTH;
 // Negative Y brings the cover toward the viewer before it settles to the left.
 const OPEN_ANGLE = THREE.MathUtils.degToRad(-160);
 // Repository exports establish the trim ratios: booklet pages sit just inside
@@ -302,10 +304,10 @@ function BookletPages({ album, page, mobile, reduced, active, returning, mobileR
     <group>
       {p2Back}
       {showStaticLeft && <mesh position={[-width / 2, 0, leftStackZ]} castShadow receiveShadow><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={left} /></mesh>}
-      <mesh position={[width / 2, 0, 0]} castShadow receiveShadow onClick={(event) => { event.stopPropagation(); onNext(); }}><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={right} /></mesh>
-      <mesh position={[-width / 2, 0, leftStackZ + 0.001]} userData={{ keepOpacity: true }} onClick={(event) => { event.stopPropagation(); onPrevious(); }}>
+      <mesh position={[width / 2, 0, 0]} castShadow receiveShadow onClick={active ? (event) => { event.stopPropagation(); onNext(); } : undefined}><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={right} /></mesh>
+      {active && <mesh position={[-width / 2, 0, leftStackZ + 0.001]} userData={{ keepOpacity: true }} onClick={(event) => { event.stopPropagation(); onPrevious(); }}>
         <planeGeometry args={[width, PAGE_HEIGHT]} /><meshBasicMaterial transparent opacity={0} depthWrite={false} />
-      </mesh>
+      </mesh>}
       {turn && <TurningPage key={turn.key} pages={pages} width={width} turn={turn} duration={returning ? 0.42 : PAGE_TURN_DURATION} onDone={completeTurn} />}
       <mesh position={[0, 0, 0.012]}><planeGeometry args={[0.025, PAGE_HEIGHT]} /><meshBasicMaterial color="#7a6f65" transparent opacity={0.18} /></mesh>
     </group>
@@ -581,7 +583,7 @@ function Scene(props: ExperienceProps) {
     const y = mobile
       ? (keepClosedTransform ? viewport.height * 0.2 : mode === 'PLAYER_FOCUS' ? viewport.height * 0.2 : viewport.height * 0.1)
       : 0.05;
-    const mobileClosedScale = viewport.width * 0.69 / PANEL_WIDTH;
+    const mobileClosedScale = getMobileClosedScale(viewport.width);
     const mobileOpenScale = viewport.width * 0.9 / (PANEL_WIDTH * 1.94);
     const mobilePlayerScale = viewport.width * 0.58 / (CD_RADIUS * 2);
     const scale = keepClosedTransform
@@ -642,7 +644,7 @@ function Scene(props: ExperienceProps) {
   };
   return (
     <>
-      <group ref={packageRig} position={[0, mobile ? viewport.height * 0.2 : 0.05, 0]} rotation={[-0.1, 0.12, 0]} scale={mobile ? viewport.width * 0.69 / PANEL : 1.18}
+      <group ref={packageRig} position={[0, mobile ? viewport.height * 0.2 : 0.05, 0]} rotation={[-0.1, 0.12, 0]} scale={mobile ? getMobileClosedScale(viewport.width) : 1.18}
         onPointerDown={down} onPointerMove={move} onPointerUp={(e) => finish(e.pointerId, true)} onPointerCancel={(e) => finish(e.pointerId, false)}>
         {/* Keep assembly coordinates spine-relative while packageRig rotates at
             the geometric centre shared by the closed front and back covers. */}
