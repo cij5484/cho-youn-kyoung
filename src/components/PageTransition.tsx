@@ -12,6 +12,7 @@ export function PageTransition({ children }: PageTransitionProps) {
   return (
     <div
       className={`page-transition${isHome ? ' page-transition--home' : ''}`}
+      key={location.pathname}
     >
       {children}
     </div>

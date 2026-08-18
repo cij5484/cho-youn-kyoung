@@ -8,7 +8,6 @@ import type {
   AlbumHeroTextures,
 } from '../../../data/albums';
 import { COVER_DEPTH, getPackageDimensions, storePackageRotation } from '../../album/packageGeometry';
-import { ClearPlasticMaterial } from '../../album/JiYoungHeePackageModel';
 
 // spine.png is 171 × 3000: its 0.057 width/height ratio defines the printed spine.
 const SPINE_SURFACE_OFFSET = 0.0015;
@@ -88,12 +87,18 @@ function usePackageMaterials(textures?: AlbumHeroTextures) {
   }, [gl, textures]);
 
   return useMemo(() => {
-    const paper = new THREE.MeshBasicMaterial({ color: '#eee9df', toneMapped: false });
+    const paper = new THREE.MeshStandardMaterial({ color: '#e8e3d8', roughness: 0.94 });
     const printed = (map?: THREE.Texture) => new THREE.MeshBasicMaterial({
       color: map ? '#ffffff' : '#d3cec3', map, toneMapped: false,
     });
+    const plastic = new THREE.MeshPhysicalMaterial({
+      color: '#ffffff', transparent: true, opacity: 0.24, roughness: 0.24,
+      metalness: 0, clearcoat: 0.12, clearcoatRoughness: 0.78,
+      transmission: 0.16, thickness: 0.018, depthWrite: false,
+    });
     return {
       paper,
+      plastic,
       front: printed(maps.front),
       back: printed(maps.back),
       spine: printed(maps.spineLeft),
@@ -200,9 +205,8 @@ function Package({ textures, geometry, scale, position }: PackageProps) {
         rotation={[DEFAULT_ROTATION.x, DEFAULT_ROTATION.y, 0]}
         scale={scale}
       >
-        <mesh castShadow>
+        <mesh material={materials.plastic} castShadow>
           <boxGeometry args={[dimensions.trayWidth, dimensions.trayHeight, dimensions.trayDepth]} />
-          <ClearPlasticMaterial opacity={0.18} thickness={0.018} />
         </mesh>
         <mesh position={[0, 0, dimensions.trayDepth / 2 + COVER_DEPTH / 2]} material={faceMaterials(materials.front, 4)} castShadow>
           <boxGeometry args={[dimensions.frontWidth, dimensions.frontHeight, COVER_DEPTH]} />

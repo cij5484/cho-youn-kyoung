@@ -29,15 +29,24 @@ export function JiYoungHeePersistentStage({ children }: { children: ReactNode })
   const [homeActive, setHomeActive] = useState(false);
   const [detailProps, setDetailProps] = useState<ExperienceProps | null>(null);
   const [mobile, setMobile] = useState(false);
+  const [reduced, setReduced] = useState(false);
   const [backgroundSize, setBackgroundSize] = useState({ width: 0, height: 0 });
   const stage = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const query = matchMedia('(max-width: 700px)');
-    const update = () => setMobile(query.matches);
+    const motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => {
+      setMobile(query.matches);
+      setReduced(motionQuery.matches);
+    };
     update();
     query.addEventListener('change', update);
-    return () => query.removeEventListener('change', update);
+    motionQuery.addEventListener('change', update);
+    return () => {
+      query.removeEventListener('change', update);
+      motionQuery.removeEventListener('change', update);
+    };
   }, []);
 
   useEffect(() => {
@@ -57,13 +66,13 @@ export function JiYoungHeePersistentStage({ children }: { children: ReactNode })
     page: 0,
     mobile,
     playing: false,
-    reduced: false,
+    reduced,
     onOpen: () => undefined,
     onBooklet: () => undefined,
     onPlayer: () => undefined,
     onPrevious: () => undefined,
     onNext: () => undefined,
-  }), [album, backgroundSize, mobile]);
+  }), [album, backgroundSize, mobile, reduced]);
   const visible = detailRoute || (location.pathname === '/' && homeActive);
   const context = useMemo(() => ({ setDetailProps, setHomeActive }), []);
 
