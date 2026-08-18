@@ -1,26 +1,35 @@
 import { Link } from 'react-router-dom';
 import type { HomeHeroSlide } from '../../data/homeHeroSlides';
 import { AlbumPackage3D } from './album/AlbumPackage3D';
+import { useEffect } from 'react';
+import { useJiYoungHeeStage } from '../album/JiYoungHeePersistentStage';
 
 type AlbumHeroProps = {
   slide: HomeHeroSlide;
 };
 
 export function AlbumHero({ slide }: AlbumHeroProps) {
+  const { setHomeActive } = useJiYoungHeeStage();
+  const persistent = slide.id === 'ji-young-hee-ryu-haegeum-sanjo-2026';
+  useEffect(() => {
+    if (!persistent) return undefined;
+    setHomeActive(true);
+    return () => setHomeActive(false);
+  }, [persistent, setHomeActive]);
   const titleLines = slide.title.split('\n');
   const [year, status] = slide.displayDate.split(' · ');
 
   return (
     <section className={`album-hero album-hero--${slide.id}`} data-album-id={slide.id} aria-labelledby={`${slide.id}-hero-title`}>
-      {slide.albumBackground ? (
+      {slide.albumBackground && !persistent ? (
         <picture className="album-hero__background" aria-hidden="true">
           <source media="(max-width: 700px)" srcSet={slide.albumBackground.mobile} />
           <img src={slide.albumBackground.desktop} alt="" />
         </picture>
       ) : null}
-      <div className="album-hero__stage" role="img" aria-label={`${slide.title} 디지팩 3D 미리보기`}>
+      {!persistent && <div className="album-hero__stage" role="img" aria-label={`${slide.title} 디지팩 3D 미리보기`}>
         <AlbumPackage3D textures={slide.albumTextures} backgroundAnchor={slide.albumBackgroundAnchor} geometry={slide.albumPackageGeometry} />
-      </div>
+      </div>}
       <div className="album-hero__content">
         <p className="album-hero__eyebrow">{slide.eyebrow || 'ALBUM'}</p>
         <h1 id={`${slide.id}-hero-title`}>
