@@ -590,10 +590,21 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .mobile-menu a:focus-
   overflow: hidden;
   isolation: isolate;
 }
+.home-hero-rotator[data-work-id="ji-young-hee-ryu-haegeum-sanjo-2026"] {
+  pointer-events: none;
+}
 .home-hero-rotator__stage,
 .home-hero-rotator__slide {
   position: absolute;
   inset: 0;
+}
+.home-hero-rotator[data-work-id="ji-young-hee-ryu-haegeum-sanjo-2026"]
+  .home-hero-rotator__stage {
+  pointer-events: none;
+}
+.home-hero-rotator[data-work-id="ji-young-hee-ryu-haegeum-sanjo-2026"]
+  :is(.album-hero__link, .recent-works, .home-creative-credit) {
+  pointer-events: auto;
 }
 .home-hero-rotator__slide {
   opacity: 0;
