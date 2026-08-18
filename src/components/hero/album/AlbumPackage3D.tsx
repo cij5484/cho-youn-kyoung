@@ -7,11 +7,9 @@ import type {
   AlbumHeroPackageGeometry,
   AlbumHeroTextures,
 } from '../../../data/albums';
+import { COVER_DEPTH, getPackageDimensions, storePackageRotation } from '../../album/packageGeometry';
 
 // spine.png is 171 × 3000: its 0.057 width/height ratio defines the printed spine.
-const PACKAGE_SIZE = { width: 2.35, height: 2.35, depth: 0.102 } as const;
-const COVER_OVERHANG = 0.035;
-const COVER_DEPTH = 0.018;
 const SPINE_SURFACE_OFFSET = 0.0015;
 const DEFAULT_ROTATION = { x: -0.06, y: 0.1 };
 const ROTATION_LIMIT = {
@@ -30,34 +28,6 @@ type AlbumPackage3DProps = {
   geometry?: AlbumHeroPackageGeometry;
 };
 type PackageProps = AlbumPackage3DProps & { scale: number; position: [number, number, number] };
-
-function getPackageDimensions(geometry?: AlbumHeroPackageGeometry) {
-  if (!geometry) return {
-    trayWidth: PACKAGE_SIZE.width,
-    trayHeight: PACKAGE_SIZE.height,
-    trayDepth: PACKAGE_SIZE.depth,
-    frontWidth: PACKAGE_SIZE.width + COVER_OVERHANG * 2,
-    frontHeight: PACKAGE_SIZE.height + COVER_OVERHANG * 2,
-    backWidth: PACKAGE_SIZE.width + COVER_OVERHANG * 2,
-    backHeight: PACKAGE_SIZE.height + COVER_OVERHANG * 2,
-  };
-
-  const coverHeight = PACKAGE_SIZE.height + COVER_OVERHANG * 2;
-  const frontWidth = coverHeight * geometry.front.width / geometry.front.height;
-  const backWidth = coverHeight * geometry.back.width / geometry.back.height;
-  const widestCover = Math.max(frontWidth, backWidth);
-  const printedSpineDepth = coverHeight * geometry.spine.width / geometry.spine.height;
-  return {
-    trayWidth: widestCover - COVER_OVERHANG * 2,
-    trayHeight: PACKAGE_SIZE.height,
-    trayDepth: Math.max(COVER_DEPTH, printedSpineDepth - COVER_DEPTH * 2),
-    printedSpineDepth,
-    frontWidth,
-    frontHeight: coverHeight,
-    backWidth,
-    backHeight: coverHeight,
-  };
-}
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -121,8 +91,8 @@ function usePackageMaterials(textures?: AlbumHeroTextures) {
 
   return useMemo(() => {
     const paper = new THREE.MeshStandardMaterial({ color: '#e8e3d8', roughness: 0.94 });
-    const printed = (map?: THREE.Texture) => new THREE.MeshStandardMaterial({
-      color: map ? '#ffffff' : '#d3cec3', map, roughness: 0.9, metalness: 0,
+    const printed = (map?: THREE.Texture) => new THREE.MeshBasicMaterial({
+      color: map ? '#ffffff' : '#d3cec3', map, toneMapped: false,
     });
     const plastic = new THREE.MeshPhysicalMaterial({
       color: '#dddcd5', transparent: true, opacity: 0.62, roughness: 0.38,
@@ -144,6 +114,7 @@ function Package({ textures, geometry, scale, position }: PackageProps) {
   const target = useRef({ ...DEFAULT_ROTATION });
   const autoRotation = useRef(DEFAULT_ROTATION.y);
   const autoRotating = useRef(true);
+  const persistFrame = useRef(0);
   const reducedMotion = useReducedMotion();
   const materials = usePackageMaterials(textures);
 
@@ -168,15 +139,17 @@ function Package({ textures, geometry, scale, position }: PackageProps) {
       autoRotation.current += AUTO_ROTATION_SPEED * delta;
       group.current.rotation.y = autoRotation.current;
       group.current.rotation.x = DEFAULT_ROTATION.x;
-      return;
-    }
-    if (reducedMotion) {
+    } else if (reducedMotion) {
       group.current.rotation.set(target.current.x, target.current.y, 0);
-      return;
+    } else {
+      const easing = 1 - Math.exp(-10 * delta);
+      group.current.rotation.x = THREE.MathUtils.lerp(group.current.rotation.x, target.current.x, easing);
+      group.current.rotation.y = THREE.MathUtils.lerp(group.current.rotation.y, target.current.y, easing);
     }
-    const easing = 1 - Math.exp(-10 * delta);
-    group.current.rotation.x = THREE.MathUtils.lerp(group.current.rotation.x, target.current.x, easing);
-    group.current.rotation.y = THREE.MathUtils.lerp(group.current.rotation.y, target.current.y, easing);
+    persistFrame.current += 1;
+    if (persistFrame.current % 12 === 0) {
+      storePackageRotation({ x: group.current.rotation.x, y: group.current.rotation.y });
+    }
   });
 
   const handlePointerDown = (event: ThreeEvent<PointerEvent>) => {
