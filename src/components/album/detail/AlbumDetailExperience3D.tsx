@@ -112,13 +112,20 @@ function CdDisc({ label, mode, playing, reduced, onPlayer, onSettled, onAnchor }
   const { camera, size } = useThree();
   const lastAnchor = useRef({ x: -1, y: -1 });
   const velocity = useRef(0);
-  const discShape = useMemo(() => {
-    const shape = new THREE.Shape();
-    shape.absarc(0, 0, CD_RADIUS, 0, Math.PI * 2);
-    const hole = new THREE.Path();
-    hole.absarc(0, 0, 0.13, 0, Math.PI * 2);
-    shape.holes.push(hole);
-    return shape;
+  const discShapes = useMemo(() => {
+    const annulus = (innerRadius: number, outerRadius: number) => {
+      const shape = new THREE.Shape();
+      shape.absarc(0, 0, outerRadius, 0, Math.PI * 2);
+      const hole = new THREE.Path();
+      hole.absarc(0, 0, innerRadius, 0, Math.PI * 2);
+      shape.holes.push(hole);
+      return shape;
+    };
+    return {
+      data: annulus(0.155, CD_RADIUS - 0.06),
+      outer: annulus(CD_RADIUS - 0.06, CD_RADIUS),
+      hub: annulus(0.13, 0.155),
+    };
   }, []);
   useFrame((_, delta) => {
     if (!rig.current) return;
@@ -146,20 +153,20 @@ function CdDisc({ label, mode, playing, reduced, onPlayer, onSettled, onAnchor }
       if (mode === 'ALBUM_OPEN') onPlayer();
     }}>
       <mesh castShadow>
-        <extrudeGeometry args={[discShape, { depth: 0.014, bevelEnabled: false, curveSegments: 64 }]} />
+        <extrudeGeometry args={[discShapes.data, { depth: 0.014, bevelEnabled: false, curveSegments: 64 }]} />
         <meshPhysicalMaterial color="#f8f7f2" metalness={0} roughness={0.28} clearcoat={0.18} clearcoatRoughness={0.72} />
       </mesh>
       <mesh position={[0, 0, 0.016]} castShadow>
         <ringGeometry args={[0.155, CD_RADIUS - 0.06, 64]} />
         <meshBasicMaterial map={label} toneMapped={false} />
       </mesh>
-      <mesh position={[0, 0, 0.017]}>
-        <ringGeometry args={[CD_RADIUS - 0.06, CD_RADIUS, 64]} />
-        <meshPhysicalMaterial color="#ffffff" transparent opacity={0.3} roughness={0.18} transmission={0.18} thickness={0.012} depthWrite={false} />
+      <mesh>
+        <extrudeGeometry args={[discShapes.outer, { depth: 0.014, bevelEnabled: false, curveSegments: 64 }]} />
+        <meshPhysicalMaterial color="#ffffff" transparent opacity={0.18} roughness={0.08} transmission={0.72} thickness={0.014} ior={1.46} clearcoat={0.08} clearcoatRoughness={0.78} depthWrite={false} />
       </mesh>
-      <mesh position={[0, 0, 0.018]}>
-        <ringGeometry args={[0.13, 0.155, 64]} />
-        <meshPhysicalMaterial color="#ffffff" transparent opacity={0.38} roughness={0.2} transmission={0.14} thickness={0.012} depthWrite={false} />
+      <mesh>
+        <extrudeGeometry args={[discShapes.hub, { depth: 0.014, bevelEnabled: false, curveSegments: 64 }]} />
+        <meshPhysicalMaterial color="#ffffff" transparent opacity={0.2} roughness={0.08} transmission={0.68} thickness={0.014} ior={1.46} clearcoat={0.08} clearcoatRoughness={0.78} depthWrite={false} />
       </mesh>
     </group>
   );
@@ -579,7 +586,7 @@ function Scene(props: ExperienceProps) {
     const screenLineX = backgroundOffsetX + source.x * renderedWidth;
     const closedX = (screenLineX / stageWidth - 0.5) * viewport.width;
     const keepClosedTransform = closed || openingPhaseRef.current === 'ALIGN_CLOSED';
-    const x = keepClosedTransform ? closedX : mode === 'BOOKLET_FOCUS' ? 1.05 : mode === 'PLAYER_FOCUS' ? (mobile ? 0 : 0.62) : (mobile ? 0 : HALF_PANEL);
+    const x = keepClosedTransform ? closedX : mode === 'BOOKLET_FOCUS' ? 1.05 : mode === 'PLAYER_FOCUS' ? (mobile ? 0 : 0.32) : (mobile ? 0 : HALF_PANEL);
     const y = mobile
       ? (keepClosedTransform ? viewport.height * 0.2 : mode === 'PLAYER_FOCUS' ? viewport.height * 0.2 : viewport.height * 0.1)
       : 0.05;
