@@ -30,8 +30,18 @@ export function JiYoungHeePersistentStage({ children }: { children: ReactNode })
   const [detailProps, setDetailProps] = useState<ExperienceProps | null>(null);
   const [mobile, setMobile] = useState(false);
   const [reduced, setReduced] = useState(false);
+  const [homeActivationKey, setHomeActivationKey] = useState(0);
   const [backgroundSize, setBackgroundSize] = useState({ width: 0, height: 0 });
   const stage = useRef<HTMLDivElement>(null);
+  const previousPath = useRef(location.pathname);
+
+  useEffect(() => {
+    const previous = previousPath.current;
+    if (location.pathname === '/' && previous !== '/' && previous !== `/album/${ALBUM_ID}`) {
+      setHomeActivationKey((key) => key + 1);
+    }
+    previousPath.current = location.pathname;
+  }, [location.pathname]);
 
   useEffect(() => {
     const query = matchMedia('(max-width: 700px)');
@@ -67,12 +77,13 @@ export function JiYoungHeePersistentStage({ children }: { children: ReactNode })
     mobile,
     playing: false,
     reduced,
+    homeActivationKey,
     onOpen: () => undefined,
     onBooklet: () => undefined,
     onPlayer: () => undefined,
     onPrevious: () => undefined,
     onNext: () => undefined,
-  }), [album, backgroundSize, mobile, reduced]);
+  }), [album, backgroundSize, homeActivationKey, mobile, reduced]);
   const visible = detailRoute || (location.pathname === '/' && homeActive);
   const context = useMemo(() => ({ setDetailProps, setHomeActive }), []);
 

@@ -66,10 +66,12 @@
 .ji-persistent-stage.is-visible{visibility:visible;opacity:1;pointer-events:auto}
 .ji-persistent-stage__background{position:absolute;inset:0}.ji-persistent-stage__background img{width:100%;height:100%;object-fit:cover}
 .ji-persistent-stage__canvas{position:absolute;inset:var(--header) 0 0}
-.ji-detail { --ji-ink:#252525; --ji-accent:#70453f; position:relative;z-index:1;background:transparent;color:var(--ji-ink); }
+.ji-detail { --ji-ink:#252525; --ji-accent:#70453f; position:relative;z-index:1;background:transparent;color:var(--ji-ink);pointer-events:none; }
 .ji-detail button { color:inherit; font:inherit; }
 .ji-detail button:focus-visible,.ji-detail a:focus-visible { outline:2px solid var(--ji-accent); outline-offset:5px; }
 .ji-detail__stage { position:relative; min-height:100svh; overflow:hidden; isolation:isolate; }
+.ji-detail__intro a,.ji-detail__intro button,.ji-detail__mode-actions,.ji-detail__booklet-ui,.ji-detail__player,.ji-detail__editorial{pointer-events:auto}
+.ji-detail__swipe-surface{position:absolute;z-index:2;inset:var(--header) 0 90px;pointer-events:auto;touch-action:pan-y}
 .ji-detail__background { position:absolute; inset:0; z-index:-2; }
 .ji-detail__background img { width:100%; height:100%; object-fit:cover; }
 .ji-detail__canvas { position:absolute; inset:var(--header) 0 0; touch-action:pan-y; }
