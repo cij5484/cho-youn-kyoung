@@ -28,6 +28,7 @@ function BookletNavigation({
   onBack,
   onNext,
   onPrevious,
+  onRead,
   disabled,
 }: {
   mobile: boolean;
@@ -36,6 +37,7 @@ function BookletNavigation({
   onBack(): void;
   onNext(): void;
   onPrevious(): void;
+  onRead(): void;
   disabled: boolean;
 }) {
   const atStart = mobile ? mobilePage === 0 : spread === 0;
@@ -49,6 +51,7 @@ function BookletNavigation({
       <p aria-live="polite">{pageLabel}</p>
       <div className="ji-detail__booklet-controls">
         <button type="button" disabled={disabled || atStart} onClick={onPrevious}>PREVIOUS</button>
+        {mobile && <button type="button" disabled={disabled} onClick={onRead}>READ PAGE</button>}
         <button type="button" disabled={disabled} onClick={onBack}>BACK TO ALBUM</button>
         <button type="button" disabled={disabled || atEnd} onClick={onNext}>NEXT</button>
       </div>
@@ -133,6 +136,8 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
   const [reduced, setReduced] = useState(false);
   const [backgroundSize, setBackgroundSize] = useState({ width: 0, height: 0 });
   const [webgl] = useState(canUseWebGL);
+  const [cdAnchor, setCdAnchor] = useState<{ x: number; y: number } | null>(null);
+  const [readerOpen, setReaderOpen] = useState(false);
   const stage = useRef<HTMLElement>(null);
   const swipe = useRef<number | undefined>(undefined);
   const pages = album.booklet?.previewImages ?? [];
@@ -271,8 +276,16 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
               onTransitionChange={handleTransitionChange}
               onPageTurnComplete={() => setPageTurning(false)}
               onBooklet={openBooklet}
+              onPrevious={previous}
+              onNext={next}
+              onCdAnchor={setCdAnchor}
               onOpen={openAlbum}
-              onPlayer={() => { if (!sceneTransitioning) { setSceneTransitioning(true); setMode('PLAYER_FOCUS'); } }}
+              onPlayer={() => {
+                if (!sceneTransitioning && mode === 'ALBUM_OPEN') {
+                  setSceneTransitioning(true);
+                  setMode('PLAYER_FOCUS');
+                }
+              }}
             />
           </Suspense>
         </div>
@@ -303,10 +316,24 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
             onBack={backToAlbum}
             onNext={next}
             onPrevious={previous}
+            onRead={() => setReaderOpen(true)}
           />
         )}
         {mode === 'PLAYER_FOCUS' && !sceneTransitioning && (
-          <PlayerPanel tracks={tracks} player={player} onBack={backToAlbum} disabled={sceneTransitioning} />
+          <>
+            {cdAnchor && (
+              <svg className="ji-detail__connector" aria-hidden="true">
+                <line x1={cdAnchor.x} y1={cdAnchor.y} x2={mobile ? backgroundSize.width / 2 : backgroundSize.width * 0.69} y2={mobile ? backgroundSize.height * 0.58 : cdAnchor.y} />
+              </svg>
+            )}
+            <PlayerPanel tracks={tracks} player={player} onBack={backToAlbum} disabled={sceneTransitioning} />
+          </>
+        )}
+        {readerOpen && mode === 'BOOKLET_FOCUS' && mobile && (
+          <div className="ji-detail__reader" role="dialog" aria-modal="true" aria-label={`북클릿 P${mobilePage + 2}`}>
+            <button type="button" onClick={() => setReaderOpen(false)}>CLOSE</button>
+            <img src={assetUrl(pages[mobilePage + 1]?.src)} alt={pages[mobilePage + 1]?.alt} />
+          </div>
         )}
       </section>
       <Editorial album={album} onBooklet={openBooklet} />
