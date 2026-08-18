@@ -108,7 +108,7 @@ function PlayerPanel({
         />
         <span>{player.track.duration ?? formatTime(player.duration)}</span>
       </div>
-      {!player.playable && <p className="ji-detail__audio-status">AUDIO COMING SOON</p>}
+      {!player.hasAudio && <p className="ji-detail__audio-status">ROTATION PREVIEW · AUDIO COMING SOON</p>}
       {player.error && <p role="status">{player.error}</p>}
       <button
         className="ji-detail__player-back"
@@ -136,7 +136,6 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
   const [reduced, setReduced] = useState(false);
   const [backgroundSize, setBackgroundSize] = useState({ width: 0, height: 0 });
   const [webgl] = useState(canUseWebGL);
-  const [cdAnchor, setCdAnchor] = useState<{ x: number; y: number } | null>(null);
   const [readerOpen, setReaderOpen] = useState(false);
   const stage = useRef<HTMLElement>(null);
   const swipe = useRef<number | undefined>(undefined);
@@ -278,7 +277,6 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
               onBooklet={openBooklet}
               onPrevious={previous}
               onNext={next}
-              onCdAnchor={setCdAnchor}
               onOpen={openAlbum}
               onPlayer={() => {
                 if (!sceneTransitioning && mode === 'ALBUM_OPEN') {
@@ -321,11 +319,6 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
         )}
         {mode === 'PLAYER_FOCUS' && !sceneTransitioning && (
           <>
-            {cdAnchor && (
-              <svg className="ji-detail__connector" aria-hidden="true">
-                <line x1={cdAnchor.x} y1={cdAnchor.y} x2={mobile ? backgroundSize.width / 2 : backgroundSize.width * 0.69} y2={mobile ? backgroundSize.height * 0.58 : cdAnchor.y} />
-              </svg>
-            )}
             <PlayerPanel tracks={tracks} player={player} onBack={backToAlbum} disabled={sceneTransitioning} />
           </>
         )}
