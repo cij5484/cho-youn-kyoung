@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, lazy, Suspense, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, lazy, Suspense, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { albums } from '../../data/albums';
@@ -34,6 +34,13 @@ export function JiYoungHeePersistentStage({ children }: { children: ReactNode })
   const [backgroundSize, setBackgroundSize] = useState({ width: 0, height: 0 });
   const stage = useRef<HTMLDivElement>(null);
   const previousPath = useRef(location.pathname);
+  const homeActiveRef = useRef(false);
+
+  const updateHomeActive = useCallback((active: boolean) => {
+    if (active && !homeActiveRef.current) setHomeActivationKey((key) => key + 1);
+    homeActiveRef.current = active;
+    setHomeActive(active);
+  }, []);
 
   useEffect(() => {
     const previous = previousPath.current;
@@ -85,7 +92,7 @@ export function JiYoungHeePersistentStage({ children }: { children: ReactNode })
     onNext: () => undefined,
   }), [album, backgroundSize, homeActivationKey, mobile, reduced]);
   const visible = detailRoute || (location.pathname === '/' && homeActive);
-  const context = useMemo(() => ({ setDetailProps, setHomeActive }), []);
+  const context = useMemo(() => ({ setDetailProps, setHomeActive: updateHomeActive }), [updateHomeActive]);
 
   return (
     <StageContext.Provider value={context}>

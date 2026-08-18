@@ -128,7 +128,7 @@ function CdDisc({ label, mode, playing, reduced, tray, onPlayer, onSettled, onAn
   const lastAnchor = useRef({ x: -1, y: -1 });
   const velocity = useRef(0);
   const detached = useRef(false);
-  const CD_THICKNESS = CD_RADIUS * 0.011;
+  const CD_THICKNESS = CD_RADIUS * 0.02;
   const CENTER_HOLE_RADIUS = CD_RADIUS * 0.12;
   const HUB_RADIUS = CD_RADIUS * 0.235;
   const LABEL_OUTER_RADIUS = CD_RADIUS * 0.955;
