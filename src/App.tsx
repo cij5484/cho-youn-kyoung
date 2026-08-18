@@ -10,10 +10,12 @@ import { PageTransition } from "./components/PageTransition";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { MediaPage } from "./pages/MediaPage";
 import { AlbumDetailPage } from "./pages/AlbumDetailPage";
+import { JiYoungHeePersistentStage } from "./components/album/JiYoungHeePersistentStage";
 
 export default function App() {
   return (
     <HashRouter>
+      <JiYoungHeePersistentStage>
       <Header />
       <ScrollToTop />
       <main>
@@ -31,6 +33,7 @@ export default function App() {
         </Routes>
         </PageTransition>
       </main>
+      </JiYoungHeePersistentStage>
     </HashRouter>
   );
 }
