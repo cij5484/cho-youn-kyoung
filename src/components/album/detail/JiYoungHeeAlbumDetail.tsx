@@ -46,11 +46,13 @@ function BookletNavigation({
 
   return (
     <div className="ji-detail__booklet-ui">
-      <p aria-live="polite">{pageLabel}</p>
       <div className="ji-detail__booklet-controls">
         <button type="button" disabled={disabled || atStart} onClick={onPrevious}>PREVIOUS</button>
-        <button type="button" disabled={disabled} onClick={onBack}>BACK TO ALBUM</button>
         <button type="button" disabled={disabled || atEnd} onClick={onNext}>NEXT</button>
+      </div>
+      <div className="ji-detail__booklet-footer">
+        <p aria-live="polite">{pageLabel}</p>
+        <button type="button" disabled={disabled} onClick={onBack}>BACK TO ALBUM</button>
       </div>
     </div>
   );
@@ -164,8 +166,8 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
     const element = stage.current;
     if (!element) return undefined;
     const observer = new IntersectionObserver(([entry]) => {
-      setDetailStageVisible(entry.isIntersecting && entry.intersectionRatio > 0.08);
-    }, { threshold: [0, 0.08, 0.2] });
+      setDetailStageVisible(entry.isIntersecting && entry.intersectionRatio > 0.72);
+    }, { threshold: [0, 0.72, 0.85] });
     observer.observe(element);
     return () => {
       observer.disconnect();
@@ -308,15 +310,23 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
           </div>
         )}
         {mode === 'BOOKLET_FOCUS' && !sceneTransitioning && (
-          <BookletNavigation
-            mobile={mobile}
-            mobilePage={mobilePage}
-            spread={spread}
-            disabled={sceneTransitioning || pageTurning}
-            onBack={backToAlbum}
-            onNext={next}
-            onPrevious={previous}
-          />
+          <>
+            {!mobile && (
+              <div className="ji-detail__booklet-hit-areas" aria-label="북클릿 페이지 이동">
+                <button type="button" aria-label="이전 북클릿 펼침면" disabled={pageTurning || spread === 0} onClick={previous} />
+                <button type="button" aria-label="다음 북클릿 펼침면" disabled={pageTurning || spread === 2} onClick={next} />
+              </div>
+            )}
+            <BookletNavigation
+              mobile={mobile}
+              mobilePage={mobilePage}
+              spread={spread}
+              disabled={sceneTransitioning || pageTurning}
+              onBack={backToAlbum}
+              onNext={next}
+              onPrevious={previous}
+            />
+          </>
         )}
         {mode === 'PLAYER_FOCUS' && !sceneTransitioning && (
           <>
@@ -332,20 +342,6 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
 function Editorial({ album, onBooklet }: { album: Album; onBooklet(): void }) {
   return (
     <div className="ji-detail__editorial">
-      {album.tracks?.length && (
-        <section>
-          <h2>TRACKS</h2>
-          <ol>
-            {album.tracks.map((track) => (
-              <li key={track.number}>
-                <span>{String(track.number).padStart(2, '0')}</span>
-                <strong>{track.title}</strong>
-                <time>{track.duration}</time>
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
       {album.credits?.length && (
         <section>
           <h2>CREDITS</h2>
