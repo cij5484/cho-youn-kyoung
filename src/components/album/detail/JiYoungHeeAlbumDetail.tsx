@@ -138,6 +138,7 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
   const [reduced, setReduced] = useState(false);
   const [backgroundSize, setBackgroundSize] = useState({ width: 0, height: 0 });
   const [bookletBounds, setBookletBounds] = useState<BookletBounds>();
+  const [stageVisible, setStageVisible] = useState(true);
   const [webgl] = useState(canUseWebGL);
   const stage = useRef<HTMLElement>(null);
   const swipe = useRef<number | undefined>(undefined);
@@ -173,7 +174,9 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
     const element = stage.current;
     if (!element) return undefined;
     const observer = new IntersectionObserver(([entry]) => {
-      setDetailStageVisible(entry.isIntersecting && entry.intersectionRatio > 0.72);
+      const visible = entry.isIntersecting && entry.intersectionRatio > 0.72;
+      setStageVisible(visible);
+      setDetailStageVisible(visible);
     }, { threshold: [0, 0.72, 0.85] });
     observer.observe(element);
     return () => {
@@ -311,7 +314,7 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
           </div>
         )}
         {mode === 'ALBUM_OPEN' && !sceneTransitioning && (
-          <div className="ji-detail__mode-actions">
+          <div className={`ji-detail__mode-actions${stageVisible ? '' : ' is-editorial-hidden'}`}>
             <button type="button" disabled={sceneTransitioning} onClick={openBooklet}>BOOKLET</button>
             <button type="button" disabled={sceneTransitioning} onClick={enterPlayer}>CD / TRACKS</button>
             <button type="button" disabled={sceneTransitioning} onClick={() => { setSceneTransitioning(true); setMode('CLOSED'); }}>CLOSE ALBUM</button>
