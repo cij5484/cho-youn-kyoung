@@ -86,12 +86,12 @@
 .ji-detail__intro>button { margin-top:34px; color:var(--ji-accent); }
 .ji-detail__back { display:inline-block; margin-bottom:clamp(35px,6vh,70px); color:var(--ji-accent); font-size:.7rem; font-weight:700; letter-spacing:.15em; }
 .ji-detail__mode-actions { position:absolute; z-index:3; bottom:7vh; left:50%; display:flex; gap:35px; transform:translateX(-50%); }
-.ji-detail__booklet-ui { position:absolute; z-index:5; inset:calc(var(--header) + 18px) 5vw 24px; pointer-events:none!important; touch-action:pan-y; }
+.ji-detail__booklet-ui { position:absolute; z-index:5; pointer-events:none!important; touch-action:pan-y; }
 .ji-detail__booklet-controls { display:flex; justify-content:space-between; }
 .ji-detail__booklet-controls button,.ji-detail__booklet-footer{pointer-events:auto}
-.ji-detail__booklet-footer{position:absolute;bottom:0;left:50%;display:flex;flex-direction:column;align-items:center;transform:translateX(-50%)}
+.ji-detail__booklet-footer{position:absolute;top:calc(100% + 8px);left:50%;display:flex;flex-direction:column;align-items:center;transform:translateX(-50%)}
 .ji-detail__booklet-footer p{margin:0 0 3px;font-size:.68rem;letter-spacing:.15em;white-space:nowrap}
-.ji-detail__booklet-hit-areas{position:absolute;z-index:4;top:10%;right:8%;bottom:11%;left:8%;display:grid;grid-template-columns:1fr 1fr}
+.ji-detail__booklet-hit-areas{position:absolute;z-index:4;display:grid;grid-template-columns:1fr 1fr}
 .ji-detail__booklet-hit-areas button{width:100%;border:0;background:transparent;cursor:pointer}
 .ji-detail__booklet-hit-areas button:disabled{cursor:default}
 .ji-detail button:disabled { cursor:default; opacity:.35; }
