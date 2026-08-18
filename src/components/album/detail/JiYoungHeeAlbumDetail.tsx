@@ -123,7 +123,7 @@ function PlayerPanel({
 }
 
 export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
-  const { setDetailProps } = useJiYoungHeeStage();
+  const { setDetailProps, setDetailStageVisible } = useJiYoungHeeStage();
   const [mode, setMode] = useState<ExperienceMode>('CLOSED');
   const [spread, setSpread] = useState(0);
   const [mobilePage, setMobilePage] = useState(0);
@@ -159,6 +159,19 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
       motionQuery.removeEventListener('change', update);
     };
   }, []);
+
+  useEffect(() => {
+    const element = stage.current;
+    if (!element) return undefined;
+    const observer = new IntersectionObserver(([entry]) => {
+      setDetailStageVisible(entry.isIntersecting && entry.intersectionRatio > 0.08);
+    }, { threshold: [0, 0.08, 0.2] });
+    observer.observe(element);
+    return () => {
+      observer.disconnect();
+      setDetailStageVisible(true);
+    };
+  }, [setDetailStageVisible]);
 
   useEffect(() => {
     const element = stage.current;

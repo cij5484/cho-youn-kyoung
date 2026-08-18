@@ -27,6 +27,9 @@ export function ClearPlasticMaterial({ opacity = 0.2, thickness = 0.012 }: {
       roughness={0.07}
       metalness={0}
       ior={1.46}
+      clearcoat={0.32}
+      clearcoatRoughness={0.08}
+      specularIntensity={0.9}
       depthWrite={false}
       toneMapped={false}
     />

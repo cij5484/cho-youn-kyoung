@@ -54,7 +54,7 @@ const TRAY_THICKNESS = 0.018;
 const TRAY_PLATE_Z = BACK_INNER_Z + TRAY_THICKNESS / 2 + SURFACE_OFFSET;
 const RECESS_Z = TRAY_PLATE_Z + TRAY_THICKNESS / 2 + SURFACE_OFFSET;
 const HUB_Z = RECESS_Z + 0.009;
-const CD_MOUNT_Z = RECESS_Z + 0.026;
+const CD_MOUNT_Z = RECESS_Z + 0.032;
 const MOBILE_CLOSED_WIDTH = 0.69;
 const getMobileClosedScale = (viewportWidth: number) => viewportWidth * MOBILE_CLOSED_WIDTH / PANEL_WIDTH;
 // Negative Y brings the cover toward the viewer before it settles to the left.
@@ -123,10 +123,13 @@ function CdDisc({ label, mode, playing, reduced, tray, onPlayer, onSettled, onAn
   onAnchor?(anchor: { x: number; y: number }): void;
 }) {
   const rig = useRef<THREE.Group>(null);
+  const tilt = useRef<THREE.Group>(null);
   const spin = useRef<THREE.Group>(null);
-  const { camera, scene, size, viewport } = useThree();
+  const { camera, gl, scene, size, viewport } = useThree();
   const lastAnchor = useRef({ x: -1, y: -1 });
   const velocity = useRef(0);
+  const tiltTarget = useRef({ x: 0, y: 0 });
+  const tiltDrag = useRef<{ id: number; x: number; y: number } | null>(null);
   const detached = useRef(false);
   const CD_THICKNESS = CD_RADIUS * 0.02;
   const CENTER_HOLE_RADIUS = CD_RADIUS * 0.12;
@@ -168,6 +171,12 @@ function CdDisc({ label, mode, playing, reduced, tray, onPlayer, onSettled, onAn
     rig.current.scale.setScalar(scale);
     velocity.current = THREE.MathUtils.lerp(velocity.current, playing && !reduced ? Math.PI / 9 : 0, 1 - Math.exp(-3 * delta));
     if (spin.current) spin.current.rotation.z -= velocity.current * delta;
+    if (tilt.current) {
+      if (mode !== 'PLAYER_FOCUS') tiltTarget.current = { x: 0, y: 0 };
+      const tiltEase = reduced ? 1 : 1 - Math.exp(-10 * delta);
+      tilt.current.rotation.x = THREE.MathUtils.lerp(tilt.current.rotation.x, tiltTarget.current.x, tiltEase);
+      tilt.current.rotation.y = THREE.MathUtils.lerp(tilt.current.rotation.y, tiltTarget.current.y, tiltEase);
+    }
     const positionError = rig.current.position.distanceTo(targetPosition);
     if (!player && detached.current && positionError < 0.012 && tray.current) {
       tray.current.attach(rig.current);
@@ -190,12 +199,30 @@ function CdDisc({ label, mode, playing, reduced, tray, onPlayer, onSettled, onAn
     <group ref={rig} position={[0, 0, CD_MOUNT_Z]} onClick={(event) => {
       event.stopPropagation();
       if (mode === 'ALBUM_OPEN') onPlayer();
-    }}>
+    }} onPointerDown={(event) => {
+      if (mode !== 'PLAYER_FOCUS') return;
+      event.stopPropagation();
+      gl.domElement.setPointerCapture(event.pointerId);
+      tiltDrag.current = { id: event.pointerId, x: event.clientX, y: event.clientY };
+    }} onPointerMove={(event) => {
+      const active = tiltDrag.current;
+      if (!active || active.id !== event.pointerId || mode !== 'PLAYER_FOCUS') return;
+      tiltTarget.current.y = THREE.MathUtils.clamp(tiltTarget.current.y + (event.clientX - active.x) * 0.0035, -THREE.MathUtils.degToRad(11), THREE.MathUtils.degToRad(11));
+      tiltTarget.current.x = THREE.MathUtils.clamp(tiltTarget.current.x + (event.clientY - active.y) * 0.0028, -THREE.MathUtils.degToRad(7), THREE.MathUtils.degToRad(7));
+      active.x = event.clientX;
+      active.y = event.clientY;
+    }} onPointerUp={(event) => {
+      if (tiltDrag.current?.id === event.pointerId) tiltDrag.current = null;
+      if (gl.domElement.hasPointerCapture(event.pointerId)) gl.domElement.releasePointerCapture(event.pointerId);
+    }} onPointerCancel={() => { tiltDrag.current = null; }}>
+      {/* This soft, offset contact shadow stays on the tray plane; it does not
+          spin with the artwork or draw an outline around the disc. */}
+      {mode === 'ALBUM_OPEN' && <mesh position={[0.018, -0.015, -0.025]} receiveShadow>
+        <circleGeometry args={[CD_RADIUS * 0.88, 64]} />
+        <shadowMaterial transparent opacity={0.075} depthWrite={false} />
+      </mesh>}
+      <group ref={tilt}>
       <group ref={spin}>
-      <mesh position={[0, 0, -0.004]} receiveShadow>
-        <circleGeometry args={[CD_RADIUS * 0.94, 64]} />
-        <shadowMaterial transparent opacity={0.1} depthWrite={false} />
-      </mesh>
       <mesh castShadow>
         <extrudeGeometry args={[discShapes.substrate, { depth: CD_THICKNESS, bevelEnabled: false, curveSegments: 96 }]} />
         <ClearPlasticMaterial opacity={0.3} thickness={CD_THICKNESS} />
@@ -204,6 +231,7 @@ function CdDisc({ label, mode, playing, reduced, tray, onPlayer, onSettled, onAn
         <ringGeometry args={[HUB_RADIUS, LABEL_OUTER_RADIUS, 96]} />
         <meshBasicMaterial map={label} toneMapped={false} />
       </mesh>
+      </group>
       </group>
     </group>
   );
@@ -332,17 +360,12 @@ function BookletPages({ album, page, mobile, reduced, active, returning, mobileR
     setTurn(null);
     onPageTurnComplete();
   };
-  const p2Back = coverNode ? createPortal(
-    <mesh position={[width / 2, 0, -0.002]} rotation={[0, Math.PI, 0]} castShadow>
-      <planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} />
-      <PrintedPaperMaterial texture={pages[0]} side={THREE.FrontSide} />
-    </mesh>,
-    coverNode,
-  ) : null;
+  // The reader spread exists independently of P1 so entry and exit can use a
+  // clean crossfade instead of exposing a cover/page-fold intermediate.
+  void coverNode;
   if (mobile) {
     const base = pages[turn ? turn.target : settled];
     return <>
-      {p2Back}
       {mobileReaderReady && <mesh castShadow receiveShadow><planeGeometry args={[PAGE_HEIGHT * textureAspect(base), PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={base} /></mesh>}
     </>;
   }
@@ -354,11 +377,10 @@ function BookletPages({ album, page, mobile, reduced, active, returning, mobileR
   const leftSpreadIndex = turn
     ? (turn.direction > 0 ? turn.source : turn.target)
     : settled;
-  const showStaticLeft = leftSpreadIndex > 0;
+  const showStaticLeft = true;
   const leftStackZ = 0.006 + leftSpreadIndex * 0.004;
   return (
     <group>
-      {p2Back}
       {showStaticLeft && <mesh position={[-width / 2, 0, leftStackZ]} castShadow receiveShadow><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={left} /></mesh>}
       <mesh position={[width / 2, 0, 0]} castShadow receiveShadow onClick={active ? (event) => { event.stopPropagation(); onNext(); } : undefined}><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={right} /></mesh>
       {active && <mesh position={[-width / 2, 0, leftStackZ + 0.001]} userData={{ keepOpacity: true }} onClick={(event) => { event.stopPropagation(); onPrevious(); }}>
@@ -450,6 +472,7 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
   const focusTransformSettled = useRef(false);
   const previousMode = useRef(mode);
   const opacity = useRef(1);
+  const coverOpacity = useRef(1);
   const p1Width = PAGE_HEIGHT * textureAspect(p1);
   const assignCover = useCallback((node: THREE.Group | null) => {
     cover.current = node;
@@ -485,8 +508,7 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
     const targetQuaternion = new THREE.Quaternion();
     const restingScale = mode === 'PLAYER_FOCUS' ? 0.72 : 1;
     const targetScale = new THREE.Vector3(restingScale, restingScale, restingScale);
-    // Lift the closed booklet first; only then carry it to the reader position.
-    const movingToFocus = holdFocusTransform && focusElapsed.current >= 0.18;
+    const movingToFocus = holdFocusTransform;
     if (movingToFocus && rig.current.parent) {
       rig.current.parent.updateWorldMatrix(true, false);
       const desiredPosition = new THREE.Vector3(0, mobile ? 0.35 : 0.08, 0.82);
@@ -515,11 +537,18 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
       + rig.current.quaternion.angleTo(targetQuaternion)
       + rig.current.scale.distanceTo(targetScale);
     if (focused && movingToFocus && transformError < 0.045) focusTransformSettled.current = true;
-    const coverTarget = ((focused && focusTransformSettled.current) || (returning && !pagesReturned)) && detailsReady ? -Math.PI : 0;
-    cover.current.rotation.y = THREE.MathUtils.lerp(cover.current.rotation.y, coverTarget, ease);
-    cover.current.position.z = THREE.MathUtils.lerp(cover.current.position.z, coverTarget === -Math.PI ? 0 : 0.035, ease);
-    const coverError = Math.abs(cover.current.rotation.y - coverTarget)
-      + Math.abs(cover.current.position.z - (coverTarget === -Math.PI ? 0 : 0.035));
+    const coverTargetOpacity = focused && detailsReady && focusElapsed.current > 0.24 ? 0 : 1;
+    coverOpacity.current = THREE.MathUtils.lerp(coverOpacity.current, coverTargetOpacity, ease);
+    cover.current.traverse((object) => {
+      if (!(object instanceof THREE.Mesh)) return;
+      const material = object.material as THREE.Material & { opacity: number };
+      material.transparent = true;
+      material.opacity = coverOpacity.current;
+      material.depthWrite = coverOpacity.current > 0.08;
+    });
+    cover.current.rotation.y = 0;
+    cover.current.position.z = 0.035;
+    const coverError = Math.abs(coverOpacity.current - coverTargetOpacity);
     if (returning && pagesReturned && coverError < 0.025 && !coverClosed) {
       queueMicrotask(() => setCoverClosed(true));
     }

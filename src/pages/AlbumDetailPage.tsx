@@ -18,7 +18,7 @@ export function AlbumDetailPage() {
 
   if (!album) return <NotFoundPage />;
   if (album.id === 'ji-young-hee-ryu-haegeum-sanjo-2026') {
-    return <Suspense fallback={<div className="ji-detail__loading">앨범을 준비하고 있습니다.</div>}><JiYoungHeeAlbumDetail album={album} /></Suspense>;
+    return <Suspense fallback={null}><JiYoungHeeAlbumDetail album={album} /></Suspense>;
   }
 
   return (
