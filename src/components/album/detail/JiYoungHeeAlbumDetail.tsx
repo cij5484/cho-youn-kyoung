@@ -220,7 +220,7 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
   useEffect(() => {
     setDetailProps({
       album, backgroundSize, openingFromClosed, mobile, mode, page: mobile ? mobilePage : spread,
-      playing: player.playing, reduced, onTransitionChange: handleTransitionChange,
+      playing: player.playing, reduced, homeActivationKey: 0, onTransitionChange: handleTransitionChange,
       onPageTurnComplete: () => setPageTurning(false), onBooklet: openBooklet,
       onPrevious: previous, onNext: next, onOpen: openAlbum, onPlayer: enterPlayer,
     });
@@ -262,16 +262,20 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
         className="ji-detail__stage"
         ref={stage}
         aria-label="지영희류 앨범 인터랙티브 전시"
-        onTouchStart={(event) => {
-          if (mode === 'BOOKLET_FOCUS') swipe.current = event.touches[0].clientX;
-        }}
-        onTouchEnd={(event) => {
-          if (mode !== 'BOOKLET_FOCUS' || swipe.current === undefined) return;
-          const distance = event.changedTouches[0].clientX - swipe.current;
-          if (Math.abs(distance) > 45) (distance > 0 ? previous : next)();
-          swipe.current = undefined;
-        }}
       >
+        {mobile && mode === 'BOOKLET_FOCUS' && (
+          <div
+            className="ji-detail__swipe-surface"
+            aria-hidden="true"
+            onTouchStart={(event) => { swipe.current = event.touches[0].clientX; }}
+            onTouchEnd={(event) => {
+              if (swipe.current === undefined) return;
+              const distance = event.changedTouches[0].clientX - swipe.current;
+              if (Math.abs(distance) > 45) (distance > 0 ? previous : next)();
+              swipe.current = undefined;
+            }}
+          />
+        )}
         {mode === 'CLOSED' && !sceneTransitioning && (
           <div className="ji-detail__intro">
             <Link to="/works" className="ji-detail__back">← BACK TO WORKS</Link>

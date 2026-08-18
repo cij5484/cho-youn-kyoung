@@ -606,6 +606,10 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .mobile-menu a:focus-
   pointer-events: auto;
   z-index: 1;
 }
+.home-hero-rotator[data-work-id="ji-young-hee-ryu-haegeum-sanjo-2026"]
+  .home-hero-rotator__slide.is-active {
+  pointer-events: none;
+}
 .home-creative-credit {
   --credit-color: rgba(241, 237, 229, 0.82);
   --credit-personal-color: rgba(205, 201, 193, 0.70);

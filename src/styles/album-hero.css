@@ -25,6 +25,8 @@
   color: #f2eee5;
 }
 .album-hero--ji-young-hee-ryu-haegeum-sanjo-2026 { background: transparent; }
+.album-hero--ji-young-hee-ryu-haegeum-sanjo-2026 { pointer-events:none; }
+.album-hero--ji-young-hee-ryu-haegeum-sanjo-2026 .album-hero__link { pointer-events:auto; }
 
 .album-hero--han-beom-su-haegeum-sanjo-2020 .album-hero__subtitle,
 .album-hero--han-beom-su-haegeum-sanjo-2020 .album-hero__meta,

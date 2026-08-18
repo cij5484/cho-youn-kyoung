@@ -19,6 +19,7 @@ export type ExperienceProps = {
   mobile: boolean;
   playing: boolean;
   reduced: boolean;
+  homeActivationKey: number;
   onOpen(): void;
   onBooklet(): void;
   onPlayer(): void;
@@ -53,7 +54,7 @@ const TRAY_THICKNESS = 0.018;
 const TRAY_PLATE_Z = BACK_INNER_Z + TRAY_THICKNESS / 2 + SURFACE_OFFSET;
 const RECESS_Z = TRAY_PLATE_Z + TRAY_THICKNESS / 2 + SURFACE_OFFSET;
 const HUB_Z = RECESS_Z + 0.009;
-const CD_MOUNT_Z = RECESS_Z + 0.012;
+const CD_MOUNT_Z = RECESS_Z + 0.026;
 const MOBILE_CLOSED_WIDTH = 0.69;
 const getMobileClosedScale = (viewportWidth: number) => viewportWidth * MOBILE_CLOSED_WIDTH / PANEL_WIDTH;
 // Negative Y brings the cover toward the viewer before it settles to the left.
@@ -127,6 +128,10 @@ function CdDisc({ label, mode, playing, reduced, tray, onPlayer, onSettled, onAn
   const lastAnchor = useRef({ x: -1, y: -1 });
   const velocity = useRef(0);
   const detached = useRef(false);
+  const CD_THICKNESS = CD_RADIUS * 0.02;
+  const CENTER_HOLE_RADIUS = CD_RADIUS * 0.12;
+  const HUB_RADIUS = CD_RADIUS * 0.235;
+  const LABEL_OUTER_RADIUS = CD_RADIUS * 0.955;
   const mountPosition = useMemo(() => new THREE.Vector3(0, 0, CD_MOUNT_Z), []);
   const discShapes = useMemo(() => {
     const annulus = (innerRadius: number, outerRadius: number) => {
@@ -137,12 +142,8 @@ function CdDisc({ label, mode, playing, reduced, tray, onPlayer, onSettled, onAn
       shape.holes.push(hole);
       return shape;
     };
-    return {
-      data: annulus(0.155, CD_RADIUS - 0.06),
-      outer: annulus(CD_RADIUS - 0.06, CD_RADIUS),
-      hub: annulus(0.13, 0.155),
-    };
-  }, []);
+    return { substrate: annulus(CENTER_HOLE_RADIUS, CD_RADIUS) };
+  }, [CENTER_HOLE_RADIUS]);
   useFrame((_, delta) => {
     if (!rig.current) return;
     const ease = reduced ? 1 : 1 - Math.exp(-7 * delta);
@@ -191,21 +192,17 @@ function CdDisc({ label, mode, playing, reduced, tray, onPlayer, onSettled, onAn
       if (mode === 'ALBUM_OPEN') onPlayer();
     }}>
       <group ref={spin}>
+      <mesh position={[0, 0, -0.004]} receiveShadow>
+        <circleGeometry args={[CD_RADIUS * 0.94, 64]} />
+        <shadowMaterial transparent opacity={0.1} depthWrite={false} />
+      </mesh>
       <mesh castShadow>
-        <extrudeGeometry args={[discShapes.data, { depth: 0.014, bevelEnabled: false, curveSegments: 64 }]} />
-        <meshPhysicalMaterial color="#f8f7f2" metalness={0} roughness={0.28} clearcoat={0.18} clearcoatRoughness={0.72} />
+        <extrudeGeometry args={[discShapes.substrate, { depth: CD_THICKNESS, bevelEnabled: false, curveSegments: 96 }]} />
+        <ClearPlasticMaterial opacity={0.3} thickness={CD_THICKNESS} />
       </mesh>
-      <mesh position={[0, 0, 0.016]} castShadow>
-        <ringGeometry args={[0.155, CD_RADIUS - 0.06, 64]} />
+      <mesh position={[0, 0, CD_THICKNESS + SURFACE_OFFSET]} castShadow>
+        <ringGeometry args={[HUB_RADIUS, LABEL_OUTER_RADIUS, 96]} />
         <meshBasicMaterial map={label} toneMapped={false} />
-      </mesh>
-      <mesh>
-        <extrudeGeometry args={[discShapes.outer, { depth: 0.014, bevelEnabled: false, curveSegments: 64 }]} />
-        <ClearPlasticMaterial opacity={0.12} thickness={0.008} />
-      </mesh>
-      <mesh>
-        <extrudeGeometry args={[discShapes.hub, { depth: 0.014, bevelEnabled: false, curveSegments: 64 }]} />
-        <ClearPlasticMaterial opacity={0.12} thickness={0.008} />
       </mesh>
       </group>
     </group>
@@ -247,10 +244,10 @@ function TrayRig({ back, texture, label, mode, playing, reduced, onPlayer, onSet
         <IvoryEdgeMaterial />
       </mesh>
       <mesh position={[0, 0, -HALF_PACKAGE_DEPTH - SURFACE_OFFSET]} rotation={[0, Math.PI, 0]}>
-        <planeGeometry args={[PANEL_WIDTH * 0.98, PANEL * 0.98]} />
+        <planeGeometry args={[PANEL_WIDTH, PANEL]} />
         <PaperMaterial texture={back} />
       </mesh>
-      <mesh position={[0, 0, BACK_PANEL_CENTER_Z + PAPER_THICKNESS / 2 + SURFACE_OFFSET]} receiveShadow><planeGeometry args={[PANEL_WIDTH * 0.98, PANEL * 0.98]} /><PaperMaterial texture={texture} /></mesh>
+      <mesh position={[0, 0, BACK_PANEL_CENTER_Z + PAPER_THICKNESS / 2 + SURFACE_OFFSET]} receiveShadow><planeGeometry args={[PANEL_WIDTH, PANEL]} /><PaperMaterial texture={texture} /></mesh>
       <group ref={cdTray}>
         <group ref={trayContext}>
         <mesh position={[0, 0, TRAY_PLATE_Z]} receiveShadow userData={{ baseOpacity: 0.5 }}>
@@ -368,7 +365,6 @@ function BookletPages({ album, page, mobile, reduced, active, returning, mobileR
         <planeGeometry args={[width, PAGE_HEIGHT]} /><meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>}
       {turn && <TurningPage key={turn.key} pages={pages} width={width} turn={turn} duration={returning ? 0.42 : PAGE_TURN_DURATION} onDone={completeTurn} />}
-      <mesh position={[0, 0, 0.012]}><planeGeometry args={[0.025, PAGE_HEIGHT]} /><meshBasicMaterial color="#7a6f65" transparent opacity={0.18} /></mesh>
     </group>
   );
 }
@@ -558,7 +554,7 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
 }
 
 function Scene(props: ExperienceProps) {
-  const { album, backgroundSize, openingFromClosed, mode, page, mobile, playing, reduced, onOpen, onBooklet, onPlayer, onPrevious, onNext, onCdAnchor, onTransitionChange } = props;
+  const { album, backgroundSize, openingFromClosed, mode, page, mobile, playing, reduced, homeActivationKey, onOpen, onBooklet, onPlayer, onPrevious, onNext, onCdAnchor, onTransitionChange } = props;
   const textures = useCoreTextures(album);
   const { size, viewport } = useThree();
   const packageRig = useRef<THREE.Group>(null);
@@ -591,6 +587,10 @@ function Scene(props: ExperienceProps) {
   const backgroundOffsetX = (stageWidth - renderedWidth) / 2;
   const screenLineX = backgroundOffsetX + backgroundSource.x * renderedWidth;
   const closedX = (screenLineX / stageWidth - 0.5) * viewport.width;
+
+  useEffect(() => {
+    if (homeActivationKey > 0) autoRotate.current = !reduced;
+  }, [homeActivationKey, reduced]);
 
   useEffect(() => {
     const openingFromClosed = previousMode.current === 'CLOSED' && mode !== 'CLOSED';
@@ -706,8 +706,8 @@ function Scene(props: ExperienceProps) {
         <group ref={hinge}>
           <group position={[HALF_PANEL, 0, FRONT_PANEL_CENTER_Z]}>
             <mesh castShadow receiveShadow><boxGeometry args={[PANEL_WIDTH, PANEL, PAPER_THICKNESS]} /><IvoryEdgeMaterial /></mesh>
-            <mesh position={[0, 0, PAPER_THICKNESS / 2 + SURFACE_OFFSET]}><planeGeometry args={[PANEL_WIDTH * 0.98, PANEL * 0.98]} /><PaperMaterial texture={textures.front} /></mesh>
-            <mesh position={[0, 0, -PAPER_THICKNESS / 2 - SURFACE_OFFSET]} rotation={[0, Math.PI, 0]} receiveShadow><planeGeometry args={[PANEL_WIDTH * 0.98, PANEL * 0.98]} /><PaperMaterial texture={textures.interiorBooklet} /></mesh>
+            <mesh position={[0, 0, PAPER_THICKNESS / 2 + SURFACE_OFFSET]}><planeGeometry args={[PANEL_WIDTH, PANEL]} /><PaperMaterial texture={textures.front} /></mesh>
+            <mesh position={[0, 0, -PAPER_THICKNESS / 2 - SURFACE_OFFSET]} rotation={[0, Math.PI, 0]} receiveShadow><planeGeometry args={[PANEL_WIDTH, PANEL]} /><PaperMaterial texture={textures.interiorBooklet} /></mesh>
             <group position={[0, 0, 0.064]} rotation={[0, Math.PI, 0]}>
               <BookletRig album={album} p1={textures.p1} mode={keepInternalsClosed ? 'CLOSED' : mode} page={page} mobile={mobile} reduced={reduced} onBooklet={onBooklet} onSettled={setBookletSettled} onPageTurnComplete={() => props.onPageTurnComplete?.()} onPrevious={onPrevious} onNext={onNext} />
             </group>
