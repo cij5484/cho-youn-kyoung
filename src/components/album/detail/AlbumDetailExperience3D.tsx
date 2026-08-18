@@ -67,6 +67,7 @@ const OPEN_ANGLE = THREE.MathUtils.degToRad(-160);
 const PAGE_HEIGHT = PANEL * 0.92;
 const CD_RADIUS = PANEL * 0.45;
 const PAGE_TURN_DURATION = 0.86;
+const BOOKLET_EDGE_INSET = 0.003;
 const DETAIL_BACKGROUND = {
   desktop: { sourceWidth: 3840, sourceHeight: 2160, x: 1369 / 3840 },
   mobile: { sourceWidth: 1440, sourceHeight: 2560, x: 720 / 1440 },
@@ -90,6 +91,10 @@ function configureBookletTextures(textures: THREE.Texture[], maxAnisotropy: numb
     texture.magFilter = THREE.LinearFilter;
     texture.minFilter = THREE.LinearFilter;
     texture.generateMipmaps = false;
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    texture.offset.set(BOOKLET_EDGE_INSET, BOOKLET_EDGE_INSET);
+    texture.repeat.set(1 - BOOKLET_EDGE_INSET * 2, 1 - BOOKLET_EDGE_INSET * 2);
     texture.needsUpdate = true;
   });
 }
@@ -487,8 +492,8 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
       rig.current.parent.updateWorldMatrix(true, false);
       const desiredPosition = new THREE.Vector3(0, mobile ? 0.35 : 0.08, 0.82);
       const focusViewport = viewport.getCurrentViewport(camera, desiredPosition);
-      const mobileFocusScale = Math.min(focusViewport.width * 0.95 / p1Width, focusViewport.height * 0.91 / PAGE_HEIGHT);
-      const desktopFocusScale = Math.min(focusViewport.width * 0.93 / (p1Width * 2), focusViewport.height * 0.94 / PAGE_HEIGHT);
+      const mobileFocusScale = Math.min(focusViewport.width * 0.95 / p1Width, focusViewport.height * 0.91 / PAGE_HEIGHT) * 0.9;
+      const desktopFocusScale = Math.min(focusViewport.width * 0.93 / (p1Width * 2), focusViewport.height * 0.94 / PAGE_HEIGHT) * 0.9;
       const desiredWorld = new THREE.Matrix4().compose(
         desiredPosition,
         new THREE.Quaternion().setFromEuler(new THREE.Euler(mobile ? -0.04 : -0.08, 0, 0)),
@@ -626,8 +631,9 @@ function Scene(props: ExperienceProps) {
         setOpeningPhase('POSITION_FOR_OPEN');
       }
     }
-    packageRig.current.rotation.x = THREE.MathUtils.lerp(packageRig.current.rotation.x, closed ? rotation.current.x : -0.1, ease);
-    packageRig.current.rotation.y = THREE.MathUtils.lerp(packageRig.current.rotation.y, closed ? rotation.current.y : alignedYaw.current, ease);
+    const openInteractive = mode === 'ALBUM_OPEN' && aligned.current && openingPhaseRef.current === 'IDLE';
+    packageRig.current.rotation.x = THREE.MathUtils.lerp(packageRig.current.rotation.x, closed || openInteractive ? rotation.current.x : -0.1, ease);
+    packageRig.current.rotation.y = THREE.MathUtils.lerp(packageRig.current.rotation.y, closed || openInteractive ? rotation.current.y : alignedYaw.current, ease);
     const positioning = openingPhaseRef.current === 'POSITION_FOR_OPEN';
     const opening = openingPhaseRef.current === 'HINGE_OPEN' || (!closed && openingPhaseRef.current === 'IDLE');
     const targetHinge = opening ? OPEN_ANGLE : 0;
@@ -676,7 +682,7 @@ function Scene(props: ExperienceProps) {
     const active = drag.current;
     if (!active || active.id !== id) return;
     if (active.canvas.hasPointerCapture(id)) active.canvas.releasePointerCapture(id);
-    if (click && Math.hypot(active.x - active.startX, active.y - active.startY) < 7) onOpen();
+    if (mode === 'CLOSED' && click && Math.hypot(active.x - active.startX, active.y - active.startY) < 7) onOpen();
     drag.current = null;
   };
   useEffect(() => {
@@ -685,20 +691,29 @@ function Scene(props: ExperienceProps) {
     return () => { window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); };
   });
   const down = (event: ThreeEvent<PointerEvent>) => {
-    if (mode !== 'CLOSED') return;
+    if (mode !== 'CLOSED' && mode !== 'ALBUM_OPEN') return;
     event.stopPropagation(); autoRotate.current = false;
     const canvas = event.nativeEvent.currentTarget as HTMLCanvasElement; canvas.setPointerCapture(event.pointerId);
     drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY, startX: event.clientX, startY: event.clientY, canvas };
   };
   const move = (event: ThreeEvent<PointerEvent>) => {
-    const active = drag.current; if (!active || active.id !== event.pointerId || mode !== 'CLOSED') return;
-    rotation.current.y += (event.clientX - active.x) * 0.008;
-    rotation.current.x = THREE.MathUtils.clamp(rotation.current.x + (event.clientY - active.y) * 0.006, -0.48, 0.48);
+    const active = drag.current; if (!active || active.id !== event.pointerId || (mode !== 'CLOSED' && mode !== 'ALBUM_OPEN')) return;
+    const distance = Math.hypot(event.clientX - active.startX, event.clientY - active.startY);
+    if (distance >= 7) {
+      if (mode === 'ALBUM_OPEN') {
+        rotation.current.y = THREE.MathUtils.clamp(rotation.current.y + (event.clientX - active.x) * 0.0035, alignedYaw.current - THREE.MathUtils.degToRad(10), alignedYaw.current + THREE.MathUtils.degToRad(10));
+        rotation.current.x = THREE.MathUtils.clamp(rotation.current.x + (event.clientY - active.y) * 0.003, -0.1 - THREE.MathUtils.degToRad(6), -0.1 + THREE.MathUtils.degToRad(6));
+      } else {
+        rotation.current.y += (event.clientX - active.x) * 0.008;
+        rotation.current.x = THREE.MathUtils.clamp(rotation.current.x + (event.clientY - active.y) * 0.006, -0.48, 0.48);
+      }
+    }
     active.x = event.clientX; active.y = event.clientY;
   };
   return (
     <>
-      <group ref={packageRig} visible={mode !== 'PLAYER_FOCUS'} position={[0, mobile ? viewport.height * 0.2 : 0.05, 0]} rotation={[-0.1, 0.12, 0]} scale={mobile ? getMobileClosedScale(viewport.width) : 1.18}>
+      <group ref={packageRig} visible={mode !== 'PLAYER_FOCUS'} position={[0, mobile ? viewport.height * 0.2 : 0.05, 0]} rotation={[-0.1, 0.12, 0]} scale={mobile ? getMobileClosedScale(viewport.width) : 1.18}
+        onPointerDown={down} onPointerMove={move} onPointerUp={(event) => finish(event.pointerId, true)} onPointerCancel={(event) => finish(event.pointerId, false)}>
         {/* Keep assembly coordinates spine-relative while packageRig rotates at
             the geometric centre shared by the closed front and back covers. */}
         <group position={[-HALF_PANEL, 0, 0]}>
