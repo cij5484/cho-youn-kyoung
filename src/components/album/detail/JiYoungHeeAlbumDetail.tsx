@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Album } from '../../../data/albums';
 import { assetUrl } from '../../../utils/assetUrl';
-import type { ExperienceMode } from './AlbumDetailExperience3D';
+import type { BookletBounds, ExperienceMode } from './AlbumDetailExperience3D';
 import { useAlbumAudio } from './useAlbumAudio';
 import { useJiYoungHeeStage } from '../JiYoungHeePersistentStage';
 
@@ -29,6 +29,7 @@ function BookletNavigation({
   onNext,
   onPrevious,
   disabled,
+  bounds,
 }: {
   mobile: boolean;
   mobilePage: number;
@@ -37,6 +38,7 @@ function BookletNavigation({
   onNext(): void;
   onPrevious(): void;
   disabled: boolean;
+  bounds?: BookletBounds;
 }) {
   const atStart = mobile ? mobilePage === 0 : spread === 0;
   const atEnd = mobile ? mobilePage === 5 : spread === 2;
@@ -45,12 +47,14 @@ function BookletNavigation({
     : `P${spread * 2 + 2} — P${spread * 2 + 3}`;
 
   return (
-    <div className="ji-detail__booklet-ui">
-      <p aria-live="polite">{pageLabel}</p>
+    <div className="ji-detail__booklet-ui" style={bounds}>
       <div className="ji-detail__booklet-controls">
         <button type="button" disabled={disabled || atStart} onClick={onPrevious}>PREVIOUS</button>
-        <button type="button" disabled={disabled} onClick={onBack}>BACK TO ALBUM</button>
         <button type="button" disabled={disabled || atEnd} onClick={onNext}>NEXT</button>
+      </div>
+      <div className="ji-detail__booklet-footer">
+        <p aria-live="polite">{pageLabel}</p>
+        <button type="button" disabled={disabled} onClick={onBack}>BACK TO ALBUM</button>
       </div>
     </div>
   );
@@ -133,6 +137,7 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
   const [mobile, setMobile] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [backgroundSize, setBackgroundSize] = useState({ width: 0, height: 0 });
+  const [bookletBounds, setBookletBounds] = useState<BookletBounds>();
   const [webgl] = useState(canUseWebGL);
   const stage = useRef<HTMLElement>(null);
   const swipe = useRef<number | undefined>(undefined);
@@ -142,6 +147,10 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
   const handleTransitionChange = useCallback((transitioning: boolean) => {
     setSceneTransitioning(transitioning);
     if (!transitioning) setOpeningFromClosed(false);
+  }, []);
+  const handleBookletBounds = useCallback((bounds: BookletBounds) => {
+    const stageRect = stage.current?.getBoundingClientRect();
+    setBookletBounds(stageRect ? { ...bounds, left: bounds.left - stageRect.left, top: bounds.top - stageRect.top } : bounds);
   }, []);
 
   useEffect(() => {
@@ -164,8 +173,8 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
     const element = stage.current;
     if (!element) return undefined;
     const observer = new IntersectionObserver(([entry]) => {
-      setDetailStageVisible(entry.isIntersecting && entry.intersectionRatio > 0.08);
-    }, { threshold: [0, 0.08, 0.2] });
+      setDetailStageVisible(entry.isIntersecting && entry.intersectionRatio > 0.72);
+    }, { threshold: [0, 0.72, 0.85] });
     observer.observe(element);
     return () => {
       observer.disconnect();
@@ -235,9 +244,10 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
       album, backgroundSize, openingFromClosed, mobile, mode, page: mobile ? mobilePage : spread,
       playing: player.playing, reduced, homeActivationKey: 0, onTransitionChange: handleTransitionChange,
       onPageTurnComplete: () => setPageTurning(false), onBooklet: openBooklet,
+      onBookletBounds: handleBookletBounds,
       onPrevious: previous, onNext: next, onOpen: openAlbum, onPlayer: enterPlayer,
     });
-  }, [album, backgroundSize, enterPlayer, handleTransitionChange, mobile, mobilePage, mode,
+  }, [album, backgroundSize, enterPlayer, handleBookletBounds, handleTransitionChange, mobile, mobilePage, mode,
     next, openAlbum, openBooklet, openingFromClosed, player.playing, previous, reduced,
     setDetailProps, spread]);
 
@@ -258,7 +268,7 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
         <img src={assetUrl(album.coverImage!)} alt={`${album.title} 앨범 커버`} />
         <h1>{album.title}</h1>
         <p>ALBUM · {album.year}</p>
-        <Editorial album={album} onBooklet={() => undefined} />
+        <Editorial album={album} />
         <section>
           <h2>DIGITAL BOOKLET</h2>
           <div className="ji-detail__fallback-grid">
@@ -308,15 +318,24 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
           </div>
         )}
         {mode === 'BOOKLET_FOCUS' && !sceneTransitioning && (
-          <BookletNavigation
-            mobile={mobile}
-            mobilePage={mobilePage}
-            spread={spread}
-            disabled={sceneTransitioning || pageTurning}
-            onBack={backToAlbum}
-            onNext={next}
-            onPrevious={previous}
-          />
+          <>
+            {!mobile && (
+              <div className="ji-detail__booklet-hit-areas" aria-label="북클릿 페이지 이동" style={bookletBounds}>
+                <button type="button" aria-label="이전 북클릿 펼침면" disabled={pageTurning || spread === 0} onClick={previous} />
+                <button type="button" aria-label="다음 북클릿 펼침면" disabled={pageTurning || spread === 2} onClick={next} />
+              </div>
+            )}
+            <BookletNavigation
+              mobile={mobile}
+              mobilePage={mobilePage}
+              spread={spread}
+              disabled={sceneTransitioning || pageTurning}
+              bounds={bookletBounds}
+              onBack={backToAlbum}
+              onNext={next}
+              onPrevious={previous}
+            />
+          </>
         )}
         {mode === 'PLAYER_FOCUS' && !sceneTransitioning && (
           <>
@@ -324,28 +343,14 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
           </>
         )}
       </section>
-      <Editorial album={album} onBooklet={openBooklet} />
+      <Editorial album={album} />
     </article>
   );
 }
 
-function Editorial({ album, onBooklet }: { album: Album; onBooklet(): void }) {
+function Editorial({ album }: { album: Album }) {
   return (
     <div className="ji-detail__editorial">
-      {album.tracks?.length && (
-        <section>
-          <h2>TRACKS</h2>
-          <ol>
-            {album.tracks.map((track) => (
-              <li key={track.number}>
-                <span>{String(track.number).padStart(2, '0')}</span>
-                <strong>{track.title}</strong>
-                <time>{track.duration}</time>
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
       {album.credits?.length && (
         <section>
           <h2>CREDITS</h2>
@@ -357,15 +362,6 @@ function Editorial({ album, onBooklet }: { album: Album; onBooklet(): void }) {
               </div>
             ))}
           </dl>
-        </section>
-      )}
-      {album.booklet?.previewImages.length && (
-        <section>
-          <h2>DIGITAL BOOKLET</h2>
-          <div>
-            <p>P1—P7 · DESKTOP SPREAD / MOBILE PAGE VIEW</p>
-            <button type="button" onClick={onBooklet}>OPEN BOOKLET →</button>
-          </div>
         </section>
       )}
       <Link className="ji-detail__works" to="/works">← BACK TO WORKS</Link>
