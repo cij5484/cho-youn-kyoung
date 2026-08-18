@@ -67,6 +67,7 @@ const OPEN_ANGLE = THREE.MathUtils.degToRad(-160);
 const PAGE_HEIGHT = PANEL * 0.92;
 const CD_RADIUS = PANEL * 0.45;
 const PAGE_TURN_DURATION = 0.86;
+const BOOKLET_EDGE_INSET = 0.003;
 const DETAIL_BACKGROUND = {
   desktop: { sourceWidth: 3840, sourceHeight: 2160, x: 1369 / 3840 },
   mobile: { sourceWidth: 1440, sourceHeight: 2560, x: 720 / 1440 },
@@ -90,6 +91,10 @@ function configureBookletTextures(textures: THREE.Texture[], maxAnisotropy: numb
     texture.magFilter = THREE.LinearFilter;
     texture.minFilter = THREE.LinearFilter;
     texture.generateMipmaps = false;
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    texture.offset.set(BOOKLET_EDGE_INSET, BOOKLET_EDGE_INSET);
+    texture.repeat.set(1 - BOOKLET_EDGE_INSET * 2, 1 - BOOKLET_EDGE_INSET * 2);
     texture.needsUpdate = true;
   });
 }
@@ -347,7 +352,7 @@ function BookletPages({ album, page, mobile, reduced, active, onReady, onPageTur
   };
   if (mobile) {
     const base = pages[turn ? turn.target : settled];
-    return <mesh castShadow><planeGeometry args={[PAGE_HEIGHT * textureAspect(base), PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={base} /></mesh>;
+    return <mesh castShadow receiveShadow><planeGeometry args={[PAGE_HEIGHT * textureAspect(base), PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={base} /></mesh>;
   }
   const spreads = [[pages[0], pages[1]], [pages[2], pages[3]], [pages[4], pages[5]]];
   const source = spreads[turn ? turn.source : settled];
@@ -360,8 +365,8 @@ function BookletPages({ album, page, mobile, reduced, active, onReady, onPageTur
   const leftStackZ = 0.006 + leftSpreadIndex * 0.004;
   return (
     <group>
-      <mesh position={[-width / 2, 0, leftStackZ]} castShadow><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={left} /></mesh>
-      <mesh position={[width / 2, 0, 0]} castShadow onClick={active ? (event) => { event.stopPropagation(); onNext(); } : undefined}><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={right} /></mesh>
+      <mesh position={[-width / 2, 0, leftStackZ]} castShadow receiveShadow><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={left} /></mesh>
+      <mesh position={[width / 2, 0, 0]} castShadow receiveShadow onClick={active ? (event) => { event.stopPropagation(); onNext(); } : undefined}><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={right} /></mesh>
       {active && <mesh position={[-width / 2, 0, leftStackZ + 0.001]} userData={{ keepOpacity: true }} onClick={(event) => { event.stopPropagation(); onPrevious(); }}>
         <planeGeometry args={[width, PAGE_HEIGHT]} /><meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>}
