@@ -12,10 +12,7 @@ import { COVER_DEPTH, getPackageDimensions, storePackageRotation } from '../../a
 // spine.png is 171 × 3000: its 0.057 width/height ratio defines the printed spine.
 const SPINE_SURFACE_OFFSET = 0.0015;
 const DEFAULT_ROTATION = { x: -0.06, y: 0.1 };
-const ROTATION_LIMIT = {
-  x: THREE.MathUtils.degToRad(28),
-  y: THREE.MathUtils.degToRad(168),
-} as const;
+const TILT_LIMIT = THREE.MathUtils.degToRad(28);
 const AUTO_ROTATION_SPEED = (Math.PI * 2) / 22;
 const DEFAULT_BACKGROUND_ANCHORS = {
   desktop: { sourceWidth: 3840, sourceHeight: 2160, x: 1369 / 3840 },
@@ -95,8 +92,9 @@ function usePackageMaterials(textures?: AlbumHeroTextures) {
       color: map ? '#ffffff' : '#d3cec3', map, toneMapped: false,
     });
     const plastic = new THREE.MeshPhysicalMaterial({
-      color: '#dddcd5', transparent: true, opacity: 0.62, roughness: 0.38,
-      metalness: 0, clearcoat: 0.22, clearcoatRoughness: 0.58, depthWrite: true,
+      color: '#ffffff', transparent: true, opacity: 0.24, roughness: 0.24,
+      metalness: 0, clearcoat: 0.12, clearcoatRoughness: 0.78,
+      transmission: 0.16, thickness: 0.018, depthWrite: false,
     });
     return {
       paper,
@@ -156,7 +154,7 @@ function Package({ textures, geometry, scale, position }: PackageProps) {
     event.stopPropagation();
     if (group.current && autoRotating.current) {
       const normalizedY = THREE.MathUtils.euclideanModulo(group.current.rotation.y + Math.PI, Math.PI * 2) - Math.PI;
-      target.current.y = THREE.MathUtils.clamp(normalizedY, -ROTATION_LIMIT.y, ROTATION_LIMIT.y);
+      target.current.y = normalizedY;
       group.current.rotation.y = target.current.y;
     }
     autoRotating.current = false;
@@ -170,8 +168,10 @@ function Package({ textures, geometry, scale, position }: PackageProps) {
     const dy = event.clientY - drag.current.y;
     drag.current.x = event.clientX;
     drag.current.y = event.clientY;
-    target.current.y = THREE.MathUtils.clamp(target.current.y + dx * 0.008, -ROTATION_LIMIT.y, ROTATION_LIMIT.y);
-    target.current.x = THREE.MathUtils.clamp(target.current.x + dy * 0.006, -ROTATION_LIMIT.x, ROTATION_LIMIT.x);
+    // Yaw deliberately remains unbounded so the package can be spun through
+    // any number of full turns; only the vertical tilt needs a physical limit.
+    target.current.y += dx * 0.008;
+    target.current.x = THREE.MathUtils.clamp(target.current.x + dy * 0.006, -TILT_LIMIT, TILT_LIMIT);
   };
 
   const endDrag = (event: ThreeEvent<PointerEvent>) => {

@@ -8,9 +8,13 @@ export function useAlbumAudio(tracks: AlbumTrack[]) {
   const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState('');
+  const previewTimer = useRef<number | null>(null);
   const track = tracks[selected];
 
-  useEffect(() => () => audio.current?.pause(), []);
+  useEffect(() => () => {
+    audio.current?.pause();
+    if (previewTimer.current !== null) window.clearInterval(previewTimer.current);
+  }, []);
   const ensureAudio = () => {
     if (!track?.webAudioUrl) return null;
     if (!audio.current || audio.current.src !== new URL(track.webAudioUrl, window.location.href).href) {
@@ -26,15 +30,35 @@ export function useAlbumAudio(tracks: AlbumTrack[]) {
     return audio.current;
   };
   const select = async (index: number) => {
-    audio.current?.pause(); setPlaying(false); setTime(0); setError(''); setSelected(index);
+    audio.current?.pause();
+    if (previewTimer.current !== null) window.clearInterval(previewTimer.current);
+    previewTimer.current = null;
+    setPlaying(false); setTime(0); setError(''); setSelected(index);
   };
   const toggle = async () => {
     const element = ensureAudio();
-    if (!element) return;
+    if (!element) {
+      // Until masters are delivered, keep the transport testable: PLAY drives
+      // the physical disc and a silent preview clock rather than disabling UI.
+      if (playing) {
+        if (previewTimer.current !== null) window.clearInterval(previewTimer.current);
+        previewTimer.current = null;
+        setPlaying(false);
+      } else {
+        previewTimer.current = window.setInterval(() => setTime((value) => value + 0.25), 250);
+        setPlaying(true);
+      }
+      return;
+    }
     if (playing) { element.pause(); setPlaying(false); return; }
     try { await element.play(); setPlaying(true); } catch { setError('재생을 시작할 수 없습니다.'); }
   };
   const seek = (value: number) => { if (audio.current) audio.current.currentTime = value; setTime(value); };
-  const pause = () => { audio.current?.pause(); setPlaying(false); };
-  return { selected, track, playing, time, duration, error, select, toggle, seek, pause, playable: Boolean(track?.webAudioUrl) };
+  const pause = () => {
+    audio.current?.pause();
+    if (previewTimer.current !== null) window.clearInterval(previewTimer.current);
+    previewTimer.current = null;
+    setPlaying(false);
+  };
+  return { selected, track, playing, time, duration, error, select, toggle, seek, pause, playable: true, hasAudio: Boolean(track?.webAudioUrl) };
 }

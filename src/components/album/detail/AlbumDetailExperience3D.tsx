@@ -147,7 +147,7 @@ function CdDisc({ label, mode, playing, reduced, onPlayer, onSettled, onAnchor }
     }}>
       <mesh castShadow>
         <extrudeGeometry args={[discShape, { depth: 0.014, bevelEnabled: false, curveSegments: 64 }]} />
-        <meshStandardMaterial color="#e4e2dc" metalness={0} roughness={0.52} />
+        <meshPhysicalMaterial color="#f8f7f2" metalness={0} roughness={0.28} clearcoat={0.18} clearcoatRoughness={0.72} />
       </mesh>
       <mesh position={[0, 0, 0.016]} castShadow>
         <ringGeometry args={[0.155, CD_RADIUS - 0.06, 64]} />
@@ -155,11 +155,11 @@ function CdDisc({ label, mode, playing, reduced, onPlayer, onSettled, onAnchor }
       </mesh>
       <mesh position={[0, 0, 0.017]}>
         <ringGeometry args={[CD_RADIUS - 0.06, CD_RADIUS, 64]} />
-        <meshPhysicalMaterial color="#eeeae1" transparent opacity={0.62} roughness={0.65} depthWrite />
+        <meshPhysicalMaterial color="#ffffff" transparent opacity={0.3} roughness={0.18} transmission={0.18} thickness={0.012} depthWrite={false} />
       </mesh>
       <mesh position={[0, 0, 0.018]}>
         <ringGeometry args={[0.13, 0.155, 64]} />
-        <meshPhysicalMaterial color="#eeeae1" transparent opacity={0.62} roughness={0.65} depthWrite />
+        <meshPhysicalMaterial color="#ffffff" transparent opacity={0.38} roughness={0.2} transmission={0.14} thickness={0.012} depthWrite={false} />
       </mesh>
     </group>
   );
@@ -585,13 +585,13 @@ function Scene(props: ExperienceProps) {
       : 0.05;
     const mobileClosedScale = getMobileClosedScale(viewport.width);
     const mobileOpenScale = viewport.width * 0.9 / (PANEL_WIDTH * 1.94);
-    const mobilePlayerScale = viewport.width * 0.58 / (CD_RADIUS * 2);
+    const mobilePlayerScale = viewport.width * 0.62 / (CD_RADIUS * 2);
     const scale = keepClosedTransform
       ? (mobile ? mobileClosedScale : 1.18)
       : mode === 'BOOKLET_FOCUS'
         ? (mobile ? mobileOpenScale : 0.76)
         : mode === 'PLAYER_FOCUS'
-          ? (mobile ? mobilePlayerScale : 1.01)
+          ? (mobile ? mobilePlayerScale : 1.18)
           : (mobile ? mobileOpenScale : 1.08);
     packageRig.current.position.x = THREE.MathUtils.lerp(packageRig.current.position.x, x, ease);
     packageRig.current.position.y = THREE.MathUtils.lerp(packageRig.current.position.y, y, ease);
@@ -662,6 +662,12 @@ function Scene(props: ExperienceProps) {
         </group>
         {/* The printed spine stays in the fixed assembly as the cover opens. */}
         <mesh position={[SURFACE_OFFSET, 0, 0]} rotation={[0, -Math.PI / 2, 0]} castShadow><planeGeometry args={[PACKAGE_DEPTH, PANEL]} /><PaperMaterial texture={textures.spine} /></mesh>
+        {mode === 'CLOSED' && (
+          <mesh position={[HALF_PANEL, 0, 0.32]}>
+            <planeGeometry args={[PANEL_WIDTH * 1.22, PANEL * 1.22]} />
+            <meshBasicMaterial transparent opacity={0} colorWrite={false} depthWrite={false} />
+          </mesh>
+        )}
         </group>
       </group>
       <mesh position={[0, 0, -0.48]} receiveShadow><planeGeometry args={[16, 12]} /><shadowMaterial transparent opacity={0.065} depthWrite={false} /></mesh>

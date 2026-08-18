@@ -84,8 +84,6 @@
 .ji-detail__booklet-controls { display:flex; gap:32px; }
 .ji-detail button:disabled { cursor:default; opacity:.35; }
 .ji-detail__player { position:absolute; z-index:4; top:50%; right:6vw; width:min(27vw,420px); transform:translateY(-44%); }
-.ji-detail__connector{position:absolute;z-index:3;inset:var(--header) 0 0;width:100%;height:calc(100% - var(--header));overflow:visible;pointer-events:none}
-.ji-detail__connector line{stroke:var(--ji-accent);stroke-width:1;vector-effect:non-scaling-stroke;stroke-dasharray:1000;stroke-dashoffset:1000;opacity:.7;animation:ji-connector .5s ease-out forwards}
 .ji-detail__player ol { list-style:none; margin:20px 0 25px; padding:0; border-top:1px solid rgba(37,37,37,.2); }
 .ji-detail__player li button { display:grid; grid-template-columns:34px 1fr auto; gap:15px; width:100%; border:0; border-bottom:1px solid rgba(37,37,37,.16); text-align:left; }
 .ji-detail__player li button[aria-current=true] { color:var(--ji-accent); }
@@ -116,6 +114,5 @@
 }
 .ji-detail__intro,.ji-detail__mode-actions,.ji-detail__booklet-ui,.ji-detail__player{animation:ji-ui-in .55s ease both}
 @keyframes ji-ui-in{from{opacity:0}to{opacity:1}}
-@keyframes ji-connector{to{stroke-dashoffset:0}}
 @keyframes ji-track-item{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.ji-detail *{scroll-behavior:auto!important;transition:none!important;animation-duration:.01ms!important;animation-delay:0ms!important}}
