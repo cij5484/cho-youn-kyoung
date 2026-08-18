@@ -46,6 +46,13 @@ const PAPER_THICKNESS = 0.028;
 const SURFACE_OFFSET = 0.001;
 const FRONT_PANEL_CENTER_Z = HALF_PACKAGE_DEPTH - PAPER_THICKNESS / 2;
 const BACK_PANEL_CENTER_Z = -FRONT_PANEL_CENTER_Z;
+const BACK_INNER_Z = BACK_PANEL_CENTER_Z + PAPER_THICKNESS / 2 + SURFACE_OFFSET;
+const TRAY_THICKNESS = 0.018;
+const TRAY_PLATE_Z = BACK_INNER_Z + TRAY_THICKNESS / 2 + SURFACE_OFFSET;
+const RECESS_Z = TRAY_PLATE_Z + TRAY_THICKNESS / 2 + SURFACE_OFFSET;
+const HUB_Z = RECESS_Z + 0.009;
+const CD_MOUNT_Z = RECESS_Z + 0.012;
+const CD_PLAYER_LIFT = 0.16;
 // Negative Y brings the cover toward the viewer before it settles to the left.
 const OPEN_ANGLE = THREE.MathUtils.degToRad(-160);
 // Repository exports establish the trim ratios: booklet pages sit just inside
@@ -114,12 +121,12 @@ function CdDisc({ label, mode, playing, reduced, onPlayer, onSettled, onAnchor }
   useFrame((_, delta) => {
     if (!rig.current) return;
     const ease = reduced ? 1 : 1 - Math.exp(-7 * delta);
-    rig.current.position.z = THREE.MathUtils.lerp(rig.current.position.z, mode === 'PLAYER_FOCUS' ? 0.205 : 0.135, ease);
+    const targetZ = mode === 'PLAYER_FOCUS' ? CD_MOUNT_Z + CD_PLAYER_LIFT : CD_MOUNT_Z;
+    rig.current.position.z = THREE.MathUtils.lerp(rig.current.position.z, targetZ, ease);
     const scale = THREE.MathUtils.lerp(rig.current.scale.x, mode === 'PLAYER_FOCUS' ? 1.025 : 1, ease);
     rig.current.scale.setScalar(scale);
     velocity.current = THREE.MathUtils.lerp(velocity.current, playing && !reduced ? Math.PI / 9 : 0, 1 - Math.exp(-3 * delta));
     rig.current.rotation.z -= velocity.current * delta;
-    const targetZ = mode === 'PLAYER_FOCUS' ? 0.205 : 0.135;
     const targetScale = mode === 'PLAYER_FOCUS' ? 1.025 : 1;
     onSettled(Math.abs(rig.current.position.z - targetZ) + Math.abs(rig.current.scale.x - targetScale) < 0.015);
     if (mode === 'PLAYER_FOCUS' && onAnchor) {
@@ -132,7 +139,7 @@ function CdDisc({ label, mode, playing, reduced, onPlayer, onSettled, onAnchor }
     }
   });
   return (
-    <group ref={rig} position={[0, 0, 0.135]} onClick={(event) => {
+    <group ref={rig} position={[0, 0, CD_MOUNT_Z]} onClick={(event) => {
       event.stopPropagation();
       if (mode === 'ALBUM_OPEN') onPlayer();
     }}>
@@ -160,35 +167,26 @@ function TrayRig({ back, texture, label, mode, playing, reduced, onPlayer, onSet
   back: THREE.Texture; texture: THREE.Texture; label: THREE.Texture; mode: ExperienceMode; playing: boolean; reduced: boolean;
   onPlayer(): void; onSettled(settled: boolean): void; onDiscSettled(settled: boolean): void; onCdAnchor?(anchor: { x: number; y: number }): void;
 }) {
-  const rig = useRef<THREE.Group>(null);
   const trayContext = useRef<THREE.Group>(null);
   const contextFactor = mode === 'PLAYER_FOCUS' ? 0 : mode === 'BOOKLET_FOCUS' ? 0.48 : 1;
   useFrame((_, delta) => {
-    if (!rig.current) return;
+    if (!trayContext.current) return;
     const ease = reduced ? 1 : 1 - Math.exp(-7 * delta);
-    // The complete internal stack remains behind the front cover until the
-    // hinge exposes it; this is physical occlusion rather than a visibility pop.
-    const closedInternalZ = HALF_PACKAGE_DEPTH - 0.21 - SURFACE_OFFSET;
-    rig.current.position.z = THREE.MathUtils.lerp(rig.current.position.z, mode === 'CLOSED' ? closedInternalZ : 0, ease);
-    if (trayContext.current) {
-      const contextScale = mode === 'PLAYER_FOCUS' ? 0.94 : 1;
-      trayContext.current.scale.setScalar(THREE.MathUtils.lerp(trayContext.current.scale.x, contextScale, ease));
-      trayContext.current.position.y = THREE.MathUtils.lerp(trayContext.current.position.y, mode === 'PLAYER_FOCUS' ? -0.08 : 0, ease);
-      trayContext.current.traverse((object) => {
-        if (!(object instanceof THREE.Mesh)) return;
-        const material = object.material as THREE.Material & { opacity: number };
-        const targetOpacity = Number(object.userData.baseOpacity) * contextFactor;
-        material.transparent = true;
-        material.opacity = THREE.MathUtils.lerp(material.opacity, targetOpacity, ease);
-        material.depthWrite = material.opacity > 0.08;
-      });
-    }
-    const contextError = trayContext.current
-      ? Math.abs(trayContext.current.scale.x - (mode === 'PLAYER_FOCUS' ? 0.94 : 1))
-        + Math.abs(trayContext.current.position.y - (mode === 'PLAYER_FOCUS' ? -0.08 : 0))
-        + Math.abs(((trayContext.current.children[0] as THREE.Mesh).material as THREE.Material & { opacity: number }).opacity - 0.5 * contextFactor)
-      : 1;
-    onSettled(Math.abs(rig.current.position.z - (mode === 'CLOSED' ? closedInternalZ : 0)) < 0.012 && contextError < 0.018);
+    const contextScale = mode === 'PLAYER_FOCUS' ? 0.94 : 1;
+    trayContext.current.scale.setScalar(THREE.MathUtils.lerp(trayContext.current.scale.x, contextScale, ease));
+    trayContext.current.position.y = THREE.MathUtils.lerp(trayContext.current.position.y, mode === 'PLAYER_FOCUS' ? -0.08 : 0, ease);
+    trayContext.current.traverse((object) => {
+      if (!(object instanceof THREE.Mesh)) return;
+      const material = object.material as THREE.Material & { opacity: number };
+      const targetOpacity = Number(object.userData.baseOpacity) * contextFactor;
+      material.transparent = true;
+      material.opacity = THREE.MathUtils.lerp(material.opacity, targetOpacity, ease);
+      material.depthWrite = material.opacity > 0.08;
+    });
+    const contextError = Math.abs(trayContext.current.scale.x - contextScale)
+      + Math.abs(trayContext.current.position.y - (mode === 'PLAYER_FOCUS' ? -0.08 : 0))
+      + Math.abs(((trayContext.current.children[0] as THREE.Mesh).material as THREE.Material & { opacity: number }).opacity - 0.5 * contextFactor);
+    onSettled(contextError < 0.018);
   });
   return (
     <group position={[HALF_PANEL, 0, 0]}>
@@ -201,19 +199,19 @@ function TrayRig({ back, texture, label, mode, playing, reduced, onPlayer, onSet
         <PaperMaterial texture={back} />
       </mesh>
       <mesh position={[0, 0, BACK_PANEL_CENTER_Z + PAPER_THICKNESS / 2 + SURFACE_OFFSET]} receiveShadow><planeGeometry args={[PANEL_WIDTH * 0.98, PANEL * 0.98]} /><PaperMaterial texture={texture} /></mesh>
-      <group ref={rig} position={[0, 0, mode === 'CLOSED' ? HALF_PACKAGE_DEPTH - 0.21 - SURFACE_OFFSET : 0]}>
+      <group>
         <group ref={trayContext}>
-        <mesh position={[0, 0, 0.045]} receiveShadow userData={{ baseOpacity: 0.5 }}>
-          <boxGeometry args={[PANEL_WIDTH * 0.95, PANEL * 0.95, 0.028]} />
+        <mesh position={[0, 0, TRAY_PLATE_Z]} receiveShadow userData={{ baseOpacity: 0.5 }}>
+          <boxGeometry args={[PANEL_WIDTH * 0.95, PANEL * 0.95, TRAY_THICKNESS]} />
           <meshPhysicalMaterial color="#dedbd2" transparent opacity={0.5} roughness={0.88} metalness={0} clearcoat={0.04} depthWrite />
         </mesh>
-        <mesh position={[0, 0, 0.082]} receiveShadow userData={{ baseOpacity: 0.58 }}>
+        <mesh position={[0, 0, RECESS_Z]} receiveShadow userData={{ baseOpacity: 0.58 }}>
           <ringGeometry args={[CD_RADIUS, PANEL * 0.475, 64]} />
           <meshStandardMaterial color="#d9d5cc" transparent opacity={0.58} roughness={0.8} />
         </mesh>
-        <mesh position={[0, 0, 0.09]} userData={{ baseOpacity: 0.09 }}><ringGeometry args={[0.18, CD_RADIUS - 0.04, 64]} /><meshStandardMaterial color="#e4e0d7" transparent opacity={0.09} roughness={0.85} /></mesh>
-        <mesh position={[0, 0, 0.105]} rotation={[Math.PI / 2, 0, 0]} castShadow userData={{ baseOpacity: 0.62 }}>
-          <cylinderGeometry args={[0.16, 0.145, 0.045, 32]} />
+        <mesh position={[0, 0, RECESS_Z + SURFACE_OFFSET]} userData={{ baseOpacity: 0.09 }}><ringGeometry args={[0.18, CD_RADIUS - 0.04, 64]} /><meshStandardMaterial color="#e4e0d7" transparent opacity={0.09} roughness={0.85} /></mesh>
+        <mesh position={[0, 0, HUB_Z]} rotation={[Math.PI / 2, 0, 0]} castShadow userData={{ baseOpacity: 0.62 }}>
+          <cylinderGeometry args={[0.16, 0.145, 0.018, 32]} />
           <meshStandardMaterial color="#d8d4ca" transparent opacity={0.62} roughness={0.75} />
         </mesh>
         </group>
@@ -386,6 +384,7 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
   album: Album; p1: THREE.Texture; mode: ExperienceMode; page: number; mobile: boolean; reduced: boolean;
   onBooklet(): void; onSettled(settled: boolean): void; onPageTurnComplete(): void; onPrevious(): void; onNext(): void;
 }) {
+  const { camera, viewport } = useThree();
   const rig = useRef<THREE.Group>(null);
   const cover = useRef<THREE.Group>(null);
   const [coverNode, setCoverNode] = useState<THREE.Group | null>(null);
@@ -440,10 +439,13 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
     const movingToFocus = holdFocusTransform && focusElapsed.current >= 0.18;
     if (movingToFocus && rig.current.parent) {
       rig.current.parent.updateWorldMatrix(true, false);
+      const desiredPosition = new THREE.Vector3(0, mobile ? 0.35 : 0.08, 0.82);
+      const focusViewport = viewport.getCurrentViewport(camera, desiredPosition);
+      const mobileFocusScale = focusViewport.width * 0.88 / p1Width;
       const desiredWorld = new THREE.Matrix4().compose(
-        new THREE.Vector3(0, mobile ? 0.35 : 0.08, 0.82),
+        desiredPosition,
         new THREE.Quaternion().setFromEuler(new THREE.Euler(mobile ? -0.04 : -0.08, 0, 0)),
-        new THREE.Vector3(mobile ? 1.2 : 1.12, mobile ? 1.2 : 1.12, mobile ? 1.2 : 1.12),
+        new THREE.Vector3(mobile ? mobileFocusScale : 1.12, mobile ? mobileFocusScale : 1.12, mobile ? mobileFocusScale : 1.12),
       );
       const local = rig.current.parent.matrixWorld.clone().invert().multiply(desiredWorld);
       local.decompose(targetPosition, targetQuaternion, targetScale);
@@ -579,7 +581,7 @@ function Scene(props: ExperienceProps) {
     const y = mobile
       ? (keepClosedTransform ? viewport.height * 0.2 : mode === 'PLAYER_FOCUS' ? viewport.height * 0.2 : viewport.height * 0.1)
       : 0.05;
-    const mobileClosedScale = viewport.width * 0.69 / PANEL;
+    const mobileClosedScale = viewport.width * 0.69 / PANEL_WIDTH;
     const mobileOpenScale = viewport.width * 0.9 / (PANEL_WIDTH * 1.94);
     const mobilePlayerScale = viewport.width * 0.58 / (CD_RADIUS * 2);
     const scale = keepClosedTransform

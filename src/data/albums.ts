@@ -151,11 +151,6 @@ export const albums: Album[] = [
         desktop: { sourceWidth: 3840, sourceHeight: 2160, x: 1369 / 3840 },
         mobile: { sourceWidth: 1440, sourceHeight: 2560, x: 720 / 1440 },
       },
-      packageGeometry: {
-        front: { width: 3000, height: 2686 },
-        back: { width: 3000, height: 2657 },
-        spine: { width: 171, height: 3000 },
-      },
       textures: {
         front: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/front.png',
         back: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/back.png',

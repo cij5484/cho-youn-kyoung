@@ -152,12 +152,12 @@ HOME RECENT WORKS에는 확정 `releaseDate`가 있거나 위의 `coming-soon` �
 ### 지영희류 상세 UX 보정 (2026-08-18)
 
 - HOME과 상세의 닫힌 외형은 `packageGeometry.ts`의 panel, cover overhang, cover depth, spine ratio 계산을 함께 사용한다. HOME에서 마지막으로 보인 회전값은 session storage로 상세 CLOSED의 초기값에 전달하며, 저장값이 없으면 기존 초기 회전을 사용한다.
-- 저장소의 실제 web export 크기(front 3000×2686, back 3000×2657, spine 171×3000)를 `albums.ts`의 `packageGeometry`에 기록했다. 별도 원본 PDF는 이 checkout에 없으므로 PDF 재검수나 재-export 완료를 주장하지 않는다.
-- mobile CLOSED, OPEN, PLAYER, BOOKLET 크기는 world 상수가 아니라 viewport world width에서 각각 69vw, 90vw, 58vw를 역산하고 mobile booklet reader는 약 88~90vw의 독립 focus transform을 사용한다. CD는 panel height의 90%, booklet은 92%, tray는 panel 안쪽의 95%를 사용한다.
+- 저장소의 실제 web export 크기(front 3000×2686, back 3000×2657, spine 171×3000)는 상세 articulated geometry의 비율 계산에 사용한다. HOME은 기존 정사각 silhouette과 크기를 유지하도록 선택적 `packageGeometry`를 추가하지 않는다. 별도 원본 PDF는 이 checkout에 없으므로 PDF 재검수나 재-export 완료를 주장하지 않는다.
+- mobile CLOSED, OPEN, PLAYER 크기는 world 상수가 아니라 실제 cover width, spread width, CD diameter를 기준으로 viewport world width에서 각각 69vw, 90vw, 58vw를 역산한다. mobile booklet reader는 focus depth에서의 viewport와 실제 page width로 약 88vw scale을 별도 계산한다. CD는 panel height의 90%, booklet은 92%, tray는 panel 안쪽의 95%를 사용한다.
 - P2~P7 loader는 scene 내부 nested Suspense에 격리한다. 상세 페이지 texture가 suspend되어도 core digipack, tray/CD와 P1을 포함한 Canvas 전체는 교체되지 않는다.
 - 인쇄 artwork plane(front/back/spine/booklet/CD label)은 tone mapping을 끈 unlit material로 표시하고, 별도 paper/plastic backing이 조명과 그림자를 담당한다. 원본 이미지 자체의 색이나 대비는 재가공하지 않는다.
 - PC booklet 탐색은 실제 좌우 page mesh의 pointer event를 우선 사용한다. mobile은 P2~P7 single page를 유지하고 `READ PAGE`에서 고해상도 2D modal을 제공한다.
-- PLAYER 진입은 CD lift, booklet/tray fade·slide·scale settle 뒤 HTML player를 표시한다. connector 시작점은 CD world position을 camera projection한 screen coordinate를 사용한다.
+- tray와 mounted CD는 CLOSED/ALBUM_OPEN에서 동일한 local Z를 유지하며 back inner surface와 front inner surface 사이에 수납한다. PLAYER 진입에서만 CD를 lift하고 booklet/tray fade·slide·scale settle 뒤 HTML player를 표시한다. connector 시작점은 CD world position을 camera projection한 screen coordinate를 사용한다.
 
 ### Album Detail 3D 공통 제작 원칙
 
