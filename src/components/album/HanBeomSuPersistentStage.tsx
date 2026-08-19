@@ -11,7 +11,6 @@ const ALBUM_ID = 'han-beom-su-haegeum-sanjo-2020';
 
 type StageContextValue = {
   setDetailProps(props: ExperienceProps | null): void;
-  setDetailStageVisible(visible: boolean): void;
   setHomeActive(active: boolean): void;
 };
 
@@ -29,7 +28,6 @@ export function HanBeomSuPersistentStage({ children }: { children: ReactNode }) 
   const detailRoute = location.pathname === `/album/${ALBUM_ID}`;
   const [homeActive, setHomeActive] = useState(false);
   const [detailProps, setDetailProps] = useState<ExperienceProps | null>(null);
-  const [detailStageVisible, setDetailStageVisible] = useState(true);
   const [mobile, setMobile] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [homeActivationKey, setHomeActivationKey] = useState(0);
@@ -45,35 +43,25 @@ export function HanBeomSuPersistentStage({ children }: { children: ReactNode }) 
   }, []);
 
   useEffect(() => {
-    const preloadImage = (src: string | undefined) => {
-      if (!src) return;
-      const image = new Image();
-      image.src = assetUrl(src) ?? src;
-    };
-    const detail = album.detailExperience!;
-    const coreImages = [
-      album.albumHero!.textures.front, album.albumHero!.textures.back,
-      album.albumHero!.textures.spineLeft, detail.interior.bookletPanel,
-      detail.interior.trayPanel, album.cdLabelImage, album.booklet!.previewImages[0].src,
-    ];
-    // Begin after the initial paint. Dynamic imports share Vite's module cache
-    // with both lazy boundaries; Image preloads share the browser HTTP cache
-    // with TextureLoader without allocating a second WebGL texture.
-    const timer = window.setTimeout(() => {
-      void import('./detail/HanBeomSuAlbumDetail');
-      void import('./detail/HanBeomSuAlbumDetailExperience3D');
-      coreImages.forEach(preloadImage);
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, [album]);
-
-  useEffect(() => {
     const previous = previousPath.current;
     if (location.pathname === '/' && previous !== '/' && previous !== `/album/${ALBUM_ID}`) {
       setHomeActivationKey((key) => key + 1);
     }
     previousPath.current = location.pathname;
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!homeActive || location.pathname !== '/') return undefined;
+    const preload = () => [album.booklet?.previewImages[0].src, album.cdLabelImage].forEach((src) => {
+      if (!src) return;
+      const image = new Image();
+      image.src = assetUrl(src) ?? src;
+    });
+    const idleWindow = window as unknown as { requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number; cancelIdleCallback?: (handle: number) => void };
+    const requestIdle = idleWindow.requestIdleCallback;
+    const handle = requestIdle ? requestIdle(preload, { timeout: 2200 }) : window.setTimeout(preload, 900);
+    return () => requestIdle ? idleWindow.cancelIdleCallback?.(handle) : window.clearTimeout(handle);
+  }, [album, homeActive, location.pathname]);
 
   useEffect(() => {
     const query = matchMedia('(max-width: 700px)');
@@ -110,6 +98,7 @@ export function HanBeomSuPersistentStage({ children }: { children: ReactNode }) 
     playing: false,
     reduced,
     homeActivationKey,
+    detailActive: false,
     onOpen: () => undefined,
     onBooklet: () => undefined,
     onPlayer: () => undefined,
@@ -117,21 +106,22 @@ export function HanBeomSuPersistentStage({ children }: { children: ReactNode }) 
     onNext: () => undefined,
   }), [album, backgroundSize, homeActivationKey, mobile, reduced]);
   const visible = detailRoute || (location.pathname === '/' && homeActive);
-  const context = useMemo(() => ({ setDetailProps, setDetailStageVisible, setHomeActive: updateHomeActive }), [updateHomeActive]);
+  const context = useMemo(() => ({ setDetailProps, setHomeActive: updateHomeActive }), [updateHomeActive]);
+  const routeEligible = detailRoute || (location.pathname === '/' && homeActive);
 
   return (
     <StageContext.Provider value={context}>
-      <div ref={stage} className={`han-persistent-stage${visible ? ' is-visible' : ''}`} aria-hidden={!visible}>
+      {routeEligible && <div ref={stage} className={`han-persistent-stage${visible ? ' is-visible' : ''}`} aria-hidden={!visible}>
         <picture className="han-persistent-stage__background">
           <source media="(max-width:700px)" srcSet={assetUrl(album.albumHero!.background.mobile)} />
           <img src={assetUrl(album.albumHero!.background.desktop)} alt="" />
         </picture>
-        <div className={`han-persistent-stage__canvas${detailRoute && !detailStageVisible ? ' is-editorial-hidden' : ''}`}>
+        <div className="han-persistent-stage__canvas">
           <Suspense fallback={null}>
             <Experience3D {...(detailRoute && detailProps ? detailProps : fallbackProps)} />
           </Suspense>
         </div>
-      </div>
+      </div>}
       {children}
     </StageContext.Provider>
   );

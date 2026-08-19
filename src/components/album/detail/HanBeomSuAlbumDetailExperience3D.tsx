@@ -5,8 +5,8 @@ import type { RefObject } from 'react';
 import * as THREE from 'three';
 import type { Album } from '../../../data/albums';
 import { assetUrl } from '../../../utils/assetUrl';
-import { getPackageDimensions, PACKAGE_PANEL } from '../packageGeometry';
-import { CdPolycarbonateMaterial, IvoryEdgeMaterial, PrintedPaperMaterial, TrayClearPlasticMaterial } from '../HanBeomSuPackageModel';
+import { COVER_DEPTH, getPackageDimensions, PACKAGE_PANEL } from '../packageGeometry';
+import { CdPolycarbonateMaterial, HanOuterPlasticMaterial, PrintedPaperMaterial, TrayClearPlasticMaterial } from '../HanBeomSuPackageModel';
 
 export type ExperienceMode = 'CLOSED' | 'ALBUM_OPEN' | 'BOOKLET_FOCUS' | 'PLAYER_FOCUS';
 export type BookletBounds = { left: number; top: number; width: number; height: number };
@@ -21,21 +21,23 @@ export type ExperienceProps = {
   playing: boolean;
   reduced: boolean;
   homeActivationKey: number;
+  detailActive: boolean;
   onOpen(): void;
   onBooklet(): void;
   onPlayer(): void;
   onPrevious(): void;
   onNext(): void;
-  onCdAnchor?(anchor: { x: number; y: number }): void;
   onBookletBounds?(bounds: BookletBounds): void;
   onTransitionChange?(transitioning: boolean): void;
   onPageTurnComplete?(): void;
 };
 
-type CoreTextures = {
+type OuterTextures = {
   front: THREE.Texture;
   back: THREE.Texture;
   spine: THREE.Texture;
+};
+type InteriorTextures = {
   interiorBooklet: THREE.Texture;
   interiorTray: THREE.Texture;
   cdLabel: THREE.Texture;
@@ -44,23 +46,9 @@ type CoreTextures = {
 
 const PANEL = PACKAGE_PANEL;
 const HAN_ROTATION_KEY = 'han-beom-su-package-rotation';
-const HAN_GEOMETRY = { front: { width: 3320, height: 2946 }, back: { width: 3317, height: 2946 }, spine: { width: 182, height: 2946 } };
-const HAN_DIMENSIONS = getPackageDimensions(HAN_GEOMETRY);
-const PANEL_WIDTH = HAN_DIMENSIONS.frontWidth;
-const HALF_PANEL = PANEL_WIDTH / 2;
-const PACKAGE_DEPTH = HAN_DIMENSIONS.printedSpineDepth;
-const HALF_PACKAGE_DEPTH = PACKAGE_DEPTH / 2;
-const PAPER_THICKNESS = 0.028;
 const SURFACE_OFFSET = 0.001;
 const SPINE_SURFACE_OFFSET = 0.0015;
-const FRONT_PANEL_CENTER_Z = HALF_PACKAGE_DEPTH - PAPER_THICKNESS / 2;
-const BACK_PANEL_CENTER_Z = -FRONT_PANEL_CENTER_Z;
-const BACK_INNER_Z = BACK_PANEL_CENTER_Z + PAPER_THICKNESS / 2 + SURFACE_OFFSET;
 const TRAY_THICKNESS = 0.018;
-const TRAY_PLATE_Z = BACK_INNER_Z + TRAY_THICKNESS / 2 + SURFACE_OFFSET;
-const RECESS_Z = TRAY_PLATE_Z + TRAY_THICKNESS / 2 + SURFACE_OFFSET;
-const HUB_Z = RECESS_Z + 0.009;
-const CD_MOUNT_Z = RECESS_Z + 0.046;
 // Negative Y brings the cover toward the viewer before it settles to the left.
 const OPEN_ANGLE = THREE.MathUtils.degToRad(-160);
 // Repository exports establish the trim ratios: booklet pages sit just inside
@@ -74,6 +62,17 @@ const DETAIL_BACKGROUND = {
   mobile: { sourceWidth: 1440, sourceHeight: 2560, x: 0.5 },
 } as const;
 type OpeningPhase = 'IDLE' | 'ALIGN_CLOSED' | 'POSITION_FOR_OPEN' | 'HINGE_OPEN';
+type PackageDimensions = ReturnType<typeof getPackageDimensions>;
+
+function getPackageLayout(dimensions: PackageDimensions) {
+  const halfDepth = dimensions.printedSpineDepth / 2;
+  const frontCenterZ = halfDepth - COVER_DEPTH / 2;
+  const backCenterZ = -frontCenterZ;
+  const backInnerZ = backCenterZ + COVER_DEPTH / 2 + SURFACE_OFFSET;
+  const trayPlateZ = backInnerZ + TRAY_THICKNESS / 2 + SURFACE_OFFSET;
+  const recessZ = trayPlateZ + TRAY_THICKNESS / 2 + SURFACE_OFFSET;
+  return { frontCenterZ, backInnerZ, trayPlateZ, recessZ, hubZ: recessZ + 0.009, cdMountZ: recessZ + 0.046 };
+}
 
 function readHanRotation(fallback: { x: number; y: number }) {
   try {
@@ -112,37 +111,41 @@ function textureAspect(texture: THREE.Texture) {
   return image?.width && image?.height ? image.width / image.height : 1;
 }
 
-function useCoreTextures(album: Album): CoreTextures {
+function useOuterTextures(album: Album): OuterTextures {
   const { gl } = useThree();
   const hero = album.albumHero!;
-  const detail = album.detailExperience!;
   const urls = [
     hero.textures.front!, hero.textures.back!, hero.textures.spineLeft!,
-    detail.interior.bookletPanel, detail.interior.trayPanel, album.cdLabelImage!,
-    album.booklet!.previewImages[0].src,
   ].map((url) => assetUrl(url)!);
   const loaded = useLoader(THREE.TextureLoader, urls) as THREE.Texture[];
   useMemo(() => configureTextures(loaded, gl.capabilities.getMaxAnisotropy()), [gl, loaded]);
   return {
-    front: loaded[0], back: loaded[1], spine: loaded[2], interiorBooklet: loaded[3],
-    interiorTray: loaded[4], cdLabel: loaded[5], p1: loaded[6],
+    front: loaded[0], back: loaded[1], spine: loaded[2],
   };
+}
+
+function useInteriorTextures(album: Album): InteriorTextures {
+  const { gl } = useThree();
+  const detail = album.detailExperience!;
+  const urls = [detail.interior.bookletPanel, detail.interior.trayPanel, album.cdLabelImage!, album.booklet!.previewImages[0].src].map((url) => assetUrl(url)!);
+  const loaded = useLoader(THREE.TextureLoader, urls) as THREE.Texture[];
+  useMemo(() => configureTextures(loaded, gl.capabilities.getMaxAnisotropy()), [gl, loaded]);
+  return { interiorBooklet: loaded[0], interiorTray: loaded[1], cdLabel: loaded[2], p1: loaded[3] };
 }
 
 function PaperMaterial({ texture }: { texture: THREE.Texture }) {
   return <PrintedPaperMaterial texture={texture} />;
 }
 
-function CdDisc({ label, mode, playing, reduced, tray, onPlayer, onSettled, onAnchor }: {
+function CdDisc({ label, mode, playing, reduced, tray, cdMountZ, onPlayer, onSettled }: {
   label: THREE.Texture; mode: ExperienceMode; playing: boolean; reduced: boolean; onPlayer(): void; onSettled(settled: boolean): void;
   tray: RefObject<THREE.Group | null>;
-  onAnchor?(anchor: { x: number; y: number }): void;
+  cdMountZ: number;
 }) {
   const rig = useRef<THREE.Group>(null);
   const tilt = useRef<THREE.Group>(null);
   const spin = useRef<THREE.Group>(null);
-  const { camera, scene, size, viewport } = useThree();
-  const lastAnchor = useRef({ x: -1, y: -1 });
+  const { scene, size, viewport } = useThree();
   const velocity = useRef(0);
   const tiltTarget = useRef({ x: 0, y: 0 });
   const tiltDrag = useRef<{ id: number; x: number; y: number } | null>(null);
@@ -151,7 +154,7 @@ function CdDisc({ label, mode, playing, reduced, tray, onPlayer, onSettled, onAn
   const CENTER_HOLE_RADIUS = CD_RADIUS * 0.12;
   const HUB_RADIUS = CD_RADIUS * 0.235;
   const LABEL_OUTER_RADIUS = CD_RADIUS * 0.955;
-  const mountPosition = useMemo(() => new THREE.Vector3(0, 0, CD_MOUNT_Z), []);
+  const mountPosition = useMemo(() => new THREE.Vector3(0, 0, cdMountZ), [cdMountZ]);
   const discShapes = useMemo(() => {
     const annulus = (innerRadius: number, outerRadius: number) => {
       const shape = new THREE.Shape();
@@ -202,17 +205,9 @@ function CdDisc({ label, mode, playing, reduced, tray, onPlayer, onSettled, onAn
       detached.current = false;
     }
     onSettled(positionError + Math.abs(rig.current.scale.x - targetScale) < 0.015);
-    if (mode === 'PLAYER_FOCUS' && onAnchor) {
-      const projected = rig.current.getWorldPosition(new THREE.Vector3()).project(camera);
-      const anchor = { x: (projected.x * 0.5 + 0.5) * size.width, y: (-projected.y * 0.5 + 0.5) * size.height };
-      if (Math.abs(anchor.x - lastAnchor.current.x) + Math.abs(anchor.y - lastAnchor.current.y) > 0.5) {
-        lastAnchor.current = anchor;
-        onAnchor(anchor);
-      }
-    }
   });
   return (
-    <group ref={rig} position={[0, 0, CD_MOUNT_Z]} onClick={(event) => {
+    <group ref={rig} position={[0, 0, cdMountZ]} onClick={(event) => {
       event.stopPropagation();
       if (mode === 'ALBUM_OPEN') onPlayer();
     }} onPointerDown={(event) => {
@@ -255,9 +250,9 @@ function CdDisc({ label, mode, playing, reduced, tray, onPlayer, onSettled, onAn
   );
 }
 
-function TrayRig({ back, texture, label, mode, playing, reduced, onPlayer, onSettled, onDiscSettled, onCdAnchor }: {
-  back: THREE.Texture; texture: THREE.Texture; label: THREE.Texture; mode: ExperienceMode; playing: boolean; reduced: boolean;
-  onPlayer(): void; onSettled(settled: boolean): void; onDiscSettled(settled: boolean): void; onCdAnchor?(anchor: { x: number; y: number }): void;
+function TrayRig({ texture, label, dimensions, layout, mode, playing, reduced, onPlayer, onSettled, onDiscSettled }: {
+  texture: THREE.Texture; label: THREE.Texture; dimensions: PackageDimensions; layout: ReturnType<typeof getPackageLayout>; mode: ExperienceMode; playing: boolean; reduced: boolean;
+  onPlayer(): void; onSettled(settled: boolean): void; onDiscSettled(settled: boolean): void;
 }) {
   const { scene, size } = useThree();
   const cdTray = useRef<THREE.Group>(null);
@@ -284,33 +279,25 @@ function TrayRig({ back, texture, label, mode, playing, reduced, onPlayer, onSet
   });
   return (
     <>
-    <group position={[HALF_PANEL, 0, 0]}>
-      <mesh position={[0, 0, BACK_PANEL_CENTER_Z]} castShadow receiveShadow>
-        <boxGeometry args={[PANEL_WIDTH, PANEL, PAPER_THICKNESS]} />
-        <IvoryEdgeMaterial />
-      </mesh>
-      <mesh position={[0, 0, -HALF_PACKAGE_DEPTH - SURFACE_OFFSET]} rotation={[0, Math.PI, 0]}>
-        <planeGeometry args={[PANEL_WIDTH, PANEL]} />
-        <PaperMaterial texture={back} />
-      </mesh>
-      <mesh position={[0, 0, BACK_PANEL_CENTER_Z + PAPER_THICKNESS / 2 + SURFACE_OFFSET]} receiveShadow><planeGeometry args={[PANEL_WIDTH, PANEL]} /><PaperMaterial texture={texture} /></mesh>
+    <group>
+      <mesh position={[0, 0, layout.backInnerZ]} receiveShadow><planeGeometry args={[dimensions.backWidth, dimensions.backHeight]} /><PaperMaterial texture={texture} /></mesh>
       <group ref={cdTray}>
         <group ref={trayContext}>
-        <mesh position={[0, 0, TRAY_PLATE_Z]} receiveShadow userData={{ baseOpacity: 0.5 }}>
-          <boxGeometry args={[PANEL_WIDTH * 0.95, PANEL * 0.95, TRAY_THICKNESS]} />
+        <mesh position={[0, 0, layout.trayPlateZ]} receiveShadow userData={{ baseOpacity: 0.5 }}>
+          <boxGeometry args={[dimensions.backWidth * 0.95, dimensions.backHeight * 0.95, TRAY_THICKNESS]} />
           <TrayClearPlasticMaterial opacity={0.34} thickness={TRAY_THICKNESS} />
         </mesh>
-        <mesh position={[0, 0, RECESS_Z]} receiveShadow userData={{ baseOpacity: 0.68 }}>
+        <mesh position={[0, 0, layout.recessZ]} receiveShadow userData={{ baseOpacity: 0.68 }}>
           <ringGeometry args={[CD_RADIUS, PANEL * 0.475, 64]} />
           <TrayClearPlasticMaterial opacity={0.36} thickness={0.008} />
         </mesh>
-        <mesh position={[0, 0, RECESS_Z + SURFACE_OFFSET]} userData={{ baseOpacity: 0.15 }}><ringGeometry args={[0.18, CD_RADIUS - 0.04, 64]} /><TrayClearPlasticMaterial opacity={0.15} thickness={0.006} /></mesh>
-        <mesh position={[0, 0, HUB_Z]} rotation={[Math.PI / 2, 0, 0]} castShadow userData={{ baseOpacity: 0.62 }}>
+        <mesh position={[0, 0, layout.recessZ + SURFACE_OFFSET]} userData={{ baseOpacity: 0.15 }}><ringGeometry args={[0.18, CD_RADIUS - 0.04, 64]} /><TrayClearPlasticMaterial opacity={0.15} thickness={0.006} /></mesh>
+        <mesh position={[0, 0, layout.hubZ]} rotation={[Math.PI / 2, 0, 0]} castShadow userData={{ baseOpacity: 0.62 }}>
           <cylinderGeometry args={[0.16, 0.145, 0.018, 32]} />
           <TrayClearPlasticMaterial opacity={0.3} thickness={0.012} />
         </mesh>
         </group>
-        <CdDisc label={label} tray={cdTray} mode={mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={onDiscSettled} onAnchor={onCdAnchor} />
+        <CdDisc label={label} tray={cdTray} cdMountZ={layout.cdMountZ} mode={mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={onDiscSettled} />
       </group>
     </group>
     {mode === 'PLAYER_FOCUS' && createPortal(
@@ -333,14 +320,24 @@ function BookletPages({ album, page, mobile, reduced, active, onReady, onPageTur
 }) {
   const { gl } = useThree();
   const allUrls = album.booklet!.previewImages.slice(1).map(({ src }) => assetUrl(src)!);
-  const firstIndex = mobile ? Math.max(0, page - 1) : Math.max(0, (page - 1) * 2);
-  const lastIndex = mobile ? Math.min(allUrls.length - 1, page + 1) : Math.min(allUrls.length - 1, (page + 2) * 2 - 1);
-  const urls = allUrls.slice(firstIndex, lastIndex + 1);
+  const pageIndices = useCallback((value: number) => mobile ? [value] : [value * 2, value * 2 + 1], [mobile]);
+  const [requested, setRequested] = useState(() => pageIndices(page).filter((index) => index < allUrls.length));
+  const activeRequested = Array.from(new Set([...requested, ...pageIndices(page).filter((index) => index < allUrls.length)])).sort((a, b) => a - b);
+  const urls = activeRequested.map((index) => allUrls[index]);
   const loadedPages = useLoader(THREE.TextureLoader, urls) as THREE.Texture[];
   useMemo(() => configureBookletTextures(loadedPages, gl.capabilities.getMaxAnisotropy()), [gl, loadedPages]);
+  useEffect(() => {
+    const next = pageIndices(page + 1).filter((index) => index < allUrls.length);
+    if (!next.length) return undefined;
+    const prefetch = () => setRequested((current) => Array.from(new Set([...current, ...next])).sort((a, b) => a - b));
+    const idleWindow = window as unknown as { requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number; cancelIdleCallback?: (handle: number) => void };
+    const requestIdle = idleWindow.requestIdleCallback;
+    const handle = requestIdle ? requestIdle(prefetch, { timeout: 1800 }) : window.setTimeout(prefetch, 700);
+    return () => requestIdle ? idleWindow.cancelIdleCallback?.(handle) : window.clearTimeout(handle);
+  }, [allUrls.length, loadedPages, page, pageIndices]);
+  const textureByIndex = new Map(activeRequested.map((index, position) => [index, loadedPages[position]]));
   const pages = Array.from({ length: allUrls.length }, (_, index) => {
-    if (index >= firstIndex && index <= lastIndex) return loadedPages[index - firstIndex];
-    return loadedPages[0];
+    return textureByIndex.get(index) ?? loadedPages[0];
   });
   const aspect = textureAspect(pages[0]);
   const width = PAGE_HEIGHT * aspect;
@@ -573,16 +570,51 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
   );
 }
 
+function FrontInterior({ album, dimensions, mode, page, mobile, reduced, onBooklet, onSettled, onPageTurnComplete, onPrevious, onNext, onBounds }: {
+  album: Album; dimensions: PackageDimensions; mode: ExperienceMode; page: number; mobile: boolean; reduced: boolean;
+  onBooklet(): void; onSettled(settled: boolean): void; onPageTurnComplete(): void; onPrevious(): void; onNext(): void; onBounds?(bounds: BookletBounds): void;
+}) {
+  const textures = useInteriorTextures(album);
+  return <>
+    <mesh position={[0, 0, -COVER_DEPTH / 2 - SURFACE_OFFSET]} rotation={[0, Math.PI, 0]} receiveShadow><planeGeometry args={[dimensions.frontWidth, dimensions.frontHeight]} /><PaperMaterial texture={textures.interiorBooklet} /></mesh>
+    <group position={[0, 0, 0.064]} rotation={[0, Math.PI, 0]}>
+      <BookletRig album={album} p1={textures.p1} mode={mode} page={page} mobile={mobile} reduced={reduced} onBooklet={onBooklet} onSettled={onSettled} onPageTurnComplete={onPageTurnComplete} onPrevious={onPrevious} onNext={onNext} onBounds={onBounds} />
+    </group>
+  </>;
+}
+
+function TrayInterior({ album, dimensions, layout, mode, playing, reduced, onPlayer, onSettled, onDiscSettled }: {
+  album: Album; dimensions: PackageDimensions; layout: ReturnType<typeof getPackageLayout>; mode: ExperienceMode; playing: boolean; reduced: boolean;
+  onPlayer(): void; onSettled(settled: boolean): void; onDiscSettled(settled: boolean): void;
+}) {
+  const textures = useInteriorTextures(album);
+  return <TrayRig texture={textures.interiorTray} label={textures.cdLabel} dimensions={dimensions} layout={layout} mode={mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={onSettled} onDiscSettled={onDiscSettled} />;
+}
+
 function Scene(props: ExperienceProps) {
-  const { album, backgroundSize, openingFromClosed, mode, page, mobile, playing, reduced, homeActivationKey, onOpen, onBooklet, onPlayer, onPrevious, onNext, onCdAnchor, onBookletBounds, onTransitionChange } = props;
-  const textures = useCoreTextures(album);
+  const { album, backgroundSize, openingFromClosed, mode, page, mobile, playing, reduced, homeActivationKey, detailActive, onOpen, onBooklet, onPlayer, onPrevious, onNext, onBookletBounds, onTransitionChange } = props;
+  const textures = useOuterTextures(album);
+  const outerMaterials = useMemo(() => {
+    const paper = new THREE.MeshStandardMaterial({ color: '#e8e3d8', roughness: 0.94 });
+    const printed = (map: THREE.Texture) => new THREE.MeshBasicMaterial({ color: '#ffffff', map, toneMapped: false });
+    const faceMaterials = (map: THREE.Texture, faceIndex: 4 | 5) => {
+      const materials: THREE.Material[] = Array(6).fill(paper);
+      materials[faceIndex] = printed(map);
+      return materials;
+    };
+    return { front: faceMaterials(textures.front, 4), back: faceMaterials(textures.back, 5) };
+  }, [textures.back, textures.front]);
+  useEffect(() => () => new Set([...outerMaterials.front, ...outerMaterials.back]).forEach((material) => material.dispose()), [outerMaterials]);
   const packageDimensions = getPackageDimensions(album.albumHero?.packageGeometry);
+  const layout = getPackageLayout(packageDimensions);
+  const halfPanel = packageDimensions.frontWidth / 2;
   const { size, viewport } = useThree();
   const packageRig = useRef<THREE.Group>(null);
   const hinge = useRef<THREE.Group>(null);
   const drag = useRef<{ id: number; x: number; y: number; startX: number; startY: number; canvas: HTMLCanvasElement } | null>(null);
   const rotation = useRef(readHanRotation({ x: -0.06, y: 0.1 }));
   const autoRotate = useRef(true);
+  const persistFrame = useRef(0);
   const aligned = useRef(mode !== 'CLOSED');
   const alignedYaw = useRef(0);
   const [openingPhase, setOpeningPhase] = useState<OpeningPhase>('IDLE');
@@ -641,7 +673,8 @@ function Scene(props: ExperienceProps) {
     if (!packageRig.current || !hinge.current) return;
     const closed = mode === 'CLOSED';
     if (closed && autoRotate.current && !reduced) rotation.current.y += delta * Math.PI / 11;
-    if (closed) sessionStorage.setItem(HAN_ROTATION_KEY, JSON.stringify(rotation.current));
+    persistFrame.current += 1;
+    if (closed && persistFrame.current % 12 === 0) sessionStorage.setItem(HAN_ROTATION_KEY, JSON.stringify(rotation.current));
     const ease = reduced ? 1 : 1 - Math.exp(-5 * delta);
     if (!closed && !aligned.current) {
       rotation.current.x = THREE.MathUtils.lerp(rotation.current.x, -0.1, ease);
@@ -660,12 +693,12 @@ function Scene(props: ExperienceProps) {
     const targetHinge = opening ? OPEN_ANGLE : 0;
     hinge.current.rotation.y = THREE.MathUtils.lerp(hinge.current.rotation.y, targetHinge, ease);
     const keepClosedTransform = closed || openingPhaseRef.current === 'ALIGN_CLOSED';
-    const x = keepClosedTransform ? closedX : mode === 'BOOKLET_FOCUS' ? 1.05 : mode === 'PLAYER_FOCUS' ? (mobile ? 0 : 0.32) : (mobile ? 0 : HALF_PANEL);
+    const x = keepClosedTransform ? closedX : mode === 'BOOKLET_FOCUS' ? 1.05 : mode === 'PLAYER_FOCUS' ? (mobile ? 0 : 0.32) : (mobile ? 0 : halfPanel);
     const y = mobile
       ? (keepClosedTransform ? closedY : mode === 'PLAYER_FOCUS' ? viewport.height * 0.2 : viewport.height * 0.1)
       : (keepClosedTransform ? closedY : 0.05);
     const mobileClosedScale = 0.48;
-    const mobileOpenScale = viewport.width * 0.9 / (PANEL_WIDTH * 1.94);
+    const mobileOpenScale = viewport.width * 0.9 / (packageDimensions.frontWidth * 1.94);
     const mobilePlayerScale = viewport.width * 0.62 / (CD_RADIUS * 2);
     const scale = keepClosedTransform
       ? (mobile ? mobileClosedScale : 0.7)
@@ -735,34 +768,27 @@ function Scene(props: ExperienceProps) {
     <>
       <group ref={packageRig} visible={mode !== 'PLAYER_FOCUS'} position={[closedX, closedY, 0]} rotation={[-0.06, 0.1, 0]} scale={mobile ? 0.48 : 0.7}
         onPointerDown={down} onPointerMove={move} onPointerUp={(event) => finish(event.pointerId, true)} onPointerCancel={(event) => finish(event.pointerId, false)}>
-        {/* Keep assembly coordinates spine-relative while packageRig rotates at
-            the geometric centre shared by the closed front and back covers. */}
-        <group position={[-HALF_PANEL, 0, 0]}>
-        <TrayRig back={textures.back} texture={textures.interiorTray} label={textures.cdLabel} mode={keepInternalsClosed ? 'CLOSED' : mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={setTraySettled} onDiscSettled={setDiscSettled} onCdAnchor={onCdAnchor} />
-        <group ref={hinge}>
-          <group position={[HALF_PANEL, 0, FRONT_PANEL_CENTER_Z]}>
-            <mesh castShadow receiveShadow><boxGeometry args={[PANEL_WIDTH, PANEL, PAPER_THICKNESS]} /><IvoryEdgeMaterial /></mesh>
-            <mesh position={[0, 0, PAPER_THICKNESS / 2 + SURFACE_OFFSET]}><planeGeometry args={[PANEL_WIDTH, PANEL]} /><PaperMaterial texture={textures.front} /></mesh>
-            <mesh position={[0, 0, -PAPER_THICKNESS / 2 - SURFACE_OFFSET]} rotation={[0, Math.PI, 0]} receiveShadow><planeGeometry args={[PANEL_WIDTH, PANEL]} /><PaperMaterial texture={textures.interiorBooklet} /></mesh>
-            <group position={[0, 0, 0.064]} rotation={[0, Math.PI, 0]}>
-              <BookletRig album={album} p1={textures.p1} mode={keepInternalsClosed ? 'CLOSED' : mode} page={page} mobile={mobile} reduced={reduced} onBooklet={onBooklet} onSettled={setBookletSettled} onPageTurnComplete={() => props.onPageTurnComplete?.()} onPrevious={onPrevious} onNext={onNext} onBounds={onBookletBounds} />
-            </group>
+        <mesh castShadow><boxGeometry args={[packageDimensions.trayWidth, packageDimensions.trayHeight, packageDimensions.trayDepth]} /><HanOuterPlasticMaterial /></mesh>
+        <mesh position={[0, 0, -(packageDimensions.trayDepth / 2 + COVER_DEPTH / 2)]} material={outerMaterials.back} castShadow><boxGeometry args={[packageDimensions.backWidth, packageDimensions.backHeight, COVER_DEPTH]} /></mesh>
+        {detailActive && <Suspense fallback={null}><TrayInterior album={album} dimensions={packageDimensions} layout={layout} mode={keepInternalsClosed ? 'CLOSED' : mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={setTraySettled} onDiscSettled={setDiscSettled} /></Suspense>}
+        <group ref={hinge} position={[-packageDimensions.frontWidth / 2, 0, 0]}>
+          <group position={[packageDimensions.frontWidth / 2, 0, layout.frontCenterZ]}>
+            <mesh material={outerMaterials.front} castShadow><boxGeometry args={[packageDimensions.frontWidth, packageDimensions.frontHeight, COVER_DEPTH]} /></mesh>
+            {detailActive && <Suspense fallback={null}><FrontInterior album={album} dimensions={packageDimensions} mode={keepInternalsClosed ? 'CLOSED' : mode} page={page} mobile={mobile} reduced={reduced} onBooklet={onBooklet} onSettled={setBookletSettled} onPageTurnComplete={() => props.onPageTurnComplete?.()} onPrevious={onPrevious} onNext={onNext} onBounds={onBookletBounds} /></Suspense>}
           </group>
         </group>
-        {/* The printed spine stays in the fixed assembly as the cover opens. */}
-        <mesh position={[-SPINE_SURFACE_OFFSET, 0, 0]} rotation={[0, -Math.PI / 2, 0]} castShadow><planeGeometry args={[PACKAGE_DEPTH, PANEL]} /><PaperMaterial texture={textures.spine} /></mesh>
-        </group>
+        <mesh position={[-Math.max(packageDimensions.frontWidth, packageDimensions.backWidth) / 2 - SPINE_SURFACE_OFFSET, 0, 0]} rotation={[0, -Math.PI / 2, 0]} castShadow><planeGeometry args={[packageDimensions.printedSpineDepth, packageDimensions.frontHeight]} /><PaperMaterial texture={textures.spine} /></mesh>
       </group>
       {/* This screen-facing interaction surface intentionally lives outside
           packageRig, so its usable width never collapses at spine/back angles. */}
       {mode === 'CLOSED' && (
-        <mesh position={[closedX, mobile ? viewport.height * 0.2 : 0.05, 1.2]}
+        <mesh position={[closedX, closedY, 1.2]}
           onPointerDown={down} onPointerMove={move} onPointerUp={(e) => finish(e.pointerId, true)} onPointerCancel={(e) => finish(e.pointerId, false)}>
           <planeGeometry args={[mobile ? viewport.width * 0.78 : 3.7, mobile ? viewport.width * 0.78 : 3.4]} />
           <meshBasicMaterial transparent opacity={0} colorWrite={false} depthWrite={false} />
         </mesh>
       )}
-      <mesh position={[0, 0, -0.48]} receiveShadow><planeGeometry args={[16, 12]} /><shadowMaterial transparent opacity={0.065} depthWrite={false} /></mesh>
+      <mesh position={[0, 0, -0.34]} receiveShadow><planeGeometry args={[12, 10]} /><shadowMaterial transparent opacity={0.13} depthWrite={false} /></mesh>
     </>
   );
 }

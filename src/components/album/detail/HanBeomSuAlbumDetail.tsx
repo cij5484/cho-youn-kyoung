@@ -133,7 +133,7 @@ function PlayerPanel({
 export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
   const location = useLocation();
   const autoOpenAlbum = Boolean((location.state as { autoOpenAlbum?: boolean } | null)?.autoOpenAlbum);
-  const { setDetailProps, setDetailStageVisible } = useHanBeomSuStage();
+  const { setDetailProps } = useHanBeomSuStage();
   const [mode, setMode] = useState<ExperienceMode>(() => autoOpenAlbum ? 'ALBUM_OPEN' : 'CLOSED');
   const [spread, setSpread] = useState(0);
   const [mobilePage, setMobilePage] = useState(0);
@@ -144,7 +144,6 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
   const [reduced, setReduced] = useState(false);
   const [backgroundSize, setBackgroundSize] = useState({ width: 0, height: 0 });
   const [bookletBounds, setBookletBounds] = useState<BookletBounds>();
-  const [stageVisible, setStageVisible] = useState(true);
   const [webgl] = useState(canUseWebGL);
   const stage = useRef<HTMLElement>(null);
   const swipe = useRef<number | undefined>(undefined);
@@ -177,21 +176,6 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
       motionQuery.removeEventListener('change', update);
     };
   }, []);
-
-  useEffect(() => {
-    const element = stage.current;
-    if (!element) return undefined;
-    const observer = new IntersectionObserver(([entry]) => {
-      const visible = entry.isIntersecting && entry.intersectionRatio > 0.72;
-      setStageVisible(visible);
-      setDetailStageVisible(visible);
-    }, { threshold: [0, 0.72, 0.85] });
-    observer.observe(element);
-    return () => {
-      observer.disconnect();
-      setDetailStageVisible(true);
-    };
-  }, [setDetailStageVisible]);
 
   useEffect(() => {
     const element = stage.current;
@@ -252,7 +236,7 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
   useEffect(() => () => setDetailProps(null), [setDetailProps]);
   useEffect(() => {
     setDetailProps({
-      album, backgroundSize, openingFromClosed, mobile, mode, page: mobile ? mobilePage : spread,
+      album, backgroundSize, openingFromClosed, mobile, mode, page: mobile ? mobilePage : spread, detailActive: true,
       playing: player.playing, reduced, homeActivationKey: 0, onTransitionChange: handleTransitionChange,
       onPageTurnComplete: () => setPageTurning(false), onBooklet: openBooklet,
       onBookletBounds: handleBookletBounds,
@@ -322,7 +306,7 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
           </div>
         )}
         {mode === 'ALBUM_OPEN' && !sceneTransitioning && (
-          <div className={`han-detail__open-ui${stageVisible ? '' : ' is-editorial-hidden'}`}>
+          <div className="han-detail__open-ui">
             <section className="han-detail__open-info" aria-labelledby="open-album-info">
               <p id="open-album-info" className="han-detail__open-label">ALBUM · {album.year}</p>
               <h1>조윤경 해금산조</h1>

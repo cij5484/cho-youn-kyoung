@@ -1,15 +1,14 @@
 import * as THREE from 'three';
 
-/** Shared, unlit paper treatment used by both the HOME and DETAIL stages. */
-export function IvoryEdgeMaterial({ color = '#eee9df' }: { color?: string }) {
-  return <meshBasicMaterial color={color} toneMapped={false} />;
-}
-
 export function PrintedPaperMaterial({ texture, side = THREE.FrontSide }: {
   texture: THREE.Texture;
   side?: THREE.Side;
 }) {
   return <meshBasicMaterial map={texture} side={side} toneMapped={false} />;
+}
+
+export function HanOuterPlasticMaterial() {
+  return <meshPhysicalMaterial color="#ffffff" transparent opacity={0.24} roughness={0.24} metalness={0} clearcoat={0.12} clearcoatRoughness={0.78} transmission={0.16} thickness={0.018} depthWrite={false} />;
 }
 
 function ClearPlasticMaterial({ opacity, thickness, roughness, clearcoat, specularIntensity, transmission }: {
