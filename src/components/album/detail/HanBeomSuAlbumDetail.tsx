@@ -390,9 +390,15 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
           <>
             {bookletBounds && (mobile ? !pageTurning : bookletPhase === 'READING' || turnDirection !== null) && (
               <div className={`han-detail__booklet-images${mobile ? ' is-mobile' : ''}`} style={bookletBounds} aria-hidden="true">
-                {(mobile ? [pages[mobilePage + 1]] : [pages[settledSpread * 2 + 1], pages[settledSpread * 2 + 2]])
+                {(mobile
+                  ? [pages[mobilePage + 1]]
+                  : turnDirection === 'forward'
+                    ? [pages[settledSpread * 2 + 1], pages[spread * 2 + 2]]
+                    : turnDirection === 'backward'
+                      ? [pages[spread * 2 + 1], pages[settledSpread * 2 + 2]]
+                      : [pages[settledSpread * 2 + 1], pages[settledSpread * 2 + 2]])
                   .filter(Boolean)
-                  .map((page, index) => <img className={turnDirection === 'forward' && index === 1 || turnDirection === 'backward' && index === 0 ? 'is-turning-page' : undefined} key={page.src} src={assetUrl(page.src)} alt="" />)}
+                  .map((page) => <img key={page.src} src={assetUrl(page.src)} alt="" />)}
               </div>
             )}
             {!mobile && (

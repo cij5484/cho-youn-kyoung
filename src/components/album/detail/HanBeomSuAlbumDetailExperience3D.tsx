@@ -31,6 +31,7 @@ export type ExperienceProps = {
   onBookletBounds?(bounds: BookletBounds): void;
   onBookletPhaseChange?(phase: BookletVisualPhase): void;
   onPageTurnStart?(direction: 'forward' | 'backward'): void;
+  onPrewarmReady?(): void;
   onTransitionChange?(transitioning: boolean): void;
   onPageTurnComplete?(): void;
 };
@@ -113,6 +114,23 @@ function configureBookletTextures(textures: THREE.Texture[], maxAnisotropy: numb
 function textureAspect(texture: THREE.Texture) {
   const image = texture.image as { width?: number; height?: number } | undefined;
   return image?.width && image?.height ? image.width / image.height : 1;
+}
+
+function PrewarmReady({ onReady }: { onReady?: () => void }) {
+  const { gl, scene, camera } = useThree();
+  const frames = useRef(0);
+  const reported = useRef(false);
+  useEffect(() => {
+    frames.current = 0;
+    reported.current = false;
+  }, [onReady]);
+  useFrame(() => {
+    if (!onReady || reported.current || ++frames.current < 2) return;
+    gl.compile(scene, camera);
+    reported.current = true;
+    onReady();
+  });
+  return null;
 }
 
 function useOuterTextures(album: Album): OuterTextures {
@@ -295,8 +313,9 @@ function TrayRig({ texture, label, dimensions, layout, mode, playing, reduced, o
 
 type PageTurn = { key: number; source: number; target: number; direction: -1 | 1 };
 
-function BookletPages({ album, page, mobile, reduced, active, onReady, onPageTurnStart, onPageTurnComplete, onPrevious, onNext }: {
+function BookletPages({ album, page, mobile, reduced, active, visualPhase, onReady, onPageTurnStart, onPageTurnComplete, onPrevious, onNext }: {
   album: Album; page: number; mobile: boolean; reduced: boolean; active: boolean;
+  visualPhase: BookletVisualPhase;
   onPrevious(): void; onNext(): void;
   onReady(): void; onPageTurnStart(direction: 'forward' | 'backward'): void; onPageTurnComplete(): void;
 }) {
@@ -386,10 +405,12 @@ function BookletPages({ album, page, mobile, reduced, active, onReady, onPageTur
     ? (turn.direction > 0 ? turn.source : turn.target)
     : settled;
   const leftStackZ = 0.006 + leftSpreadIndex * 0.004;
+  const showStaticPages = mobile || visualPhase === 'ENTERING'
+    || visualPhase === 'RETURNING_MOVE' || visualPhase === 'RETURNING_FINISH';
   return (
     <group>
-      <mesh position={[-width / 2, 0, leftStackZ]} castShadow receiveShadow><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={left} /></mesh>
-      <mesh position={[width / 2, 0, 0]} castShadow receiveShadow onClick={active ? (event) => { event.stopPropagation(); onNext(); } : undefined}><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={right} /></mesh>
+      <mesh visible={showStaticPages} position={[-width / 2, 0, leftStackZ]} castShadow receiveShadow><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={left} /></mesh>
+      <mesh visible={showStaticPages} position={[width / 2, 0, 0]} castShadow receiveShadow onClick={active ? (event) => { event.stopPropagation(); onNext(); } : undefined}><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={right} /></mesh>
       {active && <mesh position={[-width / 2, 0, leftStackZ + 0.001]} userData={{ keepOpacity: true }} onClick={(event) => { event.stopPropagation(); onPrevious(); }}>
         <planeGeometry args={[width, PAGE_HEIGHT]} /><meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>}
@@ -588,7 +609,7 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
   return (
     <group ref={rig} position={[-p1Width / 2, 0, 0.08]} onClick={(event) => { event.stopPropagation(); if (mode === 'ALBUM_OPEN') onBooklet(); }}>
       {detailsMounted && <group ref={reader} visible={phase !== 'RESTING'}>
-        <Suspense fallback={null}><BookletPages album={album} page={page} mobile={mobile} reduced={reduced} active={mode === 'BOOKLET_FOCUS'} onReady={() => setDetailsReady(true)} onPageTurnStart={(direction) => { setPhase(direction === 'forward' ? 'TURNING_FORWARD' : 'TURNING_BACKWARD'); onPageTurnStart(direction); }} onPageTurnComplete={() => { setPhase('READING'); onPageTurnComplete(); }} onPrevious={onPrevious} onNext={onNext} /></Suspense>
+        <Suspense fallback={null}><BookletPages album={album} page={page} mobile={mobile} reduced={reduced} active={mode === 'BOOKLET_FOCUS'} visualPhase={phase} onReady={() => setDetailsReady(true)} onPageTurnStart={(direction) => { setPhase(direction === 'forward' ? 'TURNING_FORWARD' : 'TURNING_BACKWARD'); onPageTurnStart(direction); }} onPageTurnComplete={() => { setPhase('READING'); onPageTurnComplete(); }} onPrevious={onPrevious} onNext={onNext} /></Suspense>
       </group>}
       <group ref={cover} position={[0, 0, 0.035]}>
         <mesh position={[p1Width / 2, 0, 0]} castShadow><planeGeometry args={[p1Width, PAGE_HEIGHT]} /><PaperMaterial texture={p1} /></mesh>
@@ -611,16 +632,17 @@ function FrontInterior({ album, dimensions, mode, page, mobile, reduced, onBookl
   </>;
 }
 
-function TrayInterior({ album, dimensions, layout, mode, playing, reduced, onPlayer, onSettled, onDiscSettled }: {
+function TrayInterior({ album, dimensions, layout, mode, playing, reduced, onPlayer, onSettled, onDiscSettled, onPrewarmReady }: {
   album: Album; dimensions: PackageDimensions; layout: ReturnType<typeof getPackageLayout>; mode: ExperienceMode; playing: boolean; reduced: boolean;
   onPlayer(): void; onSettled(settled: boolean): void; onDiscSettled(settled: boolean): void;
+  onPrewarmReady?(): void;
 }) {
   const textures = useInteriorTextures(album);
-  return <TrayRig texture={textures.interiorTray} label={textures.cdLabel} dimensions={dimensions} layout={layout} mode={mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={onSettled} onDiscSettled={onDiscSettled} />;
+  return <><TrayRig texture={textures.interiorTray} label={textures.cdLabel} dimensions={dimensions} layout={layout} mode={mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={onSettled} onDiscSettled={onDiscSettled} /><PrewarmReady onReady={onPrewarmReady} /></>;
 }
 
 function Scene(props: ExperienceProps) {
-  const { album, backgroundSize, openingFromClosed, mode, page, mobile, playing, reduced, homeActivationKey, detailActive, onOpen, onBooklet, onPlayer, onPrevious, onNext, onBookletBounds, onBookletPhaseChange, onPageTurnStart, onTransitionChange } = props;
+  const { album, backgroundSize, openingFromClosed, mode, page, mobile, playing, reduced, homeActivationKey, detailActive, onOpen, onBooklet, onPlayer, onPrevious, onNext, onBookletBounds, onBookletPhaseChange, onPageTurnStart, onPrewarmReady, onTransitionChange } = props;
   const openPitch = mobile ? -0.1 : 0;
   const textures = useOuterTextures(album);
   const outerMaterials = useMemo(() => {
@@ -654,7 +676,6 @@ function Scene(props: ExperienceProps) {
   const bookletSettled = useRef(mode === 'CLOSED');
   const traySettled = useRef(true);
   const discSettled = useRef(true);
-  const packagePresentation = useRef(1);
   const setBookletSettled = useCallback((value: boolean) => { bookletSettled.current = value; }, []);
   const setTraySettled = useCallback((value: boolean) => { traySettled.current = value; }, []);
   const setDiscSettled = useCallback((value: boolean) => { discSettled.current = value; }, []);
@@ -752,23 +773,12 @@ function Scene(props: ExperienceProps) {
           : (mobile ? mobileOpenScale : hanOpenScale);
     packageRig.current.position.x = THREE.MathUtils.lerp(packageRig.current.position.x, x, ease);
     packageRig.current.position.y = THREE.MathUtils.lerp(packageRig.current.position.y, y, ease);
-    const packageZ = mode === 'BOOKLET_FOCUS' ? -1 : (!mobile && mode === 'PLAYER_FOCUS' ? -0.25 : 0);
+    const packageZ = mode === 'BOOKLET_FOCUS' ? -1 : (!mobile && mode === 'PLAYER_FOCUS' ? -2.5 : 0);
     packageRig.current.position.z = THREE.MathUtils.lerp(packageRig.current.position.z, packageZ, ease);
     packageRig.current.scale.setScalar(THREE.MathUtils.lerp(packageRig.current.scale.x, scale, ease));
-    if (!mobile) {
-      const presentationTarget = mode === 'PLAYER_FOCUS' ? 0 : 1;
-      packagePresentation.current = THREE.MathUtils.lerp(packagePresentation.current, presentationTarget, 1 - Math.exp(-3.8 * delta));
-      packageRig.current.traverse((object) => {
-        if (!(object instanceof THREE.Mesh) || object.userData.keepOpacity) return;
-        const materials = Array.isArray(object.material) ? object.material : [object.material];
-        materials.forEach((material) => {
-          if (material.userData.packageBaseOpacity === undefined) material.userData.packageBaseOpacity = material.opacity;
-          material.transparent = true;
-          material.opacity = Number(material.userData.packageBaseOpacity) * packagePresentation.current;
-          material.depthWrite = material.opacity > 0.08;
-        });
-      });
-    }
+    packageRig.current.visible = mobile
+      ? mode !== 'PLAYER_FOCUS'
+      : mode !== 'PLAYER_FOCUS' || packageRig.current.position.z > -2.35;
     const packageError = Math.abs(packageRig.current.position.x - x)
       + Math.abs(packageRig.current.position.y - y)
       + Math.abs(packageRig.current.position.z - packageZ)
@@ -845,7 +855,7 @@ function Scene(props: ExperienceProps) {
         onPointerDown={down} onPointerMove={move} onPointerUp={(event) => finish(event.pointerId, true)} onPointerCancel={(event) => finish(event.pointerId, false)}>
         <mesh castShadow><boxGeometry args={[packageDimensions.trayWidth, packageDimensions.trayHeight, packageDimensions.trayDepth]} /><HanOuterPlasticMaterial /></mesh>
         <mesh position={[0, 0, -(packageDimensions.trayDepth / 2 + COVER_DEPTH / 2)]} material={outerMaterials.back} castShadow><boxGeometry args={[packageDimensions.backWidth, packageDimensions.backHeight, COVER_DEPTH]} /></mesh>
-        {detailActive && <Suspense fallback={null}><TrayInterior album={album} dimensions={packageDimensions} layout={layout} mode={keepInternalsClosed ? 'CLOSED' : mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={setTraySettled} onDiscSettled={setDiscSettled} /></Suspense>}
+        {detailActive && <Suspense fallback={null}><TrayInterior album={album} dimensions={packageDimensions} layout={layout} mode={keepInternalsClosed ? 'CLOSED' : mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={setTraySettled} onDiscSettled={setDiscSettled} onPrewarmReady={onPrewarmReady} /></Suspense>}
         <group ref={hinge} position={[-packageDimensions.frontWidth / 2, 0, 0]}>
           <group position={[packageDimensions.frontWidth / 2, 0, layout.frontCenterZ]}>
             <mesh material={outerMaterials.front} castShadow><boxGeometry args={[packageDimensions.frontWidth, packageDimensions.frontHeight, COVER_DEPTH]} /></mesh>

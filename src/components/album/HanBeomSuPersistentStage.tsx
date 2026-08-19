@@ -37,6 +37,15 @@ export function HanBeomSuPersistentStage({ children }: { children: ReactNode }) 
   const stage = useRef<HTMLDivElement>(null);
   const previousPath = useRef(location.pathname);
   const homeActiveRef = useRef(false);
+  const prewarmReady = useRef(false);
+  const prewarmPromise = useRef<Promise<void> | null>(null);
+  const resolvePrewarm = useRef<(() => void) | null>(null);
+
+  const handlePrewarmReady = useCallback(() => {
+    prewarmReady.current = true;
+    resolvePrewarm.current?.();
+    resolvePrewarm.current = null;
+  }, []);
 
   const updateHomeActive = useCallback((active: boolean) => {
     if (active && !homeActiveRef.current) setHomeActivationKey((key) => key + 1);
@@ -106,12 +115,24 @@ export function HanBeomSuPersistentStage({ children }: { children: ReactNode }) 
     onPlayer: () => undefined,
     onPrevious: () => undefined,
     onNext: () => undefined,
-  }), [album, backgroundSize, homeActivationKey, mobile, prewarming, reduced]);
-  const prepareDetail = useCallback(async () => {
-    if (mobile) return;
+    onPrewarmReady: prewarming ? handlePrewarmReady : undefined,
+  }), [album, backgroundSize, handlePrewarmReady, homeActivationKey, mobile, prewarming, reduced]);
+  const prepareDetail = useCallback(() => {
+    if (mobile || prewarmReady.current) return Promise.resolve();
+    if (prewarmPromise.current) return prewarmPromise.current;
     setPrewarming(true);
-    await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+    prewarmPromise.current = new Promise<void>((resolve) => { resolvePrewarm.current = resolve; });
+    return prewarmPromise.current;
   }, [mobile]);
+  useEffect(() => {
+    if (detailRoute && prewarmReady.current) queueMicrotask(() => setPrewarming(false));
+    if (!detailRoute && location.pathname !== '/') {
+      queueMicrotask(() => setPrewarming(false));
+      prewarmReady.current = false;
+      prewarmPromise.current = null;
+      resolvePrewarm.current = null;
+    }
+  }, [detailRoute, location.pathname]);
   // On desktop, retain the outgoing detail stage for HOME's first commit.
   // The detail cleanup and AlbumHero activation then hand ownership over in
   // the same effect flush, so neither the body nor an empty canvas is exposed.

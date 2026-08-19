@@ -30,6 +30,7 @@ export type ExperienceProps = {
   onBookletBounds?(bounds: BookletBounds): void;
   onTransitionChange?(transitioning: boolean): void;
   onPageTurnComplete?(): void;
+  onPrewarmReady?(): void;
 };
 
 type CoreTextures = {
@@ -41,6 +42,23 @@ type CoreTextures = {
   cdLabel: THREE.Texture;
   p1: THREE.Texture;
 };
+
+function PrewarmReady({ onReady }: { onReady?: () => void }) {
+  const { gl, scene, camera } = useThree();
+  const frames = useRef(0);
+  const reported = useRef(false);
+  useEffect(() => {
+    frames.current = 0;
+    reported.current = false;
+  }, [onReady]);
+  useFrame(() => {
+    if (!onReady || reported.current || ++frames.current < 2) return;
+    gl.compile(scene, camera);
+    reported.current = true;
+    onReady();
+  });
+  return null;
+}
 
 const PANEL = PACKAGE_PANEL;
 const PANEL_WIDTH = PANEL * 3000 / 2686;
@@ -751,6 +769,7 @@ function Scene(props: ExperienceProps) {
         </mesh>
       )}
       <mesh position={[0, 0, -0.48]} receiveShadow><planeGeometry args={[16, 12]} /><shadowMaterial transparent opacity={0.065} depthWrite={false} /></mesh>
+      <PrewarmReady onReady={props.onPrewarmReady} />
     </>
   );
 }
