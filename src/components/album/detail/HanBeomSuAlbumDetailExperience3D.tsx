@@ -533,10 +533,15 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
     const canRevealReader = detailsReady && (phase === 'READING' || (phase === 'ENTERING' && transformError < 0.12));
     const coverTarget = canRevealReader ? 0 : 1;
     const readerTarget = canRevealReader ? 1 : 0;
-    // Never show two printed surfaces at once: the settled reader handoff is
-    // deliberately atomic, and RETURNING removes the reader before motion.
-    coverOpacity.current = coverTarget;
-    readerOpacity.current = readerTarget;
+    if (mobile) {
+      coverOpacity.current = THREE.MathUtils.lerp(coverOpacity.current, coverTarget, ease);
+      readerOpacity.current = THREE.MathUtils.lerp(readerOpacity.current, readerTarget, ease);
+    } else {
+      // Desktop never shows two printed surfaces at once: the settled reader
+      // handoff is atomic, and RETURNING removes the reader before motion.
+      coverOpacity.current = coverTarget;
+      readerOpacity.current = readerTarget;
+    }
     setGroupOpacity(cover.current, coverOpacity.current * opacity.current);
     setGroupOpacity(reader.current, readerOpacity.current * opacity.current);
 
@@ -669,8 +674,10 @@ function Scene(props: ExperienceProps) {
       aligned.current = false;
       openingPhaseRef.current = 'ALIGN_CLOSED';
     } else if (mode !== 'CLOSED') {
-      rotation.current.x = openPitch;
-      rotation.current.y = alignedYaw.current;
+      if (!mobile) {
+        rotation.current.x = openPitch;
+        rotation.current.y = alignedYaw.current;
+      }
       aligned.current = true;
       openingPhaseRef.current = 'IDLE';
     } else {
@@ -681,7 +688,7 @@ function Scene(props: ExperienceProps) {
     reported.current = false;
     onTransitionChange?.(true);
     previousMode.current = mode;
-  }, [mode, onTransitionChange, openPitch]);
+  }, [mobile, mode, onTransitionChange, openPitch]);
 
   useFrame((_, delta) => {
     if (!packageRig.current || !hinge.current) return;

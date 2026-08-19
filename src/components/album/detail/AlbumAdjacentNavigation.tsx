@@ -8,18 +8,26 @@ export function AlbumAdjacentNavigation({ currentId, tone }: { currentId: string
   const currentIndex = available.findIndex((album) => album.id === currentId);
   const next = available[(currentIndex + 1) % available.length];
   const navigate = useNavigate();
+  const [desktop, setDesktop] = useState(() => matchMedia('(min-width: 701px)').matches);
   const [navigating, setNavigating] = useState(false);
   useEffect(() => {
-    if (!next) return undefined;
+    const query = matchMedia('(min-width: 701px)');
+    const update = () => setDesktop(query.matches);
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+  useEffect(() => {
+    if (!desktop || !next) return undefined;
     const warm = () => { void preloadAlbumDetail(next); };
     const idle = window.requestIdleCallback?.(warm, { timeout: 1800 }) ?? window.setTimeout(warm, 300);
     return () => window.cancelIdleCallback ? window.cancelIdleCallback(idle) : window.clearTimeout(idle);
-  }, [next]);
+  }, [desktop, next]);
   if (!next || next.id === currentId) return null;
 
   return (
     <nav className={`album-adjacent album-adjacent--${tone}`} aria-label="앨범 상세 내비게이션">
-      <Link to={next.detailsPath!} state={{ autoOpenAlbum: true }} aria-disabled={navigating} onClick={(event) => {
+      <Link to={next.detailsPath!} state={{ autoOpenAlbum: true }} aria-disabled={desktop && navigating ? true : undefined} onClick={(event) => {
+        if (!desktop) return;
         if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         event.preventDefault();
         if (navigating) return;

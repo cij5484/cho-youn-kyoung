@@ -607,8 +607,10 @@ function Scene(props: ExperienceProps) {
       aligned.current = false;
       openingPhaseRef.current = 'ALIGN_CLOSED';
     } else if (mode !== 'CLOSED') {
-      rotation.current.x = openPitch;
-      rotation.current.y = alignedYaw.current;
+      if (!mobile) {
+        rotation.current.x = openPitch;
+        rotation.current.y = alignedYaw.current;
+      }
       aligned.current = true;
       openingPhaseRef.current = 'IDLE';
     } else {
@@ -619,7 +621,7 @@ function Scene(props: ExperienceProps) {
     reported.current = false;
     onTransitionChange?.(true);
     previousMode.current = mode;
-  }, [mode, onTransitionChange, openPitch]);
+  }, [mobile, mode, onTransitionChange, openPitch]);
 
   useFrame((_, delta) => {
     if (!packageRig.current || !hinge.current) return;
