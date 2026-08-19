@@ -55,6 +55,7 @@ const OPEN_ANGLE = THREE.MathUtils.degToRad(-160);
 // the cover, while a pressed CD occupies 90% of the panel height.
 const PAGE_HEIGHT = PANEL * 0.92;
 const CD_RADIUS = PANEL * 0.45;
+const JI_PLAYER_TARGET_RADIUS = PACKAGE_PANEL * 0.45 * 1.72;
 const PAGE_TURN_DURATION = 0.86;
 const BOOKLET_EDGE_INSET = 0.003;
 const DETAIL_BACKGROUND = {
@@ -169,7 +170,7 @@ function CdDisc({ label, mode, playing, reduced, tray, cdMountZ, onPlayer, onSet
     const trayQuaternion = tray.current?.getWorldQuaternion(new THREE.Quaternion()) ?? new THREE.Quaternion();
     const targetQuaternion = player || !detached.current ? new THREE.Quaternion() : trayQuaternion;
     rig.current.quaternion.slerp(targetQuaternion, ease);
-    const playerScale = size.width <= 700 ? viewport.width * 0.7 / (CD_RADIUS * 2) : 1.72;
+    const playerScale = size.width <= 700 ? viewport.width * 0.7 / (CD_RADIUS * 2) : JI_PLAYER_TARGET_RADIUS / CD_RADIUS;
     const trayScale = tray.current?.getWorldScale(new THREE.Vector3()).x ?? 1;
     const targetScale = player ? playerScale : (detached.current ? trayScale : 1);
     const scale = THREE.MathUtils.lerp(rig.current.scale.x, targetScale, ease);
@@ -514,7 +515,7 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
       const desktopFocusScale = Math.min(focusViewport.width * 0.93 / (p1Width * 2), focusViewport.height * 0.94 / PAGE_HEIGHT) * 0.9;
       const desiredWorld = new THREE.Matrix4().compose(
         desiredPosition,
-        new THREE.Quaternion().setFromEuler(new THREE.Euler(mobile ? -0.04 : -0.08, 0, 0)),
+        new THREE.Quaternion().setFromEuler(new THREE.Euler(mobile ? -0.04 : 0, 0, 0)),
         new THREE.Vector3(mobile ? mobileFocusScale : desktopFocusScale, mobile ? mobileFocusScale : desktopFocusScale, mobile ? mobileFocusScale : desktopFocusScale),
       );
       const local = rig.current.parent.matrixWorld.clone().invert().multiply(desiredWorld);
@@ -532,8 +533,15 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
     const canRevealReader = detailsReady && (phase === 'READING' || (phase === 'ENTERING' && transformError < 0.12));
     const coverTarget = canRevealReader ? 0 : 1;
     const readerTarget = canRevealReader ? 1 : 0;
-    coverOpacity.current = THREE.MathUtils.lerp(coverOpacity.current, coverTarget, ease);
-    readerOpacity.current = THREE.MathUtils.lerp(readerOpacity.current, readerTarget, ease);
+    if (mobile) {
+      coverOpacity.current = THREE.MathUtils.lerp(coverOpacity.current, coverTarget, ease);
+      readerOpacity.current = THREE.MathUtils.lerp(readerOpacity.current, readerTarget, ease);
+    } else {
+      // Desktop never shows two printed surfaces at once: the settled reader
+      // handoff is atomic, and RETURNING removes the reader before motion.
+      coverOpacity.current = coverTarget;
+      readerOpacity.current = readerTarget;
+    }
     setGroupOpacity(cover.current, coverOpacity.current * opacity.current);
     setGroupOpacity(reader.current, readerOpacity.current * opacity.current);
 
@@ -600,6 +608,7 @@ function TrayInterior({ album, dimensions, layout, mode, playing, reduced, onPla
 
 function Scene(props: ExperienceProps) {
   const { album, backgroundSize, openingFromClosed, mode, page, mobile, playing, reduced, homeActivationKey, detailActive, onOpen, onBooklet, onPlayer, onPrevious, onNext, onBookletBounds, onTransitionChange } = props;
+  const openPitch = mobile ? -0.1 : 0;
   const textures = useOuterTextures(album);
   const outerMaterials = useMemo(() => {
     const paper = new THREE.MeshStandardMaterial({ color: '#e8e3d8', roughness: 0.94 });
@@ -665,6 +674,10 @@ function Scene(props: ExperienceProps) {
       aligned.current = false;
       openingPhaseRef.current = 'ALIGN_CLOSED';
     } else if (mode !== 'CLOSED') {
+      if (!mobile) {
+        rotation.current.x = openPitch;
+        rotation.current.y = alignedYaw.current;
+      }
       aligned.current = true;
       openingPhaseRef.current = 'IDLE';
     } else {
@@ -675,7 +688,7 @@ function Scene(props: ExperienceProps) {
     reported.current = false;
     onTransitionChange?.(true);
     previousMode.current = mode;
-  }, [mode, onTransitionChange]);
+  }, [mobile, mode, onTransitionChange, openPitch]);
 
   useFrame((_, delta) => {
     if (!packageRig.current || !hinge.current) return;
@@ -690,16 +703,16 @@ function Scene(props: ExperienceProps) {
     perspectiveCamera.current.fov = THREE.MathUtils.lerp(perspectiveCamera.current.fov, targetFov, ease);
     perspectiveCamera.current.updateProjectionMatrix();
     if (!closed && !aligned.current) {
-      rotation.current.x = THREE.MathUtils.lerp(rotation.current.x, -0.1, ease);
+      rotation.current.x = THREE.MathUtils.lerp(rotation.current.x, openPitch, ease);
       rotation.current.y = THREE.MathUtils.lerp(rotation.current.y, alignedYaw.current, ease);
-      if (Math.abs(rotation.current.x + 0.1) + Math.abs(rotation.current.y - alignedYaw.current) < 0.018) {
+      if (Math.abs(rotation.current.x - openPitch) + Math.abs(rotation.current.y - alignedYaw.current) < 0.018) {
         aligned.current = true;
         openingPhaseRef.current = 'POSITION_FOR_OPEN';
         setOpeningPhase('POSITION_FOR_OPEN');
       }
     }
     const openInteractive = mode === 'ALBUM_OPEN' && aligned.current && openingPhaseRef.current === 'IDLE';
-    packageRig.current.rotation.x = THREE.MathUtils.lerp(packageRig.current.rotation.x, closed || openInteractive ? rotation.current.x : -0.1, ease);
+    packageRig.current.rotation.x = THREE.MathUtils.lerp(packageRig.current.rotation.x, closed || openInteractive ? rotation.current.x : openPitch, ease);
     packageRig.current.rotation.y = THREE.MathUtils.lerp(packageRig.current.rotation.y, closed || openInteractive ? rotation.current.y : alignedYaw.current, ease);
     const positioning = openingPhaseRef.current === 'POSITION_FOR_OPEN';
     const opening = openingPhaseRef.current === 'HINGE_OPEN' || (!closed && openingPhaseRef.current === 'IDLE');
@@ -715,13 +728,14 @@ function Scene(props: ExperienceProps) {
     const mobileClosedScale = 0.48;
     const mobileOpenScale = viewport.width * 0.9 / (packageDimensions.frontWidth * 1.94);
     const mobilePlayerScale = viewport.width * 0.62 / (CD_RADIUS * 2);
+    const hanOpenScale = (PACKAGE_PANEL * 1.08) / packageDimensions.frontHeight;
     const scale = keepClosedTransform
       ? (mobile ? mobileClosedScale : detailActive ? 1.18 : 0.7)
       : mode === 'BOOKLET_FOCUS'
         ? (mobile ? mobileOpenScale : 0.76)
         : mode === 'PLAYER_FOCUS'
           ? (mobile ? mobilePlayerScale : 1.18)
-          : (mobile ? mobileOpenScale : 1.08);
+          : (mobile ? mobileOpenScale : hanOpenScale);
     packageRig.current.position.x = THREE.MathUtils.lerp(packageRig.current.position.x, x, ease);
     packageRig.current.position.y = THREE.MathUtils.lerp(packageRig.current.position.y, y, ease);
     packageRig.current.position.z = THREE.MathUtils.lerp(packageRig.current.position.z, mode === 'BOOKLET_FOCUS' ? -1 : 0, ease);
@@ -788,7 +802,7 @@ function Scene(props: ExperienceProps) {
     if (distance >= 7) {
       if (mode === 'ALBUM_OPEN') {
         rotation.current.y = THREE.MathUtils.clamp(rotation.current.y + (event.clientX - active.x) * 0.0035, alignedYaw.current - THREE.MathUtils.degToRad(10), alignedYaw.current + THREE.MathUtils.degToRad(10));
-        rotation.current.x = THREE.MathUtils.clamp(rotation.current.x + (event.clientY - active.y) * 0.003, -0.1 - THREE.MathUtils.degToRad(6), -0.1 + THREE.MathUtils.degToRad(6));
+        rotation.current.x = THREE.MathUtils.clamp(rotation.current.x + (event.clientY - active.y) * 0.003, openPitch - THREE.MathUtils.degToRad(6), openPitch + THREE.MathUtils.degToRad(6));
       } else {
         rotation.current.y += (event.clientX - active.x) * 0.008;
         rotation.current.x = THREE.MathUtils.clamp(rotation.current.x + (event.clientY - active.y) * 0.006, -0.48, 0.48);
@@ -817,7 +831,7 @@ function Scene(props: ExperienceProps) {
       {mode === 'CLOSED' && (
         <mesh position={[closedX, closedY, 1.2]}
           onPointerDown={down} onPointerMove={move} onPointerUp={(e) => finish(e.pointerId, true)} onPointerCancel={(e) => finish(e.pointerId, false)}>
-          <planeGeometry args={[mobile ? viewport.width * 0.78 : 3.7, mobile ? viewport.width * 0.78 : 3.4]} />
+          <planeGeometry args={[mobile ? viewport.width * 0.78 : 5.5, mobile ? viewport.width * 0.78 : 4.4]} />
           <meshBasicMaterial transparent opacity={0} colorWrite={false} depthWrite={false} />
         </mesh>
       )}

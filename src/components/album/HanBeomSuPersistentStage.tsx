@@ -105,9 +105,13 @@ export function HanBeomSuPersistentStage({ children }: { children: ReactNode }) 
     onPrevious: () => undefined,
     onNext: () => undefined,
   }), [album, backgroundSize, homeActivationKey, mobile, reduced]);
-  const visible = detailRoute || (location.pathname === '/' && homeActive);
+  // On desktop, retain the outgoing detail stage for HOME's first commit.
+  // The detail cleanup and AlbumHero activation then hand ownership over in
+  // the same effect flush, so neither the body nor an empty canvas is exposed.
+  const desktopDetailHandoff = !mobile && location.pathname === '/' && detailProps !== null;
+  const visible = detailRoute || (location.pathname === '/' && (homeActive || desktopDetailHandoff));
   const context = useMemo(() => ({ setDetailProps, setHomeActive: updateHomeActive }), [updateHomeActive]);
-  const routeEligible = detailRoute || (location.pathname === '/' && homeActive);
+  const routeEligible = detailRoute || (location.pathname === '/' && (homeActive || desktopDetailHandoff));
 
   return (
     <StageContext.Provider value={context}>
