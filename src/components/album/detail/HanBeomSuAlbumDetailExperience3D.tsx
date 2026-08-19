@@ -160,7 +160,7 @@ function CdDisc({ label, mode, playing, reduced, tray, cdMountZ, onPlayer, onSet
       scene.attach(rig.current);
       detached.current = true;
     }
-    const playerPosition = new THREE.Vector3(size.width <= 700 ? 0 : -1.15, size.width <= 700 ? viewport.height * 0.16 : 0.08, 0.34);
+    const playerPosition = new THREE.Vector3(size.width <= 700 ? 0 : -1.55, size.width <= 700 ? viewport.height * 0.16 : 0.08, 0.34);
     const trayWorld = tray.current
       ? tray.current.localToWorld(mountPosition.clone())
       : rig.current.position.clone();
@@ -169,7 +169,7 @@ function CdDisc({ label, mode, playing, reduced, tray, cdMountZ, onPlayer, onSet
     const trayQuaternion = tray.current?.getWorldQuaternion(new THREE.Quaternion()) ?? new THREE.Quaternion();
     const targetQuaternion = player || !detached.current ? new THREE.Quaternion() : trayQuaternion;
     rig.current.quaternion.slerp(targetQuaternion, ease);
-    const playerScale = size.width <= 700 ? viewport.width * 0.7 / (CD_RADIUS * 2) : 0.9;
+    const playerScale = size.width <= 700 ? viewport.width * 0.7 / (CD_RADIUS * 2) : 1.72;
     const trayScale = tray.current?.getWorldScale(new THREE.Vector3()).x ?? 1;
     const targetScale = player ? playerScale : (detached.current ? trayScale : 1);
     const scale = THREE.MathUtils.lerp(rig.current.scale.x, targetScale, ease);
@@ -279,7 +279,7 @@ function TrayRig({ texture, label, dimensions, layout, mode, playing, reduced, o
       </group>
     </group>
     {mode === 'PLAYER_FOCUS' && createPortal(
-      <mesh position={[size.width <= 700 ? 0 : -1.15, size.width <= 700 ? 0.3 : -0.72, 0.05]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[size.width <= 700 ? 0 : -1.55, size.width <= 700 ? 0.3 : -0.72, 0.05]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[2.25, 0.62]} />
         <meshBasicMaterial color="#5a4840" transparent opacity={0.1} depthWrite={false} toneMapped={false} />
       </mesh>,
@@ -343,10 +343,10 @@ function BookletPages({ album, page, mobile, reduced, active, onReady, onPageTur
 
   useEffect(() => {
     if (turn || settled !== page) return undefined;
-    const nextPage = page + 1;
-    if (!pageIndices(nextPage).some((index) => index < allUrls.length)) return undefined;
+    const upcoming = [page + 1, page + 2].filter((nextPage) => pageIndices(nextPage).some((index) => index < allUrls.length));
+    if (!upcoming.length) return undefined;
     const idleWindow = window as unknown as { requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number; cancelIdleCallback?: (handle: number) => void };
-    const prefetch = () => { void loadPage(nextPage); };
+    const prefetch = () => { void upcoming.reduce((ready, nextPage) => ready.then(() => loadPage(nextPage)), Promise.resolve()); };
     const handle = idleWindow.requestIdleCallback ? idleWindow.requestIdleCallback(prefetch, { timeout: 1800 }) : window.setTimeout(prefetch, 700);
     return () => idleWindow.requestIdleCallback ? idleWindow.cancelIdleCallback?.(handle) : window.clearTimeout(handle);
   }, [allUrls.length, loadPage, page, pageIndices, settled, turn]);
@@ -537,10 +537,11 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
     setGroupOpacity(cover.current, coverOpacity.current * opacity.current);
     setGroupOpacity(reader.current, readerOpacity.current * opacity.current);
 
-    if (mode === 'BOOKLET_FOCUS' && !mobile && onBounds) {
+    if (mode === 'BOOKLET_FOCUS' && onBounds) {
+      const horizontalExtent = mobile ? p1Width / 2 : p1Width;
       const corners = [
-        new THREE.Vector3(-p1Width, PAGE_HEIGHT / 2, 0), new THREE.Vector3(p1Width, PAGE_HEIGHT / 2, 0),
-        new THREE.Vector3(-p1Width, -PAGE_HEIGHT / 2, 0), new THREE.Vector3(p1Width, -PAGE_HEIGHT / 2, 0),
+        new THREE.Vector3(-horizontalExtent, PAGE_HEIGHT / 2, 0), new THREE.Vector3(horizontalExtent, PAGE_HEIGHT / 2, 0),
+        new THREE.Vector3(-horizontalExtent, -PAGE_HEIGHT / 2, 0), new THREE.Vector3(horizontalExtent, -PAGE_HEIGHT / 2, 0),
       ].map((corner) => rig.current!.localToWorld(corner).project(camera));
       const xs = corners.map((corner) => (corner.x * 0.5 + 0.5) * size.width);
       const ys = corners.map((corner) => (-corner.y * 0.5 + 0.5) * size.height);
@@ -618,7 +619,7 @@ function Scene(props: ExperienceProps) {
   const perspectiveCamera = useRef(camera as THREE.PerspectiveCamera);
   const packageRig = useRef<THREE.Group>(null);
   const hinge = useRef<THREE.Group>(null);
-  const drag = useRef<{ id: number; x: number; y: number; startX: number; startY: number; canvas: HTMLCanvasElement } | null>(null);
+  const drag = useRef<{ id: number; x: number; y: number; startX: number; startY: number; canvas: HTMLCanvasElement; intent: 'pending' | 'rotate' | 'scroll' } | null>(null);
   const rotation = useRef(readHanRotation({ x: -0.06, y: 0.1 }));
   const autoRotate = useRef(true);
   const persistFrame = useRef(0);
@@ -707,7 +708,7 @@ function Scene(props: ExperienceProps) {
     const keepClosedTransform = closed || openingPhaseRef.current === 'ALIGN_CLOSED';
     const detailClosedX = mobile ? closedX : -viewport.width * 0.18;
     const closedTargetX = detailActive ? detailClosedX : closedX;
-    const x = keepClosedTransform ? closedTargetX : mode === 'BOOKLET_FOCUS' ? 1.05 : mode === 'PLAYER_FOCUS' ? (mobile ? 0 : 0.32) : (mobile ? 0 : halfPanel);
+    const x = keepClosedTransform ? closedTargetX : mode === 'BOOKLET_FOCUS' ? (mobile ? halfPanel : 1.05) : mode === 'PLAYER_FOCUS' ? (mobile ? 0 : 0.32) : halfPanel;
     const y = mobile
       ? (keepClosedTransform ? closedY : mode === 'PLAYER_FOCUS' ? viewport.height * 0.2 : viewport.height * 0.1)
       : (keepClosedTransform ? closedY : mode === 'ALBUM_OPEN' ? -0.08 : 0.05);
@@ -766,11 +767,23 @@ function Scene(props: ExperienceProps) {
   const down = (event: ThreeEvent<PointerEvent>) => {
     if (mode !== 'CLOSED' && mode !== 'ALBUM_OPEN') return;
     event.stopPropagation(); autoRotate.current = false;
-    const canvas = event.nativeEvent.currentTarget as HTMLCanvasElement; canvas.setPointerCapture(event.pointerId);
-    drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY, startX: event.clientX, startY: event.clientY, canvas };
+    const canvas = event.nativeEvent.currentTarget as HTMLCanvasElement;
+    if (!mobile) canvas.setPointerCapture(event.pointerId);
+    drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY, startX: event.clientX, startY: event.clientY, canvas, intent: mobile ? 'pending' : 'rotate' };
   };
   const move = (event: ThreeEvent<PointerEvent>) => {
     const active = drag.current; if (!active || active.id !== event.pointerId || (mode !== 'CLOSED' && mode !== 'ALBUM_OPEN')) return;
+    if (active.intent === 'pending') {
+      const dx = Math.abs(event.clientX - active.startX);
+      const dy = Math.abs(event.clientY - active.startY);
+      if (dx > dy * 1.15 && dx > 7) {
+        active.intent = 'rotate';
+        active.canvas.setPointerCapture(event.pointerId);
+      } else if (dy > dx * 1.15 && dy > 7) {
+        active.intent = 'scroll';
+      }
+    }
+    if (active.intent !== 'rotate') return;
     const distance = Math.hypot(event.clientX - active.startX, event.clientY - active.startY);
     if (distance >= 7) {
       if (mode === 'ALBUM_OPEN') {

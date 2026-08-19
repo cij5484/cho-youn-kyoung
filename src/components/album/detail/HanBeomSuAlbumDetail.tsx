@@ -4,6 +4,7 @@ import type { Album } from '../../../data/albums';
 import { assetUrl } from '../../../utils/assetUrl';
 import type { BookletBounds, ExperienceMode } from './HanBeomSuAlbumDetailExperience3D';
 import { useAlbumAudio } from './useAlbumAudio';
+import { AlbumAdjacentNavigation } from './AlbumAdjacentNavigation';
 import { useHanBeomSuStage } from '../HanBeomSuPersistentStage';
 
 const statusLabel = { 'coming-soon': 'COMING SOON', released: 'RELEASED' } as const;
@@ -178,6 +179,26 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
   }, []);
 
   useEffect(() => {
+    const urls = (album.booklet?.previewImages ?? []).slice(1, 4).map((page) => assetUrl(page.src)!);
+    let cancelled = false;
+    const preload = async () => {
+      for (const url of urls) {
+        if (cancelled) return;
+        const image = new Image();
+        image.src = url;
+        try { await image.decode(); } catch { /* The 3D loader remains the fallback. */ }
+      }
+    };
+    const idle = window.requestIdleCallback?.(() => { void preload(); }, { timeout: 1800 })
+      ?? window.setTimeout(() => { void preload(); }, 700);
+    return () => {
+      cancelled = true;
+      if (window.cancelIdleCallback) window.cancelIdleCallback(idle);
+      else window.clearTimeout(idle);
+    };
+  }, [album]);
+
+  useEffect(() => {
     const element = stage.current;
     if (!element) return undefined;
     const update = () => setBackgroundSize({ width: element.clientWidth, height: element.clientHeight });
@@ -216,8 +237,8 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
     if (sceneTransitioning) return;
     setSceneTransitioning(true);
     setMode('BOOKLET_FOCUS');
-    stage.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
-  }, [reduced, sceneTransitioning]);
+    if (!mobile) stage.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+  }, [mobile, reduced, sceneTransitioning]);
 
   const backToAlbum = () => {
     if (sceneTransitioning || pageTurning) return;
@@ -281,6 +302,9 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
         ref={stage}
         aria-label="한범수류 앨범 인터랙티브 전시"
       >
+        {(mode === 'CLOSED' || mode === 'ALBUM_OPEN') && !sceneTransitioning && (
+          <AlbumAdjacentNavigation currentId={album.id} tone="han" />
+        )}
         {mobile && mode === 'BOOKLET_FOCUS' && (
           <div
             className="han-detail__swipe-surface"
@@ -334,12 +358,10 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
               <span>BOOKLET</span>
               <svg viewBox="0 0 210 32" aria-hidden="true">
                 <path d="M1 16 H178 L195 3" pathLength="1" />
-                <circle cx="199" cy="3" r="2.5" />
               </svg>
             </button>
             <button className="han-detail__callout han-detail__callout--tracks" type="button" onClick={enterPlayer}>
               <svg viewBox="0 0 210 32" aria-hidden="true">
-                <circle cx="11" cy="3" r="2.5" />
                 <path d="M15 3 L32 16 H209" pathLength="1" />
               </svg>
               <span>TRACKS</span>
@@ -351,6 +373,13 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
         )}
         {mode === 'BOOKLET_FOCUS' && !sceneTransitioning && (
           <>
+            {bookletBounds && !pageTurning && (
+              <div className={`han-detail__booklet-images${mobile ? ' is-mobile' : ''}`} style={bookletBounds} aria-hidden="true">
+                {(mobile ? [pages[mobilePage + 1]] : [pages[spread * 2 + 1], pages[spread * 2 + 2]])
+                  .filter(Boolean)
+                  .map((page) => <img key={page.src} src={assetUrl(page.src)} alt="" />)}
+              </div>
+            )}
             {!mobile && (
               <div className="han-detail__booklet-hit-areas" aria-label="북클릿 페이지 이동" style={bookletBounds}>
                 <button type="button" aria-label="이전 북클릿 펼침면" disabled={pageTurning || spread === 0} onClick={previous} />

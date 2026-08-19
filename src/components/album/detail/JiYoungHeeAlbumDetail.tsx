@@ -4,6 +4,7 @@ import type { Album } from '../../../data/albums';
 import { assetUrl } from '../../../utils/assetUrl';
 import type { BookletBounds, ExperienceMode } from './AlbumDetailExperience3D';
 import { useAlbumAudio } from './useAlbumAudio';
+import { AlbumAdjacentNavigation } from './AlbumAdjacentNavigation';
 import { useJiYoungHeeStage } from '../JiYoungHeePersistentStage';
 
 const statusLabel = { 'coming-soon': 'COMING SOON', released: 'RELEASED' } as const;
@@ -234,8 +235,8 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
     if (sceneTransitioning) return;
     setSceneTransitioning(true);
     setMode('BOOKLET_FOCUS');
-    stage.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
-  }, [reduced, sceneTransitioning]);
+    if (!mobile) stage.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+  }, [mobile, reduced, sceneTransitioning]);
 
   const backToAlbum = () => {
     if (sceneTransitioning || pageTurning) return;
@@ -299,6 +300,9 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
         ref={stage}
         aria-label="지영희류 앨범 인터랙티브 전시"
       >
+        {(mode === 'CLOSED' || mode === 'ALBUM_OPEN') && !sceneTransitioning && (
+          <AlbumAdjacentNavigation currentId={album.id} tone="ji" />
+        )}
         {mobile && mode === 'BOOKLET_FOCUS' && (
           <div
             className="ji-detail__swipe-surface"
@@ -351,12 +355,10 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
               <span>BOOKLET</span>
               <svg viewBox="0 0 210 32" aria-hidden="true">
                 <path d="M1 16 H178 L195 3" pathLength="1" />
-                <circle cx="199" cy="3" r="2.5" />
               </svg>
             </button>
             <button className="ji-detail__callout ji-detail__callout--tracks" type="button" onClick={enterPlayer}>
               <svg viewBox="0 0 210 32" aria-hidden="true">
-                <circle cx="11" cy="3" r="2.5" />
                 <path d="M15 3 L32 16 H209" pathLength="1" />
               </svg>
               <span>TRACKS</span>

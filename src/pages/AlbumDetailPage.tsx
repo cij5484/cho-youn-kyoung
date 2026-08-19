@@ -6,6 +6,7 @@ import { assetUrl } from '../utils/assetUrl';
 import { NotFoundPage } from './NotFoundPage';
 import '../styles/album-detail.css';
 import '../styles/han-beom-su-album-detail.css';
+import '../styles/album-adjacent.css';
 
 const releaseStatusLabels = {
   'coming-soon': 'COMING SOON',
