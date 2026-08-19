@@ -1,7 +1,7 @@
 .han-persistent-stage{position:fixed;z-index:0;inset:0;visibility:hidden;opacity:0;pointer-events:none;background:#172724}
 .han-persistent-stage.is-visible{visibility:visible;opacity:1;pointer-events:auto}
 .han-persistent-stage__background{position:absolute;inset:0}.han-persistent-stage__background img{width:100%;height:100%;object-fit:cover}
-.han-persistent-stage__canvas{position:absolute;inset:0;opacity:1;transition:opacity .8s cubic-bezier(.22,.61,.36,1)}
+.han-persistent-stage__canvas{position:absolute;inset:0;opacity:1;pointer-events:auto;touch-action:pan-y;transition:opacity .8s cubic-bezier(.22,.61,.36,1)}
 .han-persistent-stage__canvas.is-home{opacity:0;filter:blur(2px);transform:translateY(5px) scale(.992);animation:han-package-in 1.7s cubic-bezier(.22,.61,.36,1) .08s both}
 .han-detail { --han-ink:#f2eee5; --han-accent:#9db9b1; --han-muted:rgba(242,238,229,.72); position:relative;z-index:1;background:transparent;color:var(--han-ink);pointer-events:none; }
 .han-detail button { color:inherit; font:inherit; }

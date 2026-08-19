@@ -94,10 +94,10 @@ function configureTextures(textures: THREE.Texture[], maxAnisotropy: number) {
 function configureBookletTextures(textures: THREE.Texture[], maxAnisotropy: number) {
   textures.forEach((texture) => {
     texture.colorSpace = THREE.SRGBColorSpace;
-    texture.anisotropy = maxAnisotropy;
+    texture.anisotropy = Math.min(8, maxAnisotropy);
     texture.magFilter = THREE.LinearFilter;
-    texture.minFilter = THREE.LinearFilter;
-    texture.generateMipmaps = false;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.generateMipmaps = true;
     texture.wrapS = THREE.ClampToEdgeWrapping;
     texture.wrapT = THREE.ClampToEdgeWrapping;
     texture.offset.set(BOOKLET_EDGE_INSET, BOOKLET_EDGE_INSET);
@@ -614,7 +614,8 @@ function Scene(props: ExperienceProps) {
   const packageDimensions = getPackageDimensions(album.albumHero?.packageGeometry);
   const layout = getPackageLayout(packageDimensions);
   const halfPanel = packageDimensions.frontWidth / 2;
-  const { size, viewport } = useThree();
+  const { camera, size, viewport } = useThree();
+  const perspectiveCamera = useRef(camera as THREE.PerspectiveCamera);
   const packageRig = useRef<THREE.Group>(null);
   const hinge = useRef<THREE.Group>(null);
   const drag = useRef<{ id: number; x: number; y: number; startX: number; startY: number; canvas: HTMLCanvasElement } | null>(null);
@@ -682,6 +683,11 @@ function Scene(props: ExperienceProps) {
     persistFrame.current += 1;
     if (closed && persistFrame.current % 12 === 0) sessionStorage.setItem(HAN_ROTATION_KEY, JSON.stringify(rotation.current));
     const ease = reduced ? 1 : 1 - Math.exp(-5 * delta);
+    const targetCameraZ = detailActive ? 7 : 5;
+    const targetFov = detailActive ? 42 : 36;
+    perspectiveCamera.current.position.z = THREE.MathUtils.lerp(perspectiveCamera.current.position.z, targetCameraZ, ease);
+    perspectiveCamera.current.fov = THREE.MathUtils.lerp(perspectiveCamera.current.fov, targetFov, ease);
+    perspectiveCamera.current.updateProjectionMatrix();
     if (!closed && !aligned.current) {
       rotation.current.x = THREE.MathUtils.lerp(rotation.current.x, -0.1, ease);
       rotation.current.y = THREE.MathUtils.lerp(rotation.current.y, alignedYaw.current, ease);
@@ -709,12 +715,12 @@ function Scene(props: ExperienceProps) {
     const mobileOpenScale = viewport.width * 0.9 / (packageDimensions.frontWidth * 1.94);
     const mobilePlayerScale = viewport.width * 0.62 / (CD_RADIUS * 2);
     const scale = keepClosedTransform
-      ? (mobile ? mobileClosedScale : detailActive ? 0.78 : 0.7)
+      ? (mobile ? mobileClosedScale : detailActive ? 1.18 : 0.7)
       : mode === 'BOOKLET_FOCUS'
         ? (mobile ? mobileOpenScale : 0.76)
         : mode === 'PLAYER_FOCUS'
           ? (mobile ? mobilePlayerScale : 1.18)
-          : (mobile ? mobileOpenScale : 0.78);
+          : (mobile ? mobileOpenScale : 1.08);
     packageRig.current.position.x = THREE.MathUtils.lerp(packageRig.current.position.x, x, ease);
     packageRig.current.position.y = THREE.MathUtils.lerp(packageRig.current.position.y, y, ease);
     packageRig.current.position.z = THREE.MathUtils.lerp(packageRig.current.position.z, mode === 'BOOKLET_FOCUS' ? -1 : 0, ease);
@@ -727,13 +733,18 @@ function Scene(props: ExperienceProps) {
       openingPhaseRef.current = 'HINGE_OPEN';
       setOpeningPhase('HINGE_OPEN');
     }
-    const openingFromClosedComplete = closed || openingPhaseRef.current === 'IDLE'
-      || (openingPhaseRef.current === 'HINGE_OPEN'
-        && Math.abs(hinge.current.rotation.y - OPEN_ANGLE) < 0.025);
+    const hingeError = Math.abs(hinge.current.rotation.y - targetHinge);
+    if (openingPhaseRef.current === 'HINGE_OPEN' && hingeError < 0.025 && packageError < 0.04) {
+      openingPhaseRef.current = 'IDLE';
+      setOpeningPhase('IDLE');
+    }
+    const openingFromClosedComplete = closed || openingPhaseRef.current === 'IDLE';
+    const cameraError = Math.abs(perspectiveCamera.current.position.z - targetCameraZ) + Math.abs(perspectiveCamera.current.fov - targetFov);
     const complete = aligned.current
       && openingFromClosedComplete
-      && Math.abs(hinge.current.rotation.y - targetHinge) < 0.025
+      && hingeError < 0.025
       && packageError < 0.04
+      && cameraError < 0.025
       && bookletSettled.current
       && traySettled.current
       && discSettled.current;
@@ -786,6 +797,7 @@ function Scene(props: ExperienceProps) {
           </group>
         </group>
         <mesh position={[-Math.max(packageDimensions.frontWidth, packageDimensions.backWidth) / 2 - SPINE_SURFACE_OFFSET, 0, 0]} rotation={[0, -Math.PI / 2, 0]} castShadow><planeGeometry args={[packageDimensions.printedSpineDepth, packageDimensions.frontHeight]} /><PaperMaterial texture={textures.spine} /></mesh>
+        <mesh position={[-Math.max(packageDimensions.frontWidth, packageDimensions.backWidth) / 2 + SPINE_SURFACE_OFFSET, 0, 0]} rotation={[0, Math.PI / 2, 0]} castShadow><planeGeometry args={[packageDimensions.printedSpineDepth, packageDimensions.frontHeight]} /><PaperMaterial texture={textures.spine} /></mesh>
       </group>
       {/* This screen-facing interaction surface intentionally lives outside
           packageRig, so its usable width never collapses at spine/back angles. */}

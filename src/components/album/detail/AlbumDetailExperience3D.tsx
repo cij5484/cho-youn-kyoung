@@ -665,12 +665,15 @@ function Scene(props: ExperienceProps) {
       openingPhaseRef.current = 'HINGE_OPEN';
       setOpeningPhase('HINGE_OPEN');
     }
-    const openingFromClosedComplete = closed || openingPhaseRef.current === 'IDLE'
-      || (openingPhaseRef.current === 'HINGE_OPEN'
-        && Math.abs(hinge.current.rotation.y - OPEN_ANGLE) < 0.025);
+    const hingeError = Math.abs(hinge.current.rotation.y - targetHinge);
+    if (openingPhaseRef.current === 'HINGE_OPEN' && hingeError < 0.025 && packageError < 0.04) {
+      openingPhaseRef.current = 'IDLE';
+      setOpeningPhase('IDLE');
+    }
+    const openingFromClosedComplete = closed || openingPhaseRef.current === 'IDLE';
     const complete = aligned.current
       && openingFromClosedComplete
-      && Math.abs(hinge.current.rotation.y - targetHinge) < 0.025
+      && hingeError < 0.025
       && packageError < 0.04
       && bookletSettled.current
       && traySettled.current
