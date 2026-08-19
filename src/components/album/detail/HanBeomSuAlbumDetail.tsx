@@ -389,11 +389,9 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
         )}
         {(mode === 'BOOKLET_FOCUS' || bookletPhase !== 'RESTING') && (
           <>
-            {bookletBounds && (mobile ? !pageTurning : bookletPhase === 'READING') && (
-              <div className={`han-detail__booklet-images${mobile ? ' is-mobile' : ''}`} style={bookletBounds} aria-hidden="true">
-                {(mobile
-                  ? [pages[mobilePage + 1]]
-                  : [pages[settledSpread * 2 + 1], pages[settledSpread * 2 + 2]])
+            {mobile && bookletBounds && !pageTurning && (
+              <div className="han-detail__booklet-images is-mobile" style={bookletBounds} aria-hidden="true">
+                {[pages[mobilePage + 1]]
                   .filter(Boolean)
                   .map((page) => <img key={page.src} src={assetUrl(page.src)} alt="" />)}
               </div>
