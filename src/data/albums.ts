@@ -50,7 +50,7 @@ export type AlbumHeroSettings = {
 };
 
 export type AlbumDetailExperience = {
-  theme: 'ji-young-hee-paper';
+  theme: 'ji-young-hee-paper' | 'han-beom-su-paper';
   interior: { bookletPanel: string; trayPanel: string };
 };
 
@@ -188,6 +188,13 @@ export const albums: Album[] = [
     description: '한범수류 해금산조의 결을 담은 조윤경의 산조 음반.',
     coverImage: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/front.webp',
     cdLabelImage: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/cd-label.png',
+    detailExperience: {
+      theme: 'han-beom-su-paper',
+      interior: {
+        bookletPanel: '/assets/albums/han-beom-su-haegeum-sanjo-2020/viewer/booklet-01.png',
+        trayPanel: '/assets/albums/han-beom-su-haegeum-sanjo-2020/viewer/booklet-01.png',
+      },
+    },
     detailsPath: '/album/han-beom-su-haegeum-sanjo-2020',
     albumHero: {
       theme: 'album-package',
@@ -211,6 +218,20 @@ export const albums: Album[] = [
       },
     },
     featured: true,
+    tracks: [
+      { number: 1, title: '다스름' },
+      { number: 2, title: '긴 산조 - 진양' },
+      { number: 3, title: '긴 산조 - 중모리' },
+      { number: 4, title: '긴 산조 - 중중모리' },
+      { number: 5, title: '긴 산조 - 자진모리' },
+    ],
+    booklet: {
+      previewImages: Array.from({ length: 11 }, (_, index) => ({
+        src: `/assets/albums/han-beom-su-haegeum-sanjo-2020/viewer/booklet-${String(index + 1).padStart(2, '0')}.png`,
+        alt: `한범수류 북클릿 ${index + 1}페이지`,
+        label: `P${index + 1}`,
+      })),
+    },
     streamingLinks: [
       {
         platform: 'YouTube',

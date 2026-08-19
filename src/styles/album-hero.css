@@ -21,9 +21,11 @@
 
 .album-hero--han-beom-su-haegeum-sanjo-2020 {
   --album-accent: #9db9b1;
-  background: #172724;
+  background: transparent;
   color: #f2eee5;
 }
+.album-hero--han-beom-su-haegeum-sanjo-2020 { pointer-events:none; }
+.album-hero--han-beom-su-haegeum-sanjo-2020 .album-hero__link { pointer-events:auto; }
 .album-hero--ji-young-hee-ryu-haegeum-sanjo-2026 { background: transparent; }
 .album-hero--ji-young-hee-ryu-haegeum-sanjo-2026 { pointer-events:none; }
 .album-hero--ji-young-hee-ryu-haegeum-sanjo-2026 .album-hero__link { pointer-events:auto; }
