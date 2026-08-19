@@ -18,11 +18,13 @@ export type ExperienceProps = {
   openingFromClosed: boolean;
   mode: ExperienceMode;
   page: number;
+  bookletPhase: BookletVisualPhase;
   mobile: boolean;
   playing: boolean;
   reduced: boolean;
   homeActivationKey: number;
   detailActive: boolean;
+  prewarming?: boolean;
   onOpen(): void;
   onBooklet(): void;
   onPlayer(): void;
@@ -405,8 +407,9 @@ function BookletPages({ album, page, mobile, reduced, active, visualPhase, onRea
     ? (turn.direction > 0 ? turn.source : turn.target)
     : settled;
   const leftStackZ = 0.006 + leftSpreadIndex * 0.004;
-  const showStaticPages = mobile || visualPhase === 'ENTERING'
-    || visualPhase === 'RETURNING_MOVE' || visualPhase === 'RETURNING_FINISH';
+  // HTML owns only a fully settled READING frame. Three.js keeps both static
+  // pages present for entry, return, and the entire paper-turn interval.
+  const showStaticPages = mobile || turn !== null || visualPhase !== 'READING';
   return (
     <group>
       <mesh visible={showStaticPages} position={[-width / 2, 0, leftStackZ]} castShadow receiveShadow><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={left} /></mesh>
@@ -480,8 +483,9 @@ function TurningPage({ pages, width, turn, onDone, frontTexture, backTexture, du
 }
 
 
-function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettled, onPhaseChange, onPageTurnStart, onPageTurnComplete, onPrevious, onNext, onBounds }: {
+function BookletRig({ album, p1, mode, page, bookletPhase, mobile, reduced, onBooklet, onSettled, onPhaseChange, onPageTurnStart, onPageTurnComplete, onPrevious, onNext, onBounds }: {
   album: Album; p1: THREE.Texture; mode: ExperienceMode; page: number; mobile: boolean; reduced: boolean;
+  bookletPhase: BookletVisualPhase;
   onBooklet(): void; onSettled(settled: boolean): void; onPageTurnComplete(): void; onPrevious(): void; onNext(): void;
   onPhaseChange?(phase: BookletVisualPhase): void; onPageTurnStart(direction: 'forward' | 'backward'): void;
   onBounds?(bounds: BookletBounds): void;
@@ -490,30 +494,12 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
   const rig = useRef<THREE.Group>(null);
   const cover = useRef<THREE.Group>(null);
   const reader = useRef<THREE.Group>(null);
-  const [detailsMounted, setDetailsMounted] = useState(mode === 'BOOKLET_FOCUS');
-  const [detailsReady, setDetailsReady] = useState(false);
-  const [phase, setPhase] = useState<BookletVisualPhase>(mode === 'BOOKLET_FOCUS' ? 'ENTERING' : 'RESTING');
-  const previousMode = useRef(mode);
+  const detailsReady = useRef(false);
   const opacity = useRef(1);
   const coverOpacity = useRef(1);
   const readerOpacity = useRef(0);
   const lastBounds = useRef<BookletBounds | null>(null);
   const p1Width = PAGE_HEIGHT * textureAspect(p1);
-
-  useEffect(() => {
-    if (mode === 'BOOKLET_FOCUS' && previousMode.current !== 'BOOKLET_FOCUS') {
-      queueMicrotask(() => {
-        setDetailsReady(false);
-        setDetailsMounted(true);
-        setPhase('ENTERING');
-      });
-    } else if (mode !== 'BOOKLET_FOCUS' && previousMode.current === 'BOOKLET_FOCUS') {
-      queueMicrotask(() => setPhase(mobile ? 'RETURNING_FINISH' : 'RETURNING_MOVE'));
-    }
-    previousMode.current = mode;
-  }, [mobile, mode]);
-
-  useEffect(() => { onPhaseChange?.(phase); }, [onPhaseChange, phase]);
 
   const setGroupOpacity = (group: THREE.Group | null, value: number) => {
     group?.traverse((object) => {
@@ -527,9 +513,10 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
 
   useFrame((_, delta) => {
     if (!rig.current || !cover.current) return;
-    const focusedTransform = phase === 'ENTERING' || phase === 'READING'
-      || phase === 'TURNING_FORWARD' || phase === 'TURNING_BACKWARD'
-      || (mobile && phase === 'RETURNING_FINISH');
+    if (bookletPhase === 'RESTING') detailsReady.current = false;
+    const focusedTransform = bookletPhase === 'ENTERING' || bookletPhase === 'READING'
+      || bookletPhase === 'TURNING_FORWARD' || bookletPhase === 'TURNING_BACKWARD'
+      || (mobile && bookletPhase === 'RETURNING_FINISH');
     const ease = reduced ? 1 : 1 - Math.exp(-5.5 * delta);
     const targetPosition = new THREE.Vector3(mode === 'PLAYER_FOCUS' ? -p1Width / 2 - 0.16 : -p1Width / 2, 0, mode === 'PLAYER_FOCUS' ? -0.18 : 0.08);
     const targetQuaternion = new THREE.Quaternion();
@@ -549,19 +536,26 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
       const local = rig.current.parent.matrixWorld.clone().invert().multiply(desiredWorld);
       local.decompose(targetPosition, targetQuaternion, targetScale);
     }
-    rig.current.position.lerp(targetPosition, ease);
-    rig.current.quaternion.slerp(targetQuaternion, ease);
-    rig.current.scale.lerp(targetScale, ease);
+    const turning = bookletPhase === 'TURNING_FORWARD' || bookletPhase === 'TURNING_BACKWARD';
+    if (turning) {
+      rig.current.position.copy(targetPosition);
+      rig.current.quaternion.copy(targetQuaternion);
+      rig.current.scale.copy(targetScale);
+    } else {
+      rig.current.position.lerp(targetPosition, ease);
+      rig.current.quaternion.slerp(targetQuaternion, ease);
+      rig.current.scale.lerp(targetScale, ease);
+    }
     opacity.current = THREE.MathUtils.lerp(opacity.current, mode === 'PLAYER_FOCUS' ? 0 : 1, ease);
     setGroupOpacity(rig.current, opacity.current);
 
     const transformError = rig.current.position.distanceTo(targetPosition)
       + rig.current.quaternion.angleTo(targetQuaternion)
       + rig.current.scale.distanceTo(targetScale);
-    const canRevealReader = detailsReady && (phase === 'READING'
-      || phase === 'TURNING_FORWARD' || phase === 'TURNING_BACKWARD'
-      || phase === 'RETURNING_MOVE'
-      || (phase === 'ENTERING' && transformError < 0.12));
+    const canRevealReader = detailsReady.current && (bookletPhase === 'READING'
+      || bookletPhase === 'TURNING_FORWARD' || bookletPhase === 'TURNING_BACKWARD'
+      || bookletPhase === 'RETURNING_MOVE'
+      || (bookletPhase === 'ENTERING' && transformError < 0.12));
     const coverTarget = canRevealReader ? 0 : 1;
     const readerTarget = canRevealReader ? 1 : 0;
     if (mobile) {
@@ -595,22 +589,21 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
     }
 
     const crossfadeError = Math.abs(coverOpacity.current - coverTarget) + Math.abs(readerOpacity.current - readerTarget);
-    if (phase === 'ENTERING' && canRevealReader && crossfadeError < 0.035) setPhase('READING');
-    if (phase === 'RETURNING_MOVE' && transformError < 0.035) setPhase('RETURNING_FINISH');
-    if (phase === 'RETURNING_FINISH' && crossfadeError < 0.035) {
-      setDetailsMounted(false);
-      setPhase('RESTING');
+    if (bookletPhase === 'ENTERING' && canRevealReader && crossfadeError < 0.035) onPhaseChange?.('READING');
+    if (bookletPhase === 'RETURNING_MOVE' && transformError < 0.035) onPhaseChange?.('RETURNING_FINISH');
+    if (bookletPhase === 'RETURNING_FINISH' && crossfadeError < 0.035) {
+      onPhaseChange?.('RESTING');
     }
     const opacitySettled = Math.abs(opacity.current - (mode === 'PLAYER_FOCUS' ? 0 : 1)) < 0.02;
     const geometrySettled = transformError < 0.035 && crossfadeError < 0.035 && opacitySettled;
-    onSettled(geometrySettled && (phase === 'RESTING' || phase === 'READING'));
+    onSettled(geometrySettled && (bookletPhase === 'RESTING' || bookletPhase === 'READING'));
   });
 
   return (
     <group ref={rig} position={[-p1Width / 2, 0, 0.08]} onClick={(event) => { event.stopPropagation(); if (mode === 'ALBUM_OPEN') onBooklet(); }}>
-      {detailsMounted && <group ref={reader} visible={phase !== 'RESTING'}>
-        <Suspense fallback={null}><BookletPages album={album} page={page} mobile={mobile} reduced={reduced} active={mode === 'BOOKLET_FOCUS'} visualPhase={phase} onReady={() => setDetailsReady(true)} onPageTurnStart={(direction) => { setPhase(direction === 'forward' ? 'TURNING_FORWARD' : 'TURNING_BACKWARD'); onPageTurnStart(direction); }} onPageTurnComplete={() => { setPhase('READING'); onPageTurnComplete(); }} onPrevious={onPrevious} onNext={onNext} /></Suspense>
-      </group>}
+      <group ref={reader} visible={bookletPhase !== 'RESTING'}>
+        {bookletPhase !== 'RESTING' && <Suspense fallback={null}><BookletPages album={album} page={page} mobile={mobile} reduced={reduced} active={mode === 'BOOKLET_FOCUS'} visualPhase={bookletPhase} onReady={() => { detailsReady.current = true; }} onPageTurnStart={onPageTurnStart} onPageTurnComplete={onPageTurnComplete} onPrevious={onPrevious} onNext={onNext} /></Suspense>}
+      </group>
       <group ref={cover} position={[0, 0, 0.035]}>
         <mesh position={[p1Width / 2, 0, 0]} castShadow><planeGeometry args={[p1Width, PAGE_HEIGHT]} /><PaperMaterial texture={p1} /></mesh>
       </group>
@@ -618,8 +611,9 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
   );
 }
 
-function FrontInterior({ album, dimensions, mode, page, mobile, reduced, onBooklet, onSettled, onPhaseChange, onPageTurnStart, onPageTurnComplete, onPrevious, onNext, onBounds }: {
+function FrontInterior({ album, dimensions, mode, page, bookletPhase, mobile, reduced, onBooklet, onSettled, onPhaseChange, onPageTurnStart, onPageTurnComplete, onPrevious, onNext, onBounds }: {
   album: Album; dimensions: PackageDimensions; mode: ExperienceMode; page: number; mobile: boolean; reduced: boolean;
+  bookletPhase: BookletVisualPhase;
   onBooklet(): void; onSettled(settled: boolean): void; onPageTurnComplete(): void; onPrevious(): void; onNext(): void; onBounds?(bounds: BookletBounds): void;
   onPhaseChange?(phase: BookletVisualPhase): void; onPageTurnStart(direction: 'forward' | 'backward'): void;
 }) {
@@ -627,7 +621,7 @@ function FrontInterior({ album, dimensions, mode, page, mobile, reduced, onBookl
   return <>
     <mesh position={[0, 0, -COVER_DEPTH / 2 - SURFACE_OFFSET]} rotation={[0, Math.PI, 0]} receiveShadow><planeGeometry args={[dimensions.frontWidth, dimensions.frontHeight]} /><PaperMaterial texture={textures.interiorBooklet} /></mesh>
     <group position={[0, 0, 0.064]} rotation={[0, Math.PI, 0]}>
-      <BookletRig album={album} p1={textures.p1} mode={mode} page={page} mobile={mobile} reduced={reduced} onBooklet={onBooklet} onSettled={onSettled} onPhaseChange={onPhaseChange} onPageTurnStart={onPageTurnStart} onPageTurnComplete={onPageTurnComplete} onPrevious={onPrevious} onNext={onNext} onBounds={onBounds} />
+      <BookletRig album={album} p1={textures.p1} mode={mode} page={page} bookletPhase={bookletPhase} mobile={mobile} reduced={reduced} onBooklet={onBooklet} onSettled={onSettled} onPhaseChange={onPhaseChange} onPageTurnStart={onPageTurnStart} onPageTurnComplete={onPageTurnComplete} onPrevious={onPrevious} onNext={onNext} onBounds={onBounds} />
     </group>
   </>;
 }
@@ -642,7 +636,7 @@ function TrayInterior({ album, dimensions, layout, mode, playing, reduced, onPla
 }
 
 function Scene(props: ExperienceProps) {
-  const { album, backgroundSize, openingFromClosed, mode, page, mobile, playing, reduced, homeActivationKey, detailActive, onOpen, onBooklet, onPlayer, onPrevious, onNext, onBookletBounds, onBookletPhaseChange, onPageTurnStart, onPrewarmReady, onTransitionChange } = props;
+  const { album, backgroundSize, openingFromClosed, mode, page, bookletPhase, mobile, playing, reduced, homeActivationKey, detailActive, prewarming = false, onOpen, onBooklet, onPlayer, onPrevious, onNext, onBookletBounds, onBookletPhaseChange, onPageTurnStart, onPrewarmReady, onTransitionChange } = props;
   const openPitch = mobile ? -0.1 : 0;
   const textures = useOuterTextures(album);
   const outerMaterials = useMemo(() => {
@@ -676,6 +670,7 @@ function Scene(props: ExperienceProps) {
   const bookletSettled = useRef(mode === 'CLOSED');
   const traySettled = useRef(true);
   const discSettled = useRef(true);
+  const playerReturnPending = useRef(false);
   const setBookletSettled = useCallback((value: boolean) => { bookletSettled.current = value; }, []);
   const setTraySettled = useCallback((value: boolean) => { traySettled.current = value; }, []);
   const setDiscSettled = useCallback((value: boolean) => { discSettled.current = value; }, []);
@@ -698,10 +693,22 @@ function Scene(props: ExperienceProps) {
   const closedY = mobile ? (0.5 - mobileCenterY / size.height) * viewport.height : 0.2;
 
   useEffect(() => {
+    if (prewarming) {
+      autoRotate.current = false;
+      rotation.current = { x: 0, y: 0 };
+      return;
+    }
     if (homeActivationKey > 0) autoRotate.current = !reduced;
-  }, [homeActivationKey, reduced]);
+  }, [homeActivationKey, prewarming, reduced]);
 
   useEffect(() => {
+    if (mode === 'PLAYER_FOCUS' && previousMode.current !== 'PLAYER_FOCUS') {
+      discSettled.current = false;
+    }
+    if (previousMode.current === 'PLAYER_FOCUS' && mode === 'ALBUM_OPEN') {
+      playerReturnPending.current = true;
+      discSettled.current = false;
+    }
     const openingFromClosed = previousMode.current === 'CLOSED' && mode !== 'CLOSED';
     if (openingFromClosed) {
       autoRotate.current = false;
@@ -728,9 +735,9 @@ function Scene(props: ExperienceProps) {
   useFrame((_, delta) => {
     if (!packageRig.current || !hinge.current) return;
     const closed = mode === 'CLOSED';
-    if (closed && autoRotate.current && !reduced) rotation.current.y += delta * Math.PI / 11;
+    if (closed && !prewarming && autoRotate.current && !reduced) rotation.current.y += delta * Math.PI / 11;
     persistFrame.current += 1;
-    if (closed && persistFrame.current % 12 === 0) sessionStorage.setItem(HAN_ROTATION_KEY, JSON.stringify(rotation.current));
+    if (closed && !prewarming && persistFrame.current % 12 === 0) sessionStorage.setItem(HAN_ROTATION_KEY, JSON.stringify(rotation.current));
     const ease = reduced ? 1 : 1 - Math.exp(-5 * delta);
     const targetCameraZ = detailActive ? 7 : 5;
     const targetFov = detailActive ? 42 : 36;
@@ -771,14 +778,18 @@ function Scene(props: ExperienceProps) {
         : mode === 'PLAYER_FOCUS'
           ? (mobile ? mobilePlayerScale : 1.18)
           : (mobile ? mobileOpenScale : hanOpenScale);
+    if (playerReturnPending.current && discSettled.current) playerReturnPending.current = false;
     packageRig.current.position.x = THREE.MathUtils.lerp(packageRig.current.position.x, x, ease);
     packageRig.current.position.y = THREE.MathUtils.lerp(packageRig.current.position.y, y, ease);
-    const packageZ = mode === 'BOOKLET_FOCUS' ? -1 : (!mobile && mode === 'PLAYER_FOCUS' ? -2.5 : 0);
+    const playerPackageRetreated = !mobile && (mode === 'PLAYER_FOCUS'
+      ? discSettled.current
+      : playerReturnPending.current);
+    const packageZ = mode === 'BOOKLET_FOCUS' ? -1 : (playerPackageRetreated ? -2.5 : 0);
     packageRig.current.position.z = THREE.MathUtils.lerp(packageRig.current.position.z, packageZ, ease);
     packageRig.current.scale.setScalar(THREE.MathUtils.lerp(packageRig.current.scale.x, scale, ease));
-    packageRig.current.visible = mobile
-      ? mode !== 'PLAYER_FOCUS'
-      : mode !== 'PLAYER_FOCUS' || packageRig.current.position.z > -2.35;
+    // Desktop depth and opacity provide the handoff; a z-threshold hard cut
+    // exposed an empty tray on return. Preserve the existing mobile branch.
+    packageRig.current.visible = mobile ? mode !== 'PLAYER_FOCUS' : true;
     const packageError = Math.abs(packageRig.current.position.x - x)
       + Math.abs(packageRig.current.position.y - y)
       + Math.abs(packageRig.current.position.z - packageZ)
@@ -818,7 +829,7 @@ function Scene(props: ExperienceProps) {
     return () => { window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); };
   });
   const down = (event: ThreeEvent<PointerEvent>) => {
-    if (mode !== 'CLOSED' && mode !== 'ALBUM_OPEN') return;
+    if (prewarming || (mode !== 'CLOSED' && mode !== 'ALBUM_OPEN')) return;
     event.stopPropagation(); autoRotate.current = false;
     const canvas = event.nativeEvent.currentTarget as HTMLCanvasElement;
     if (!mobile) canvas.setPointerCapture(event.pointerId);
@@ -859,7 +870,7 @@ function Scene(props: ExperienceProps) {
         <group ref={hinge} position={[-packageDimensions.frontWidth / 2, 0, 0]}>
           <group position={[packageDimensions.frontWidth / 2, 0, layout.frontCenterZ]}>
             <mesh material={outerMaterials.front} castShadow><boxGeometry args={[packageDimensions.frontWidth, packageDimensions.frontHeight, COVER_DEPTH]} /></mesh>
-            {detailActive && <Suspense fallback={null}><FrontInterior album={album} dimensions={packageDimensions} mode={keepInternalsClosed ? 'CLOSED' : mode} page={page} mobile={mobile} reduced={reduced} onBooklet={onBooklet} onSettled={setBookletSettled} onPhaseChange={onBookletPhaseChange} onPageTurnStart={(direction) => onPageTurnStart?.(direction)} onPageTurnComplete={() => props.onPageTurnComplete?.()} onPrevious={onPrevious} onNext={onNext} onBounds={onBookletBounds} /></Suspense>}
+            {detailActive && <Suspense fallback={null}><FrontInterior album={album} dimensions={packageDimensions} mode={keepInternalsClosed ? 'CLOSED' : mode} page={page} bookletPhase={bookletPhase} mobile={mobile} reduced={reduced} onBooklet={onBooklet} onSettled={setBookletSettled} onPhaseChange={onBookletPhaseChange} onPageTurnStart={(direction) => onPageTurnStart?.(direction)} onPageTurnComplete={() => props.onPageTurnComplete?.()} onPrevious={onPrevious} onNext={onNext} onBounds={onBookletBounds} /></Suspense>}
           </group>
         </group>
         <mesh position={[-Math.max(packageDimensions.frontWidth, packageDimensions.backWidth) / 2 - SPINE_SURFACE_OFFSET, 0, 0]} rotation={[0, -Math.PI / 2, 0]} castShadow><planeGeometry args={[packageDimensions.printedSpineDepth, packageDimensions.frontHeight]} /><PaperMaterial texture={textures.spine} /></mesh>

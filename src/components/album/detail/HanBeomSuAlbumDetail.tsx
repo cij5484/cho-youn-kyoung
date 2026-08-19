@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import type { Album } from '../../../data/albums';
 import { assetUrl } from '../../../utils/assetUrl';
@@ -139,7 +139,6 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
   const [spread, setSpread] = useState(0);
   const [settledSpread, setSettledSpread] = useState(0);
   const [bookletPhase, setBookletPhase] = useState<BookletVisualPhase>('RESTING');
-  const [turnDirection, setTurnDirection] = useState<'forward' | 'backward' | null>(null);
   const [mobilePage, setMobilePage] = useState(0);
   const [sceneTransitioning, setSceneTransitioning] = useState(autoOpenAlbum);
   const [openingFromClosed, setOpeningFromClosed] = useState(autoOpenAlbum);
@@ -237,6 +236,7 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
     setSettledSpread(0);
     setMobilePage(0);
     if (sceneTransitioning) return;
+    setBookletPhase('ENTERING');
     setSceneTransitioning(true);
     setMode('BOOKLET_FOCUS');
     if (!mobile) stage.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
@@ -245,6 +245,7 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
   const backToAlbum = () => {
     if (sceneTransitioning || pageTurning) return;
     player.pause();
+    if (mode === 'BOOKLET_FOCUS') setBookletPhase(mobile ? 'RETURNING_FINISH' : 'RETURNING_MOVE');
     setSceneTransitioning(true);
     setMode('ALBUM_OPEN');
   };
@@ -257,28 +258,28 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
   }, [mode, sceneTransitioning]);
   const handlePageTurnStart = useCallback((direction: 'forward' | 'backward') => {
     if (mobile) return;
-    setTurnDirection(direction);
+    setBookletPhase(direction === 'forward' ? 'TURNING_FORWARD' : 'TURNING_BACKWARD');
     setPageTurning(true);
   }, [mobile]);
   const handlePageTurnComplete = useCallback(() => {
     if (!mobile) {
       setSettledSpread(spread);
-      setTurnDirection(null);
+      setBookletPhase('READING');
     }
     setPageTurning(false);
   }, [mobile, spread]);
 
   useEffect(() => () => setDetailProps(null), [setDetailProps]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     setDetailProps({
-      album, backgroundSize, openingFromClosed, mobile, mode, page: mobile ? mobilePage : spread, detailActive: true,
+      album, backgroundSize, openingFromClosed, mobile, mode, page: mobile ? mobilePage : spread, bookletPhase, detailActive: true,
       playing: player.playing, reduced, homeActivationKey: 0, onTransitionChange: handleTransitionChange,
       onBookletPhaseChange: setBookletPhase, onPageTurnStart: handlePageTurnStart,
       onPageTurnComplete: handlePageTurnComplete, onBooklet: openBooklet,
       onBookletBounds: handleBookletBounds,
       onPrevious: previous, onNext: next, onOpen: openAlbum, onPlayer: enterPlayer,
     });
-  }, [album, backgroundSize, enterPlayer, handleBookletBounds, handleTransitionChange, mobile, mobilePage, mode,
+  }, [album, backgroundSize, bookletPhase, enterPlayer, handleBookletBounds, handleTransitionChange, mobile, mobilePage, mode,
     handlePageTurnComplete, handlePageTurnStart, next, openAlbum, openBooklet, openingFromClosed, player.playing, previous, reduced,
     setDetailProps, spread]);
 
@@ -386,28 +387,24 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
             </button>
           </div>
         )}
-        {mode === 'BOOKLET_FOCUS' && !sceneTransitioning && (
+        {(mode === 'BOOKLET_FOCUS' || bookletPhase !== 'RESTING') && (
           <>
-            {bookletBounds && (mobile ? !pageTurning : bookletPhase === 'READING' || turnDirection !== null) && (
+            {bookletBounds && (mobile ? !pageTurning : bookletPhase === 'READING') && (
               <div className={`han-detail__booklet-images${mobile ? ' is-mobile' : ''}`} style={bookletBounds} aria-hidden="true">
                 {(mobile
                   ? [pages[mobilePage + 1]]
-                  : turnDirection === 'forward'
-                    ? [pages[settledSpread * 2 + 1], pages[spread * 2 + 2]]
-                    : turnDirection === 'backward'
-                      ? [pages[spread * 2 + 1], pages[settledSpread * 2 + 2]]
-                      : [pages[settledSpread * 2 + 1], pages[settledSpread * 2 + 2]])
+                  : [pages[settledSpread * 2 + 1], pages[settledSpread * 2 + 2]])
                   .filter(Boolean)
                   .map((page) => <img key={page.src} src={assetUrl(page.src)} alt="" />)}
               </div>
             )}
-            {!mobile && (
+            {!mobile && mode === 'BOOKLET_FOCUS' && (
               <div className="han-detail__booklet-hit-areas" aria-label="북클릿 페이지 이동" style={bookletBounds}>
                 <button type="button" aria-label="이전 북클릿 펼침면" disabled={bookletPhase !== 'READING' || pageTurning || settledSpread === 0} onClick={previous} />
                 <button type="button" aria-label="다음 북클릿 펼침면" disabled={bookletPhase !== 'READING' || pageTurning || settledSpread === spreadCount - 1} onClick={next} />
               </div>
             )}
-            <BookletNavigation
+            {mode === 'BOOKLET_FOCUS' && <BookletNavigation
               mobile={mobile}
               mobilePage={mobilePage}
               spread={mobile ? spread : settledSpread}
@@ -417,7 +414,7 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
               onBack={backToAlbum}
               onNext={next}
               onPrevious={previous}
-            />
+            />}
           </>
         )}
         {mode === 'PLAYER_FOCUS' && !sceneTransitioning && (
