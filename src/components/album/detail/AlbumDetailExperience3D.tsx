@@ -66,6 +66,7 @@ const OPEN_ANGLE = THREE.MathUtils.degToRad(-160);
 // the cover, while a pressed CD occupies 90% of the panel height.
 const PAGE_HEIGHT = PANEL * 0.92;
 const CD_RADIUS = PANEL * 0.45;
+const PLAYER_TARGET_RADIUS = CD_RADIUS * 1.72;
 const PAGE_TURN_DURATION = 0.86;
 const BOOKLET_EDGE_INSET = 0.003;
 const DETAIL_BACKGROUND = {
@@ -172,7 +173,7 @@ function CdDisc({ label, mode, playing, reduced, tray, onPlayer, onSettled, onAn
     const trayQuaternion = tray.current?.getWorldQuaternion(new THREE.Quaternion()) ?? new THREE.Quaternion();
     const targetQuaternion = player || !detached.current ? new THREE.Quaternion() : trayQuaternion;
     rig.current.quaternion.slerp(targetQuaternion, ease);
-    const playerScale = size.width <= 700 ? viewport.width * 0.7 / (CD_RADIUS * 2) : 1.72;
+    const playerScale = size.width <= 700 ? viewport.width * 0.7 / (CD_RADIUS * 2) : PLAYER_TARGET_RADIUS / CD_RADIUS;
     const trayScale = tray.current?.getWorldScale(new THREE.Vector3()).x ?? 1;
     const targetScale = player ? playerScale : (detached.current ? trayScale : 1);
     const scale = THREE.MathUtils.lerp(rig.current.scale.x, targetScale, ease);
@@ -605,6 +606,8 @@ function Scene(props: ExperienceProps) {
       aligned.current = false;
       openingPhaseRef.current = 'ALIGN_CLOSED';
     } else if (mode !== 'CLOSED') {
+      rotation.current.x = 0;
+      rotation.current.y = alignedYaw.current;
       aligned.current = true;
       openingPhaseRef.current = 'IDLE';
     } else {
@@ -623,16 +626,16 @@ function Scene(props: ExperienceProps) {
     if (closed && autoRotate.current && !reduced) rotation.current.y += delta * Math.PI / 15;
     const ease = reduced ? 1 : 1 - Math.exp(-5 * delta);
     if (!closed && !aligned.current) {
-      rotation.current.x = THREE.MathUtils.lerp(rotation.current.x, -0.1, ease);
+      rotation.current.x = THREE.MathUtils.lerp(rotation.current.x, 0, ease);
       rotation.current.y = THREE.MathUtils.lerp(rotation.current.y, alignedYaw.current, ease);
-      if (Math.abs(rotation.current.x + 0.1) + Math.abs(rotation.current.y - alignedYaw.current) < 0.018) {
+      if (Math.abs(rotation.current.x) + Math.abs(rotation.current.y - alignedYaw.current) < 0.018) {
         aligned.current = true;
         openingPhaseRef.current = 'POSITION_FOR_OPEN';
         setOpeningPhase('POSITION_FOR_OPEN');
       }
     }
     const openInteractive = mode === 'ALBUM_OPEN' && aligned.current && openingPhaseRef.current === 'IDLE';
-    packageRig.current.rotation.x = THREE.MathUtils.lerp(packageRig.current.rotation.x, closed || openInteractive ? rotation.current.x : -0.1, ease);
+    packageRig.current.rotation.x = THREE.MathUtils.lerp(packageRig.current.rotation.x, closed || openInteractive ? rotation.current.x : 0, ease);
     packageRig.current.rotation.y = THREE.MathUtils.lerp(packageRig.current.rotation.y, closed || openInteractive ? rotation.current.y : alignedYaw.current, ease);
     const positioning = openingPhaseRef.current === 'POSITION_FOR_OPEN';
     const opening = openingPhaseRef.current === 'HINGE_OPEN' || (!closed && openingPhaseRef.current === 'IDLE');
@@ -705,7 +708,7 @@ function Scene(props: ExperienceProps) {
     if (distance >= 7) {
       if (mode === 'ALBUM_OPEN') {
         rotation.current.y = THREE.MathUtils.clamp(rotation.current.y + (event.clientX - active.x) * 0.0035, alignedYaw.current - THREE.MathUtils.degToRad(10), alignedYaw.current + THREE.MathUtils.degToRad(10));
-        rotation.current.x = THREE.MathUtils.clamp(rotation.current.x + (event.clientY - active.y) * 0.003, -0.1 - THREE.MathUtils.degToRad(6), -0.1 + THREE.MathUtils.degToRad(6));
+        rotation.current.x = THREE.MathUtils.clamp(rotation.current.x + (event.clientY - active.y) * 0.003, -THREE.MathUtils.degToRad(6), THREE.MathUtils.degToRad(6));
       } else {
         rotation.current.y += (event.clientX - active.x) * 0.008;
         rotation.current.x = THREE.MathUtils.clamp(rotation.current.x + (event.clientY - active.y) * 0.006, -0.48, 0.48);

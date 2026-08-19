@@ -39,7 +39,7 @@
 .han-detail__callout span{opacity:0;animation:han-callout-text .4s .58s ease-out forwards}
 .han-detail__callout--booklet span{transform:translateX(-7px)}
 .han-detail__callout--tracks span{transform:translateX(7px)}
-.han-detail__close-album{position:absolute;bottom:6vh;left:50%;border:0;border-bottom:1px solid currentColor;background:transparent;padding:10px 0;color:var(--han-accent)!important;font-size:.68rem;font-weight:700;letter-spacing:.17em;transform:translateX(-50%);cursor:pointer;pointer-events:auto;animation:han-ui-in .55s .5s ease both}
+.han-detail__close-album{position:absolute;bottom:clamp(82px,9vh,110px);left:50%;border:0;border-bottom:1px solid currentColor;background:transparent;padding:10px 0;color:var(--han-accent)!important;font-family:var(--sans);font-size:.66rem;font-weight:700;letter-spacing:.2em;transform:translateX(-50%);cursor:pointer;pointer-events:auto;animation:han-ui-in .55s .5s ease both}
 .han-detail__booklet-ui { position:absolute; z-index:5; pointer-events:none!important; touch-action:pan-y; }
 .han-detail__booklet-controls { position:absolute;top:-40px;right:12%;left:12%;display:flex;justify-content:space-between; }
 .han-detail__booklet-controls button,.han-detail__booklet-footer{pointer-events:auto}
@@ -85,7 +85,7 @@
 @keyframes han-package-in{to{opacity:1;filter:blur(0);transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.han-persistent-stage__canvas.is-home{opacity:1;filter:none;transform:none;animation:none}.han-detail *{scroll-behavior:auto!important;transition:none!important;animation-duration:.01ms!important;animation-delay:0ms!important}.han-detail__callout path{stroke-dashoffset:0}.han-detail__callout span{opacity:1;transform:none}}
 .han-detail__booklet-images{position:absolute;z-index:4;display:flex;pointer-events:none;animation:han-reader-image-in .2s ease-out both}
-.han-detail__booklet-images img{display:block;width:50%;height:100%;object-fit:fill;image-rendering:auto}
+.han-detail__booklet-images img{display:block;width:50%;height:100%;object-fit:fill;image-rendering:auto;filter:contrast(1.1)}
 @keyframes han-reader-image-in{from{opacity:0}to{opacity:1}}
 @media(max-width:700px){.han-detail__booklet-images.is-mobile{display:block;max-width:88vw;max-height:72svh}.han-detail__booklet-images.is-mobile img{width:100%;height:100%;object-fit:fill}.han-detail__player{bottom:calc(env(safe-area-inset-bottom) + 12px);max-height:calc(100svh - var(--header) - 24px);overflow:auto}.han-detail__transport{gap:7px}}
 @media(prefers-reduced-motion:reduce){.han-detail__booklet-images{animation:none}}
