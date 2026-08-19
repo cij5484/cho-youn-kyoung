@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import type { Album } from '../../../data/albums';
 import { assetUrl } from '../../../utils/assetUrl';
 import { COVER_DEPTH, getPackageDimensions, PACKAGE_PANEL } from '../packageGeometry';
-import { CdPolycarbonateMaterial, HanOuterPlasticMaterial, PrintedPaperMaterial, TrayClearPlasticMaterial } from '../HanBeomSuPackageModel';
+import { HanOuterPlasticMaterial, PrintedPaperMaterial, TrayClearPlasticMaterial } from '../HanBeomSuPackageModel';
 
 export type ExperienceMode = 'CLOSED' | 'ALBUM_OPEN' | 'BOOKLET_FOCUS' | 'PLAYER_FOCUS';
 export type BookletBounds = { left: number; top: number; width: number; height: number };
@@ -150,22 +150,8 @@ function CdDisc({ label, mode, playing, reduced, tray, cdMountZ, onPlayer, onSet
   const tiltTarget = useRef({ x: 0, y: 0 });
   const tiltDrag = useRef<{ id: number; x: number; y: number } | null>(null);
   const detached = useRef(false);
-  const CD_THICKNESS = CD_RADIUS * 0.02;
-  const CENTER_HOLE_RADIUS = CD_RADIUS * 0.12;
-  const HUB_RADIUS = CD_RADIUS * 0.235;
-  const LABEL_OUTER_RADIUS = CD_RADIUS * 0.955;
+  const CD_THICKNESS = CD_RADIUS * 0.012;
   const mountPosition = useMemo(() => new THREE.Vector3(0, 0, cdMountZ), [cdMountZ]);
-  const discShapes = useMemo(() => {
-    const annulus = (innerRadius: number, outerRadius: number) => {
-      const shape = new THREE.Shape();
-      shape.absarc(0, 0, outerRadius, 0, Math.PI * 2);
-      const hole = new THREE.Path();
-      hole.absarc(0, 0, innerRadius, 0, Math.PI * 2);
-      shape.holes.push(hole);
-      return shape;
-    };
-    return { substrate: annulus(CENTER_HOLE_RADIUS, CD_RADIUS) };
-  }, [CENTER_HOLE_RADIUS]);
   useFrame((_, delta) => {
     if (!rig.current) return;
     const ease = reduced ? 1 : 1 - Math.exp(-7 * delta);
@@ -174,7 +160,7 @@ function CdDisc({ label, mode, playing, reduced, tray, cdMountZ, onPlayer, onSet
       scene.attach(rig.current);
       detached.current = true;
     }
-    const playerPosition = new THREE.Vector3(size.width <= 700 ? 0 : -1.55, size.width <= 700 ? viewport.height * 0.16 : 0.08, 0.34);
+    const playerPosition = new THREE.Vector3(size.width <= 700 ? 0 : -1.15, size.width <= 700 ? viewport.height * 0.16 : 0.08, 0.34);
     const trayWorld = tray.current
       ? tray.current.localToWorld(mountPosition.clone())
       : rig.current.position.clone();
@@ -183,7 +169,7 @@ function CdDisc({ label, mode, playing, reduced, tray, cdMountZ, onPlayer, onSet
     const trayQuaternion = tray.current?.getWorldQuaternion(new THREE.Quaternion()) ?? new THREE.Quaternion();
     const targetQuaternion = player || !detached.current ? new THREE.Quaternion() : trayQuaternion;
     rig.current.quaternion.slerp(targetQuaternion, ease);
-    const playerScale = size.width <= 700 ? viewport.width * 0.7 / (CD_RADIUS * 2) : 1.72;
+    const playerScale = size.width <= 700 ? viewport.width * 0.7 / (CD_RADIUS * 2) : 0.9;
     const trayScale = tray.current?.getWorldScale(new THREE.Vector3()).x ?? 1;
     const targetScale = player ? playerScale : (detached.current ? trayScale : 1);
     const scale = THREE.MathUtils.lerp(rig.current.scale.x, targetScale, ease);
@@ -228,21 +214,13 @@ function CdDisc({ label, mode, playing, reduced, tray, cdMountZ, onPlayer, onSet
     }} onPointerCancel={() => { tiltDrag.current = null; }} onLostPointerCapture={() => { tiltDrag.current = null; }}>
       <group ref={tilt}>
       <group ref={spin}>
-      <mesh castShadow>
-        <extrudeGeometry args={[discShapes.substrate, { depth: CD_THICKNESS, bevelEnabled: false, curveSegments: 96 }]} />
-        <CdPolycarbonateMaterial opacity={0.3} thickness={CD_THICKNESS} />
+      <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <cylinderGeometry args={[CD_RADIUS, CD_RADIUS, CD_THICKNESS, 96, 1, true]} />
+        <meshBasicMaterial color="#77736b" toneMapped={false} />
       </mesh>
-      <mesh position={[0, 0, CD_THICKNESS + SURFACE_OFFSET]} castShadow>
-        <ringGeometry args={[HUB_RADIUS, LABEL_OUTER_RADIUS, 96]} />
-        <meshPhysicalMaterial map={label} roughness={0.3} metalness={0} clearcoat={0.24} clearcoatRoughness={0.22} specularIntensity={0.62} toneMapped={false} />
-      </mesh>
-      <mesh position={[0, 0, CD_THICKNESS + SURFACE_OFFSET * 2]}>
-        <ringGeometry args={[LABEL_OUTER_RADIUS, CD_RADIUS, 96]} />
-        <CdPolycarbonateMaterial opacity={0.42} thickness={CD_THICKNESS} />
-      </mesh>
-      <mesh position={[0, 0, CD_THICKNESS + SURFACE_OFFSET * 2]}>
-        <ringGeometry args={[CENTER_HOLE_RADIUS, HUB_RADIUS, 96]} />
-        <CdPolycarbonateMaterial opacity={0.38} thickness={CD_THICKNESS} />
+      <mesh position={[0, 0, CD_THICKNESS / 2 + SURFACE_OFFSET]} castShadow>
+        <circleGeometry args={[CD_RADIUS, 96]} />
+        <meshBasicMaterial map={label} toneMapped={false} />
       </mesh>
       </group>
       </group>
@@ -301,7 +279,7 @@ function TrayRig({ texture, label, dimensions, layout, mode, playing, reduced, o
       </group>
     </group>
     {mode === 'PLAYER_FOCUS' && createPortal(
-      <mesh position={[size.width <= 700 ? 0 : -1.55, size.width <= 700 ? 0.3 : -0.72, 0.05]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[size.width <= 700 ? 0 : -1.15, size.width <= 700 ? 0.3 : -0.72, 0.05]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[2.25, 0.62]} />
         <meshBasicMaterial color="#5a4840" transparent opacity={0.1} depthWrite={false} toneMapped={false} />
       </mesh>,
@@ -721,20 +699,22 @@ function Scene(props: ExperienceProps) {
     const targetHinge = opening ? OPEN_ANGLE : 0;
     hinge.current.rotation.y = THREE.MathUtils.lerp(hinge.current.rotation.y, targetHinge, ease);
     const keepClosedTransform = closed || openingPhaseRef.current === 'ALIGN_CLOSED';
-    const x = keepClosedTransform ? closedX : mode === 'BOOKLET_FOCUS' ? 1.05 : mode === 'PLAYER_FOCUS' ? (mobile ? 0 : 0.32) : (mobile ? 0 : halfPanel);
+    const detailClosedX = mobile ? closedX : -viewport.width * 0.18;
+    const closedTargetX = detailActive ? detailClosedX : closedX;
+    const x = keepClosedTransform ? closedTargetX : mode === 'BOOKLET_FOCUS' ? 1.05 : mode === 'PLAYER_FOCUS' ? (mobile ? 0 : 0.32) : (mobile ? 0 : halfPanel);
     const y = mobile
       ? (keepClosedTransform ? closedY : mode === 'PLAYER_FOCUS' ? viewport.height * 0.2 : viewport.height * 0.1)
-      : (keepClosedTransform ? closedY : 0.05);
+      : (keepClosedTransform ? closedY : mode === 'ALBUM_OPEN' ? -0.08 : 0.05);
     const mobileClosedScale = 0.48;
     const mobileOpenScale = viewport.width * 0.9 / (packageDimensions.frontWidth * 1.94);
     const mobilePlayerScale = viewport.width * 0.62 / (CD_RADIUS * 2);
     const scale = keepClosedTransform
-      ? (mobile ? mobileClosedScale : 0.7)
+      ? (mobile ? mobileClosedScale : detailActive ? 0.78 : 0.7)
       : mode === 'BOOKLET_FOCUS'
         ? (mobile ? mobileOpenScale : 0.76)
         : mode === 'PLAYER_FOCUS'
           ? (mobile ? mobilePlayerScale : 1.18)
-          : (mobile ? mobileOpenScale : 1.08);
+          : (mobile ? mobileOpenScale : 0.78);
     packageRig.current.position.x = THREE.MathUtils.lerp(packageRig.current.position.x, x, ease);
     packageRig.current.position.y = THREE.MathUtils.lerp(packageRig.current.position.y, y, ease);
     packageRig.current.position.z = THREE.MathUtils.lerp(packageRig.current.position.z, mode === 'BOOKLET_FOCUS' ? -1 : 0, ease);

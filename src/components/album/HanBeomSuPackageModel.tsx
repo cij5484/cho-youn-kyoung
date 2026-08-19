@@ -36,7 +36,3 @@ function ClearPlasticMaterial({ opacity, thickness, roughness, clearcoat, specul
 export function TrayClearPlasticMaterial({ opacity = 0.2, thickness = 0.012 }: { opacity?: number; thickness?: number }) {
   return <ClearPlasticMaterial opacity={opacity} thickness={thickness} transmission={0.9} roughness={0.2} clearcoat={0.08} specularIntensity={0.5} />;
 }
-
-export function CdPolycarbonateMaterial({ opacity = 0.3, thickness = 0.012 }: { opacity?: number; thickness?: number }) {
-  return <ClearPlasticMaterial opacity={opacity} thickness={thickness} transmission={0.94} roughness={0.05} clearcoat={0.4} specularIntensity={0.95} />;
-}
