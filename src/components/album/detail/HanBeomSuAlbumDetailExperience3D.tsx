@@ -319,42 +319,70 @@ function BookletPages({ album, page, mobile, reduced, active, onReady, onPageTur
   onReady(): void; onPageTurnComplete(): void;
 }) {
   const { gl } = useThree();
-  const allUrls = album.booklet!.previewImages.slice(1).map(({ src }) => assetUrl(src)!);
+  const allUrls = useMemo(() => album.booklet!.previewImages.slice(1).map(({ src }) => assetUrl(src)!), [album]);
   const pageIndices = useCallback((value: number) => mobile ? [value] : [value * 2, value * 2 + 1], [mobile]);
-  const [requested, setRequested] = useState(() => pageIndices(page).filter((index) => index < allUrls.length));
-  const activeRequested = Array.from(new Set([...requested, ...pageIndices(page).filter((index) => index < allUrls.length)])).sort((a, b) => a - b);
-  const urls = activeRequested.map((index) => allUrls[index]);
-  const loadedPages = useLoader(THREE.TextureLoader, urls) as THREE.Texture[];
-  useMemo(() => configureBookletTextures(loadedPages, gl.capabilities.getMaxAnisotropy()), [gl, loadedPages]);
-  useEffect(() => {
-    const next = pageIndices(page + 1).filter((index) => index < allUrls.length);
-    if (!next.length) return undefined;
-    const prefetch = () => setRequested((current) => Array.from(new Set([...current, ...next])).sort((a, b) => a - b));
-    const idleWindow = window as unknown as { requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number; cancelIdleCallback?: (handle: number) => void };
-    const requestIdle = idleWindow.requestIdleCallback;
-    const handle = requestIdle ? requestIdle(prefetch, { timeout: 1800 }) : window.setTimeout(prefetch, 700);
-    return () => requestIdle ? idleWindow.cancelIdleCallback?.(handle) : window.clearTimeout(handle);
-  }, [allUrls.length, loadedPages, page, pageIndices]);
-  const textureByIndex = new Map(activeRequested.map((index, position) => [index, loadedPages[position]]));
-  const pages = Array.from({ length: allUrls.length }, (_, index) => {
-    return textureByIndex.get(index) ?? loadedPages[0];
-  });
-  const aspect = textureAspect(pages[0]);
-  const width = PAGE_HEIGHT * aspect;
+  const textureCache = useRef(new Map<number, THREE.Texture>());
+  const [visibleCache, setVisibleCache] = useState(() => new Map<number, THREE.Texture>());
+  const loader = useRef(new THREE.TextureLoader());
+  const mounted = useRef(true);
   const previous = useRef(page);
   const [settled, setSettled] = useState(page);
   const [turn, setTurn] = useState<PageTurn | null>(null);
-  useEffect(onReady, [onReady]);
+  const readyReported = useRef(false);
+  const loadPage = useCallback(async (value: number) => {
+    const missing = pageIndices(value).filter((index) => index < allUrls.length && !textureCache.current.has(index));
+    if (!missing.length) return;
+    const textures = await Promise.all(missing.map((index) => loader.current.loadAsync(allUrls[index])));
+    configureBookletTextures(textures, gl.capabilities.getMaxAnisotropy());
+    if (!mounted.current) {
+      textures.forEach((texture) => texture.dispose());
+      return;
+    }
+    missing.forEach((index, position) => textureCache.current.set(index, textures[position]));
+    setVisibleCache(new Map(textureCache.current));
+  }, [allUrls, gl, pageIndices]);
+
   useEffect(() => {
-    if (!active) return;
-    if (previous.current === page) return;
-    const source = previous.current;
-    previous.current = page;
-    // Mobile is a static single-page reader: swap the texture directly instead
-    // of reusing the desktop paper-curl mesh.
-    if (mobile || reduced) { queueMicrotask(() => { setSettled(page); onPageTurnComplete(); }); return; }
-    setTurn({ key: Date.now(), source, target: page, direction: page > source ? 1 : -1 });
-  }, [active, mobile, onPageTurnComplete, page, reduced]);
+    let cancelled = false;
+    void loadPage(page).then(() => {
+      if (cancelled) return;
+      if (!readyReported.current) {
+        readyReported.current = true;
+        onReady();
+      }
+      if (!active || previous.current === page) return;
+      const source = previous.current;
+      if (mobile || reduced) {
+        previous.current = page;
+        setSettled(page);
+        onPageTurnComplete();
+        return;
+      }
+      setTurn({ key: Date.now(), source, target: page, direction: page > source ? 1 : -1 });
+    });
+    return () => { cancelled = true; };
+  }, [active, loadPage, mobile, onPageTurnComplete, onReady, page, reduced]);
+
+  useEffect(() => {
+    if (turn || settled !== page) return undefined;
+    const nextPage = page + 1;
+    if (!pageIndices(nextPage).some((index) => index < allUrls.length)) return undefined;
+    const idleWindow = window as unknown as { requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number; cancelIdleCallback?: (handle: number) => void };
+    const prefetch = () => { void loadPage(nextPage); };
+    const handle = idleWindow.requestIdleCallback ? idleWindow.requestIdleCallback(prefetch, { timeout: 1800 }) : window.setTimeout(prefetch, 700);
+    return () => idleWindow.requestIdleCallback ? idleWindow.cancelIdleCallback?.(handle) : window.clearTimeout(handle);
+  }, [allUrls.length, loadPage, page, pageIndices, settled, turn]);
+
+  useEffect(() => () => {
+    mounted.current = false;
+    textureCache.current.forEach((texture) => texture.dispose());
+    textureCache.current.clear();
+  }, []);
+
+  const fallback = visibleCache.get(pageIndices(settled)[0]);
+  if (!fallback) return null;
+  const pages = Array.from({ length: allUrls.length }, (_, index) => visibleCache.get(index) ?? fallback);
+  const width = PAGE_HEIGHT * textureAspect(fallback);
   const completeTurn = () => {
     if (!turn) return;
     previous.current = turn.target;
