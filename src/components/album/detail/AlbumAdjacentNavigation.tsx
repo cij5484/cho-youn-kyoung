@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { albums } from '../../../data/albums';
 import { preloadAlbumDetail } from './preloadAlbumDetail';
 
@@ -19,7 +19,8 @@ export function AlbumAdjacentNavigation({ currentId, tone }: { currentId: string
 
   return (
     <nav className={`album-adjacent album-adjacent--${tone}`} aria-label="앨범 상세 내비게이션">
-      <a href={next.detailsPath!} aria-disabled={navigating} onClick={(event) => {
+      <Link to={next.detailsPath!} state={{ autoOpenAlbum: true }} aria-disabled={navigating} onClick={(event) => {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         event.preventDefault();
         if (navigating) return;
         setNavigating(true);
@@ -27,7 +28,7 @@ export function AlbumAdjacentNavigation({ currentId, tone }: { currentId: string
       }}>
         <span className="album-adjacent__label">NEXT ALBUM</span>
         <strong><span>{next.title}</span><b aria-hidden="true">→</b></strong>
-      </a>
+      </Link>
     </nav>
   );
 }

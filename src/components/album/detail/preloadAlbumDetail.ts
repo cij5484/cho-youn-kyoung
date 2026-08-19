@@ -29,7 +29,12 @@ export function preloadAlbumDetail(album: Album) {
     album.detailExperience?.interior.bookletPanel,
     album.detailExperience?.interior.trayPanel,
   ];
-  const promise = Promise.all([module, ...images.map(decodeImage)]).then(() => undefined);
+  const promise = Promise.all([module, ...images.map(decodeImage)])
+    .then(() => undefined)
+    .catch((error: unknown) => {
+      ready.delete(album.id);
+      throw error;
+    });
   ready.set(album.id, promise);
   return promise;
 }

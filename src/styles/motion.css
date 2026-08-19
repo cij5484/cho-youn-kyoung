@@ -18,6 +18,13 @@
   animation-duration: 250ms;
 }
 
+@media (min-width: 701px) {
+  /* HOME paints immediately on desktop instead of fading from the body color. */
+  .page-transition--home {
+    animation: none;
+  }
+}
+
 
 .reveal {
   opacity: 0;

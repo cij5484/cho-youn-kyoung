@@ -561,6 +561,7 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
 
 function Scene(props: ExperienceProps) {
   const { album, backgroundSize, openingFromClosed, mode, page, mobile, playing, reduced, homeActivationKey, onOpen, onBooklet, onPlayer, onPrevious, onNext, onCdAnchor, onBookletBounds, onTransitionChange } = props;
+  const openPitch = mobile ? -0.1 : 0;
   const textures = useCoreTextures(album);
   const { size, viewport } = useThree();
   const packageRig = useRef<THREE.Group>(null);
@@ -606,7 +607,7 @@ function Scene(props: ExperienceProps) {
       aligned.current = false;
       openingPhaseRef.current = 'ALIGN_CLOSED';
     } else if (mode !== 'CLOSED') {
-      rotation.current.x = 0;
+      rotation.current.x = openPitch;
       rotation.current.y = alignedYaw.current;
       aligned.current = true;
       openingPhaseRef.current = 'IDLE';
@@ -618,7 +619,7 @@ function Scene(props: ExperienceProps) {
     reported.current = false;
     onTransitionChange?.(true);
     previousMode.current = mode;
-  }, [mode, onTransitionChange]);
+  }, [mode, onTransitionChange, openPitch]);
 
   useFrame((_, delta) => {
     if (!packageRig.current || !hinge.current) return;
@@ -626,16 +627,16 @@ function Scene(props: ExperienceProps) {
     if (closed && autoRotate.current && !reduced) rotation.current.y += delta * Math.PI / 15;
     const ease = reduced ? 1 : 1 - Math.exp(-5 * delta);
     if (!closed && !aligned.current) {
-      rotation.current.x = THREE.MathUtils.lerp(rotation.current.x, 0, ease);
+      rotation.current.x = THREE.MathUtils.lerp(rotation.current.x, openPitch, ease);
       rotation.current.y = THREE.MathUtils.lerp(rotation.current.y, alignedYaw.current, ease);
-      if (Math.abs(rotation.current.x) + Math.abs(rotation.current.y - alignedYaw.current) < 0.018) {
+      if (Math.abs(rotation.current.x - openPitch) + Math.abs(rotation.current.y - alignedYaw.current) < 0.018) {
         aligned.current = true;
         openingPhaseRef.current = 'POSITION_FOR_OPEN';
         setOpeningPhase('POSITION_FOR_OPEN');
       }
     }
     const openInteractive = mode === 'ALBUM_OPEN' && aligned.current && openingPhaseRef.current === 'IDLE';
-    packageRig.current.rotation.x = THREE.MathUtils.lerp(packageRig.current.rotation.x, closed || openInteractive ? rotation.current.x : 0, ease);
+    packageRig.current.rotation.x = THREE.MathUtils.lerp(packageRig.current.rotation.x, closed || openInteractive ? rotation.current.x : openPitch, ease);
     packageRig.current.rotation.y = THREE.MathUtils.lerp(packageRig.current.rotation.y, closed || openInteractive ? rotation.current.y : alignedYaw.current, ease);
     const positioning = openingPhaseRef.current === 'POSITION_FOR_OPEN';
     const opening = openingPhaseRef.current === 'HINGE_OPEN' || (!closed && openingPhaseRef.current === 'IDLE');
@@ -708,7 +709,7 @@ function Scene(props: ExperienceProps) {
     if (distance >= 7) {
       if (mode === 'ALBUM_OPEN') {
         rotation.current.y = THREE.MathUtils.clamp(rotation.current.y + (event.clientX - active.x) * 0.0035, alignedYaw.current - THREE.MathUtils.degToRad(10), alignedYaw.current + THREE.MathUtils.degToRad(10));
-        rotation.current.x = THREE.MathUtils.clamp(rotation.current.x + (event.clientY - active.y) * 0.003, -THREE.MathUtils.degToRad(6), THREE.MathUtils.degToRad(6));
+        rotation.current.x = THREE.MathUtils.clamp(rotation.current.x + (event.clientY - active.y) * 0.003, openPitch - THREE.MathUtils.degToRad(6), openPitch + THREE.MathUtils.degToRad(6));
       } else {
         rotation.current.y += (event.clientX - active.x) * 0.008;
         rotation.current.x = THREE.MathUtils.clamp(rotation.current.x + (event.clientY - active.y) * 0.006, -0.48, 0.48);

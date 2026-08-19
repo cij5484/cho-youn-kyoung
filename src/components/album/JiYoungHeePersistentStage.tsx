@@ -120,7 +120,10 @@ export function JiYoungHeePersistentStage({ children }: { children: ReactNode })
     onPrevious: () => undefined,
     onNext: () => undefined,
   }), [album, backgroundSize, homeActivationKey, mobile, reduced]);
-  const visible = detailRoute || (location.pathname === '/' && homeActive);
+  // Keep the last desktop detail paint until HOME's persistent hero effect
+  // takes ownership; mobile retains its existing route visibility behavior.
+  const desktopDetailHandoff = !mobile && location.pathname === '/' && detailProps !== null;
+  const visible = detailRoute || (location.pathname === '/' && (homeActive || desktopDetailHandoff));
   const context = useMemo(() => ({ setDetailProps, setDetailStageVisible, setHomeActive: updateHomeActive }), [updateHomeActive]);
 
   return (
