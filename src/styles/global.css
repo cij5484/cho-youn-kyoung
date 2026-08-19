@@ -590,7 +590,7 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .mobile-menu a:focus-
   overflow: hidden;
   isolation: isolate;
 }
-.home-hero-rotator[data-work-id="ji-young-hee-ryu-haegeum-sanjo-2026"] {
+.home-hero-rotator:is([data-work-id="ji-young-hee-ryu-haegeum-sanjo-2026"], [data-work-id="han-beom-su-haegeum-sanjo-2020"]) {
   pointer-events: none;
 }
 .home-hero-rotator__stage,
@@ -598,11 +598,11 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .mobile-menu a:focus-
   position: absolute;
   inset: 0;
 }
-.home-hero-rotator[data-work-id="ji-young-hee-ryu-haegeum-sanjo-2026"]
+.home-hero-rotator:is([data-work-id="ji-young-hee-ryu-haegeum-sanjo-2026"], [data-work-id="han-beom-su-haegeum-sanjo-2020"])
   .home-hero-rotator__stage {
   pointer-events: none;
 }
-.home-hero-rotator[data-work-id="ji-young-hee-ryu-haegeum-sanjo-2026"]
+.home-hero-rotator:is([data-work-id="ji-young-hee-ryu-haegeum-sanjo-2026"], [data-work-id="han-beom-su-haegeum-sanjo-2020"])
   :is(.album-hero__link, .recent-works, .home-creative-credit) {
   pointer-events: auto;
 }
@@ -617,7 +617,7 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .mobile-menu a:focus-
   pointer-events: auto;
   z-index: 1;
 }
-.home-hero-rotator[data-work-id="ji-young-hee-ryu-haegeum-sanjo-2026"]
+.home-hero-rotator:is([data-work-id="ji-young-hee-ryu-haegeum-sanjo-2026"], [data-work-id="han-beom-su-haegeum-sanjo-2020"])
   .home-hero-rotator__slide.is-active {
   pointer-events: none;
 }
