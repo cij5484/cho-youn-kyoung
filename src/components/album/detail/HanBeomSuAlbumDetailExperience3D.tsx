@@ -719,6 +719,8 @@ function Scene(props: ExperienceProps) {
   useEffect(() => {
     if (prewarming) {
       autoRotate.current = false;
+      rotation.current = { x: 0, y: 0 };
+      alignedYaw.current = 0;
       return;
     }
     if (homeActivationKey > 0) autoRotate.current = !reduced;
@@ -729,7 +731,7 @@ function Scene(props: ExperienceProps) {
       discSettled.current = false;
       discDocked.current = false;
     }
-    if (previousMode.current === 'PLAYER_FOCUS' && mode === 'ALBUM_OPEN') {
+    if (!mobile && previousMode.current === 'PLAYER_FOCUS' && mode === 'ALBUM_OPEN') {
       holdPackageBack.current = true;
       discSettled.current = false;
       discDocked.current = false;
@@ -738,6 +740,9 @@ function Scene(props: ExperienceProps) {
         quaternion: packageRig.current.quaternion.clone(),
         scale: packageRig.current.scale.clone(),
       };
+    } else if (mobile) {
+      holdPackageBack.current = false;
+      playerReturnSnapshot.current = null;
     }
     const openingFromClosed = previousMode.current === 'CLOSED' && mode !== 'CLOSED';
     if (openingFromClosed) {
@@ -777,6 +782,18 @@ function Scene(props: ExperienceProps) {
 
   useFrame((_, delta) => {
     if (!packageRig.current || !hinge.current) return;
+    if (prewarming) {
+      const detailClosedX = mobile ? closedX : -viewport.width * 0.18;
+      packageRig.current.position.set(detailClosedX, closedY, 0);
+      packageRig.current.quaternion.identity();
+      packageRig.current.scale.setScalar(mobile ? 0.48 : 1.18);
+      hinge.current.rotation.set(0, 0, 0);
+      perspectiveCamera.current.position.z = 7;
+      perspectiveCamera.current.fov = 42;
+      perspectiveCamera.current.updateProjectionMatrix();
+      rotation.current = { x: 0, y: 0 };
+      return;
+    }
     if (preserveOpeningFrame.current && openingSnapshot.current) {
       packageRig.current.position.copy(openingSnapshot.current.position);
       packageRig.current.quaternion.copy(openingSnapshot.current.quaternion);
