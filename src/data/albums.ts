@@ -148,8 +148,8 @@ export const albums: Album[] = [
         mobile: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/home-hero-mobile.png',
       },
       backgroundAnchor: {
-        desktop: { sourceWidth: 3840, sourceHeight: 2160, x: 1369 / 3840 },
-        mobile: { sourceWidth: 1440, sourceHeight: 2560, x: 720 / 1440 },
+        desktop: { sourceWidth: 3840, sourceHeight: 2160, x: 0.5 },
+        mobile: { sourceWidth: 1440, sourceHeight: 2560, x: 0.5 },
       },
       textures: {
         front: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/front.png',
