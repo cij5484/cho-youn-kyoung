@@ -9,7 +9,7 @@
 .han-detail__stage { position:relative; min-height:100svh; overflow:hidden; isolation:isolate; }
 .han-detail__intro a,.han-detail__intro button,.han-detail__booklet-ui,.han-detail__booklet-hit-areas,.han-detail__player,.han-detail__editorial{pointer-events:auto}
 .han-detail__swipe-surface{position:absolute;z-index:2;inset:var(--header) 0 90px;pointer-events:auto;touch-action:pan-y}
-.han-detail__intro { position:absolute; z-index:2; top:50%; right:max(4vw,36px); width:min(45vw,640px); transform:translateY(-45%); }
+.han-detail__intro { position:absolute; z-index:2; top:50%; right:max(4vw,36px); width:min(38vw,560px); transform:translateY(-45%); }
 .han-detail__intro p:first-of-type,.han-detail__label { color:var(--han-accent); font-size:.7rem; font-weight:700; letter-spacing:.22em; }
 .han-detail__intro h1 { margin:20px 0 4px; font-family:var(--serif); font-size:clamp(2.35rem,3.45vw,4.25rem); font-weight:500; line-height:1.12; white-space:nowrap; }
 .han-detail__intro h2 { margin:0 0 25px; color:var(--han-accent); font-family:var(--serif); font-size:clamp(1.2rem,2vw,1.7rem); font-weight:500; }
