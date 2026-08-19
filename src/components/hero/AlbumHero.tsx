@@ -41,7 +41,11 @@ export function AlbumHero({ slide }: AlbumHeroProps) {
           {status ? <span className="album-hero__status">{status}</span> : null}
         </p>
         {slide.trackCount ? <p className="album-hero__tracks">{slide.trackCount} TRACKS</p> : null}
-        <Link className="album-hero__link" to={slide.detailLink}>
+        <Link
+          className="album-hero__link"
+          to={slide.detailLink}
+          state={persistent ? { autoOpenAlbum: true } : undefined}
+        >
           VIEW ALBUM <span aria-hidden="true">→</span>
         </Link>
       </div>
