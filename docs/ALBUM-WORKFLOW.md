@@ -2,6 +2,12 @@
 
 - 마지막 확인 날짜: 2026-08-15
 
+## 한범수류 persistent detail 현황
+
+- HOME→DETAIL에서 기존 배경·Canvas·package object를 유지하는 한범수류 전용 persistent stage를 구현했다.
+- 북클릿은 P1–P11 PNG 원본을 사용하고, 왼쪽 북클릿 면과 오른쪽 tray 하단 면은 모두 P1을 사용한다.
+- player UI는 audio-ready 상태이지만 실제 Cloudflare R2 audio는 아직 연결하지 않았다.
+
 앨범 작업도 공연 작업과 동일하게 원본 자료를 먼저 확인하고, 확정·권장·미확정 정보를 구분합니다. 아직 저장소에서 확정되지 않은 앨범 목록·상세·Viewer UI나 픽셀 규격은 **미확정**으로 표시합니다.
 
 ## HOME 3D Hero 기반

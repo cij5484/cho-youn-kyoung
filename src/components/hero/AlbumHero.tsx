@@ -3,6 +3,7 @@ import type { HomeHeroSlide } from '../../data/homeHeroSlides';
 import { AlbumPackage3D } from './album/AlbumPackage3D';
 import { useEffect } from 'react';
 import { useJiYoungHeeStage } from '../album/JiYoungHeePersistentStage';
+import { useHanBeomSuStage } from '../album/HanBeomSuPersistentStage';
 
 type AlbumHeroProps = {
   slide: HomeHeroSlide;
@@ -10,12 +11,20 @@ type AlbumHeroProps = {
 
 export function AlbumHero({ slide }: AlbumHeroProps) {
   const { setHomeActive } = useJiYoungHeeStage();
-  const persistent = slide.id === 'ji-young-hee-ryu-haegeum-sanjo-2026';
+  const { setHomeActive: setHanHomeActive } = useHanBeomSuStage();
+  const jiPersistent = slide.id === 'ji-young-hee-ryu-haegeum-sanjo-2026';
+  const hanPersistent = slide.id === 'han-beom-su-haegeum-sanjo-2020';
+  const persistent = jiPersistent || hanPersistent;
   useEffect(() => {
-    if (!persistent) return undefined;
+    if (!jiPersistent) return undefined;
     setHomeActive(true);
     return () => setHomeActive(false);
-  }, [persistent, setHomeActive]);
+  }, [jiPersistent, setHomeActive]);
+  useEffect(() => {
+    if (!hanPersistent) return undefined;
+    setHanHomeActive(true);
+    return () => setHanHomeActive(false);
+  }, [hanPersistent, setHanHomeActive]);
   const titleLines = slide.title.split('\n');
   const [year, status] = slide.displayDate.split(' · ');
 

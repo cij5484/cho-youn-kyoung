@@ -5,12 +5,14 @@ import { albums } from '../data/albums';
 import { assetUrl } from '../utils/assetUrl';
 import { NotFoundPage } from './NotFoundPage';
 import '../styles/album-detail.css';
+import '../styles/han-beom-su-album-detail.css';
 
 const releaseStatusLabels = {
   'coming-soon': 'COMING SOON',
   released: 'RELEASED',
 } as const;
 const JiYoungHeeAlbumDetail = lazy(() => import('../components/album/detail/JiYoungHeeAlbumDetail'));
+const HanBeomSuAlbumDetail = lazy(() => import('../components/album/detail/HanBeomSuAlbumDetail'));
 
 export function AlbumDetailPage() {
   const { id } = useParams();
@@ -19,6 +21,9 @@ export function AlbumDetailPage() {
   if (!album) return <NotFoundPage />;
   if (album.id === 'ji-young-hee-ryu-haegeum-sanjo-2026') {
     return <Suspense fallback={null}><JiYoungHeeAlbumDetail album={album} /></Suspense>;
+  }
+  if (album.id === 'han-beom-su-haegeum-sanjo-2020') {
+    return <Suspense fallback={null}><HanBeomSuAlbumDetail album={album} /></Suspense>;
   }
 
   return (
