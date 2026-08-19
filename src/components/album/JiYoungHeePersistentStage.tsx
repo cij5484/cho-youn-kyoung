@@ -13,6 +13,7 @@ type StageContextValue = {
   setDetailProps(props: ExperienceProps | null): void;
   setDetailStageVisible(visible: boolean): void;
   setHomeActive(active: boolean): void;
+  prepareDetail(): Promise<void>;
 };
 
 const StageContext = createContext<StageContextValue | null>(null);
@@ -30,6 +31,7 @@ export function JiYoungHeePersistentStage({ children }: { children: ReactNode })
   const [homeActive, setHomeActive] = useState(false);
   const [detailProps, setDetailProps] = useState<ExperienceProps | null>(null);
   const [detailStageVisible, setDetailStageVisible] = useState(true);
+  const [prewarming, setPrewarming] = useState(false);
   const [mobile, setMobile] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [homeActivationKey, setHomeActivationKey] = useState(0);
@@ -120,11 +122,16 @@ export function JiYoungHeePersistentStage({ children }: { children: ReactNode })
     onPrevious: () => undefined,
     onNext: () => undefined,
   }), [album, backgroundSize, homeActivationKey, mobile, reduced]);
+  const prepareDetail = useCallback(async () => {
+    if (mobile) return;
+    setPrewarming(true);
+    await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+  }, [mobile]);
   // Keep the last desktop detail paint until HOME's persistent hero effect
   // takes ownership; mobile retains its existing route visibility behavior.
   const desktopDetailHandoff = !mobile && location.pathname === '/' && detailProps !== null;
   const visible = detailRoute || (location.pathname === '/' && (homeActive || desktopDetailHandoff));
-  const context = useMemo(() => ({ setDetailProps, setDetailStageVisible, setHomeActive: updateHomeActive }), [updateHomeActive]);
+  const context = useMemo(() => ({ setDetailProps, setDetailStageVisible, setHomeActive: updateHomeActive, prepareDetail }), [prepareDetail, updateHomeActive]);
 
   return (
     <StageContext.Provider value={context}>
@@ -135,7 +142,7 @@ export function JiYoungHeePersistentStage({ children }: { children: ReactNode })
         </picture>
         <div className={`ji-persistent-stage__canvas${detailRoute && !detailStageVisible ? ' is-editorial-hidden' : ''}`}>
           <Suspense fallback={null}>
-            <Experience3D {...(detailRoute && detailProps ? detailProps : fallbackProps)} />
+            <Experience3D {...(detailRoute && detailProps ? detailProps : fallbackProps)} key={prewarming ? 'detail-prewarm' : 'default'} />
           </Suspense>
         </div>
       </div>

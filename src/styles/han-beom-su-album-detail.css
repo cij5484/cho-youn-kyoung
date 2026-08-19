@@ -87,6 +87,7 @@
 @media(prefers-reduced-motion:reduce){.han-persistent-stage__canvas.is-home{opacity:1;filter:none;transform:none;animation:none}.han-detail *{scroll-behavior:auto!important;transition:none!important;animation-duration:.01ms!important;animation-delay:0ms!important}.han-detail__callout path{stroke-dashoffset:0}.han-detail__callout span{opacity:1;transform:none}}
 .han-detail__booklet-images{position:absolute;z-index:4;display:flex;pointer-events:none;animation:han-reader-image-in .2s ease-out both}
 .han-detail__booklet-images img{display:block;width:50%;height:100%;object-fit:fill;image-rendering:auto}
+.han-detail__booklet-images:not(.is-mobile) img.is-turning-page{visibility:hidden}
 .han-detail__booklet-images:not(.is-mobile) img{filter:contrast(1.1)}
 @keyframes han-reader-image-in{from{opacity:0}to{opacity:1}}
 @media(max-width:700px){.han-detail__booklet-images.is-mobile{display:block;max-width:88vw;max-height:72svh}.han-detail__booklet-images.is-mobile img{width:100%;height:100%;object-fit:fill}.han-detail__player{bottom:calc(env(safe-area-inset-bottom) + 12px);max-height:calc(100svh - var(--header) - 24px);overflow:auto}.han-detail__transport{gap:7px}}
