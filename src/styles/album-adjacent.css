@@ -1,0 +1,14 @@
+.album-adjacent{position:absolute;z-index:7;right:max(calc(50% - 780px),36px);bottom:clamp(28px,5vh,58px);pointer-events:auto;text-align:right;animation:album-adjacent-in .55s .35s ease-out both}
+.album-adjacent a{display:grid;min-height:44px;gap:7px;color:inherit;text-decoration:none}
+.album-adjacent__label{font-size:.65rem;font-weight:800;letter-spacing:.2em}
+.album-adjacent strong{display:inline-flex;justify-content:flex-end;align-items:baseline;gap:.35em;font-family:var(--serif);font-size:clamp(.95rem,1.35vw,1.25rem);font-weight:500}
+.album-adjacent strong span{position:relative}
+.album-adjacent strong span::after{content:"";position:absolute;right:0;bottom:-.12em;left:0;height:1px;background:currentColor;transform:scaleX(0);transform-origin:left;transition:transform 260ms cubic-bezier(.22,1,.36,1)}
+.album-adjacent strong b{font:inherit;transition:transform 260ms cubic-bezier(.22,1,.36,1)}
+.album-adjacent--han{color:#d6ad6c}.album-adjacent--ji{color:#70453f}
+.album-adjacent a:focus-visible{outline:2px solid currentColor;outline-offset:5px}
+.album-adjacent a:focus-visible strong span::after{transform:scaleX(1)}.album-adjacent a:focus-visible strong b{transform:translateX(5px)}
+@media(hover:hover) and (pointer:fine){.album-adjacent a:hover strong span::after{transform:scaleX(1)}.album-adjacent a:hover strong b{transform:translateX(5px)}}
+@media(max-width:700px){.album-adjacent{right:18px;bottom:calc(env(safe-area-inset-bottom) + 122px)}.album-adjacent a{display:flex;align-items:center}.album-adjacent strong span{display:none}.album-adjacent strong{font:inherit}.album-adjacent__label{font-size:.62rem}}
+@keyframes album-adjacent-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.album-adjacent{animation:none}.album-adjacent strong span::after,.album-adjacent strong b{transition:none}}

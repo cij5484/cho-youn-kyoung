@@ -99,12 +99,11 @@
 .ji-detail__open-credits dl div{margin-top:9px}
 .ji-detail__open-credits dt{color:rgba(37,37,37,.66);font-size:.59rem;line-height:1.35;letter-spacing:.08em}
 .ji-detail__open-credits dd{margin:2px 0 0;font-family:var(--serif);font-size:.7rem;line-height:1.35}
-.ji-detail__callout{position:absolute;top:64%;display:flex;align-items:center;gap:12px;border:0;background:transparent;padding:8px 0;color:var(--ji-accent)!important;font-size:.66rem;font-weight:700;letter-spacing:.2em;cursor:pointer;pointer-events:auto}
-.ji-detail__callout--booklet{left:max(4vw,36px)}
-.ji-detail__callout--tracks{right:max(4vw,36px)}
+.ji-detail__callout{position:absolute;top:64%;display:flex;align-items:center;gap:12px;border:0;background:transparent;padding:8px 0;color:var(--ji-callout,var(--ji-accent))!important;font-size:.66rem;font-weight:700;letter-spacing:.2em;cursor:pointer;pointer-events:auto}
+.ji-detail__callout--booklet{left:max(calc(50% - 780px),36px)}
+.ji-detail__callout--tracks{right:max(calc(50% - 780px),36px)}
 .ji-detail__callout svg{display:block;width:clamp(125px,15vw,210px);height:32px;overflow:visible;fill:none;stroke:currentColor;stroke-width:1;opacity:.7}
 .ji-detail__callout path{stroke-dasharray:1;stroke-dashoffset:1;animation:ji-callout-line .78s .18s cubic-bezier(.22,.61,.36,1) forwards}
-.ji-detail__callout circle{fill:currentColor;stroke:none;opacity:0;animation:ji-callout-dot .2s .15s ease-out forwards}
 .ji-detail__callout span{opacity:0;animation:ji-callout-text .4s .58s ease-out forwards}
 .ji-detail__callout--booklet span{transform:translateX(-7px)}
 .ji-detail__callout--tracks span{transform:translateX(7px)}
@@ -143,16 +142,15 @@
 .ji-detail__reader button{position:absolute;top:20px;right:20px;color:#f5efe7!important}
 
 @media(max-width:700px){
- .ji-detail__stage{min-height:max(800px,100svh)}.ji-detail__canvas{inset:var(--header) 0 0}.ji-detail__intro{top:auto;right:24px;bottom:25px;left:24px;width:auto;transform:none}.ji-detail__back{margin-bottom:12px}.ji-detail__intro h1{margin-top:10px;font-size:clamp(1.9rem,9vw,2.25rem);white-space:normal}.ji-detail__intro h2{margin-bottom:10px}.ji-detail__english{font-size:.76rem;line-height:1.45}.ji-detail__intro strong{margin-top:9px}.ji-detail__intro>button{margin-top:12px}
- .ji-detail__open-info,.ji-detail__open-credits{top:calc(var(--header) + 18px)}.ji-detail__open-info{left:20px}.ji-detail__open-credits{right:20px;width:43vw}.ji-detail__open-info h1{margin-top:9px;font-size:1.05rem}.ji-detail__open-info h2{font-size:.82rem}.ji-detail__open-meta{margin-top:9px;font-size:.55rem}.ji-detail__open-credits dl{margin-top:8px}.ji-detail__open-credits dl div{margin-top:5px}.ji-detail__open-credits dt{font-size:.5rem}.ji-detail__open-credits dd{font-size:.6rem}.ji-detail__callout{top:65%;gap:7px;font-size:.58rem}.ji-detail__callout--booklet{left:20px}.ji-detail__callout--tracks{right:20px}.ji-detail__callout svg{width:clamp(65px,21vw,95px)}.ji-detail__close-album{bottom:5vh}
- .ji-detail__booklet-ui{inset:calc(var(--header) + 10px) 18px 25px}.ji-detail__booklet-controls{position:static;padding:0 8%}
+ .ji-detail__stage{height:100svh;min-height:100svh;max-height:100svh;overflow:hidden;overscroll-behavior:none}.ji-detail__canvas{inset:var(--header) 0 0}.ji-detail__intro{top:auto;right:24px;bottom:25px;left:24px;width:auto;transform:none}.ji-detail__back{margin-bottom:12px}.ji-detail__intro h1{margin-top:10px;font-size:clamp(1.9rem,9vw,2.25rem);white-space:normal}.ji-detail__intro h2{margin-bottom:10px}.ji-detail__english{font-size:.76rem;line-height:1.45}.ji-detail__intro strong{margin-top:9px}.ji-detail__intro>button{margin-top:12px}
+ .ji-detail__open-info,.ji-detail__open-credits{top:calc(var(--header) + 18px)}.ji-detail__open-info{left:20px}.ji-detail__open-credits{right:20px;width:43vw}.ji-detail__open-info h1{margin-top:9px;font-size:1.05rem}.ji-detail__open-info h2{font-size:.82rem}.ji-detail__open-meta{margin-top:9px;font-size:.55rem}.ji-detail__open-credits dl{margin-top:8px}.ji-detail__open-credits dl div{margin-top:5px}.ji-detail__open-credits dt{font-size:.5rem}.ji-detail__open-credits dd{font-size:.6rem}.ji-detail__callout{top:auto;bottom:calc(env(safe-area-inset-bottom) + 68px);min-width:44px;min-height:44px;padding:0;font-size:.62rem}.ji-detail__callout--booklet{left:20px}.ji-detail__callout--tracks{right:20px}.ji-detail__callout svg{display:none}.ji-detail__close-album{bottom:calc(env(safe-area-inset-bottom) + 18px);min-height:44px}
+ .ji-detail__booklet-ui{inset:calc(var(--header) + 10px) 18px max(12px,env(safe-area-inset-bottom))}.ji-detail__booklet-controls{position:static;padding:0 4%}.ji-detail__booklet-controls button{min-width:44px;min-height:44px}.ji-detail__booklet-footer{top:auto;bottom:0}.ji-detail__booklet-footer button{min-height:44px}
  .ji-detail__player{top:auto;right:22px;bottom:18px;left:22px;width:auto;transform:none}.ji-detail__player ol{margin:8px 0 10px}.ji-detail__player li button{padding:6px 0}.ji-detail__selected{margin:8px 0}.ji-detail__editorial section{grid-template-columns:1fr;gap:22px}.ji-detail__editorial dl div{grid-template-columns:1fr;gap:5px}
 }
 .ji-detail__intro,.ji-detail__booklet-ui,.ji-detail__player{animation:ji-ui-in .55s ease both}
 @keyframes ji-ui-in{from{opacity:0}to{opacity:1}}
 @keyframes ji-open-copy-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-@keyframes ji-callout-dot{to{opacity:1}}
 @keyframes ji-callout-line{to{stroke-dashoffset:0}}
 @keyframes ji-callout-text{to{opacity:1;transform:none}}
 @keyframes ji-track-item{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.ji-detail *{scroll-behavior:auto!important;transition:none!important;animation-duration:.01ms!important;animation-delay:0ms!important}.ji-detail__callout path{stroke-dashoffset:0}.ji-detail__callout circle,.ji-detail__callout span{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.ji-detail *{scroll-behavior:auto!important;transition:none!important;animation-duration:.01ms!important;animation-delay:0ms!important}.ji-detail__callout path{stroke-dashoffset:0}.ji-detail__callout span{opacity:1;transform:none}}
