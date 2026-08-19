@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import type { Album } from '../../../data/albums';
 import { assetUrl } from '../../../utils/assetUrl';
@@ -245,7 +245,7 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
   const backToAlbum = () => {
     if (sceneTransitioning || pageTurning) return;
     player.pause();
-    if (!mobile && mode === 'BOOKLET_FOCUS') setBookletPhase('RETURNING_MOVE');
+    if (mode === 'BOOKLET_FOCUS') setBookletPhase(mobile ? 'RETURNING_FINISH' : 'RETURNING_MOVE');
     setSceneTransitioning(true);
     setMode('ALBUM_OPEN');
   };
@@ -270,7 +270,7 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
   }, [mobile, spread]);
 
   useEffect(() => () => setDetailProps(null), [setDetailProps]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     setDetailProps({
       album, backgroundSize, openingFromClosed, mobile, mode, page: mobile ? mobilePage : spread, bookletPhase, detailActive: true,
       playing: player.playing, reduced, homeActivationKey: 0, onTransitionChange: handleTransitionChange,

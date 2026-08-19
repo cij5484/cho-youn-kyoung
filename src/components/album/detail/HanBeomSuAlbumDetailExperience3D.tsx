@@ -409,7 +409,7 @@ function BookletPages({ album, page, mobile, reduced, active, visualPhase, onRea
   const leftStackZ = 0.006 + leftSpreadIndex * 0.004;
   // HTML owns only a fully settled READING frame. Three.js keeps both static
   // pages present for entry, return, and the entire paper-turn interval.
-  const showStaticPages = mobile || visualPhase !== 'READING';
+  const showStaticPages = mobile || turn !== null || visualPhase !== 'READING';
   return (
     <group>
       <mesh visible={showStaticPages} position={[-width / 2, 0, leftStackZ]} castShadow receiveShadow><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={left} /></mesh>
@@ -494,7 +494,7 @@ function BookletRig({ album, p1, mode, page, bookletPhase, mobile, reduced, onBo
   const rig = useRef<THREE.Group>(null);
   const cover = useRef<THREE.Group>(null);
   const reader = useRef<THREE.Group>(null);
-  const [detailsReady, setDetailsReady] = useState(false);
+  const detailsReady = useRef(false);
   const opacity = useRef(1);
   const coverOpacity = useRef(1);
   const readerOpacity = useRef(0);
@@ -513,6 +513,7 @@ function BookletRig({ album, p1, mode, page, bookletPhase, mobile, reduced, onBo
 
   useFrame((_, delta) => {
     if (!rig.current || !cover.current) return;
+    if (bookletPhase === 'RESTING') detailsReady.current = false;
     const focusedTransform = bookletPhase === 'ENTERING' || bookletPhase === 'READING'
       || bookletPhase === 'TURNING_FORWARD' || bookletPhase === 'TURNING_BACKWARD'
       || (mobile && bookletPhase === 'RETURNING_FINISH');
@@ -551,7 +552,7 @@ function BookletRig({ album, p1, mode, page, bookletPhase, mobile, reduced, onBo
     const transformError = rig.current.position.distanceTo(targetPosition)
       + rig.current.quaternion.angleTo(targetQuaternion)
       + rig.current.scale.distanceTo(targetScale);
-    const canRevealReader = detailsReady && (bookletPhase === 'READING'
+    const canRevealReader = detailsReady.current && (bookletPhase === 'READING'
       || bookletPhase === 'TURNING_FORWARD' || bookletPhase === 'TURNING_BACKWARD'
       || bookletPhase === 'RETURNING_MOVE'
       || (bookletPhase === 'ENTERING' && transformError < 0.12));
@@ -601,7 +602,7 @@ function BookletRig({ album, p1, mode, page, bookletPhase, mobile, reduced, onBo
   return (
     <group ref={rig} position={[-p1Width / 2, 0, 0.08]} onClick={(event) => { event.stopPropagation(); if (mode === 'ALBUM_OPEN') onBooklet(); }}>
       <group ref={reader} visible={bookletPhase !== 'RESTING'}>
-        <Suspense fallback={null}><BookletPages album={album} page={page} mobile={mobile} reduced={reduced} active={mode === 'BOOKLET_FOCUS'} visualPhase={bookletPhase} onReady={() => setDetailsReady(true)} onPageTurnStart={(direction) => { onPhaseChange?.(direction === 'forward' ? 'TURNING_FORWARD' : 'TURNING_BACKWARD'); onPageTurnStart(direction); }} onPageTurnComplete={() => { onPhaseChange?.('READING'); onPageTurnComplete(); }} onPrevious={onPrevious} onNext={onNext} /></Suspense>
+        {bookletPhase !== 'RESTING' && <Suspense fallback={null}><BookletPages album={album} page={page} mobile={mobile} reduced={reduced} active={mode === 'BOOKLET_FOCUS'} visualPhase={bookletPhase} onReady={() => { detailsReady.current = true; }} onPageTurnStart={onPageTurnStart} onPageTurnComplete={onPageTurnComplete} onPrevious={onPrevious} onNext={onNext} /></Suspense>}
       </group>
       <group ref={cover} position={[0, 0, 0.035]}>
         <mesh position={[p1Width / 2, 0, 0]} castShadow><planeGeometry args={[p1Width, PAGE_HEIGHT]} /><PaperMaterial texture={p1} /></mesh>
