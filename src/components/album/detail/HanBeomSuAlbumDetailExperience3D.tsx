@@ -1,7 +1,6 @@
 import { Canvas, createPortal, useFrame, useLoader, useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { RefObject } from 'react';
+import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import type { Album } from '../../../data/albums';
 import { assetUrl } from '../../../utils/assetUrl';
@@ -62,7 +61,7 @@ const OPEN_ANGLE = THREE.MathUtils.degToRad(-160);
 const PAGE_HEIGHT = PANEL * 0.92;
 const CD_RADIUS = PANEL * 0.45;
 const JI_PLAYER_TARGET_RADIUS = PACKAGE_PANEL * 0.45 * 1.72;
-const PAGE_TURN_DURATION = 0.86;
+const PAGE_TURN_DURATION = 0.98;
 const BOOKLET_EDGE_INSET = 0.003;
 const DETAIL_BACKGROUND = {
   desktop: { sourceWidth: 3840, sourceHeight: 2160, x: 0.43 },
@@ -101,10 +100,10 @@ function configureTextures(textures: THREE.Texture[], maxAnisotropy: number) {
 function configureBookletTextures(textures: THREE.Texture[], maxAnisotropy: number) {
   textures.forEach((texture) => {
     texture.colorSpace = THREE.SRGBColorSpace;
-    texture.anisotropy = Math.min(8, maxAnisotropy);
+    texture.anisotropy = maxAnisotropy;
     texture.magFilter = THREE.LinearFilter;
-    texture.minFilter = THREE.LinearMipmapLinearFilter;
-    texture.generateMipmaps = true;
+    texture.minFilter = THREE.LinearFilter;
+    texture.generateMipmaps = false;
     texture.wrapS = THREE.ClampToEdgeWrapping;
     texture.wrapT = THREE.ClampToEdgeWrapping;
     texture.offset.set(BOOKLET_EDGE_INSET, BOOKLET_EDGE_INSET);
@@ -161,10 +160,9 @@ function PaperMaterial({ texture }: { texture: THREE.Texture }) {
   return <PrintedPaperMaterial texture={texture} />;
 }
 
-function CdDisc({ label, mode, playing, reduced, tray, cdMountZ, onPlayer, onSettled }: {
+function CdDisc({ label, mode, playing, reduced, trayAnchor, onPlayer, onSettled }: {
   label: THREE.Texture; mode: ExperienceMode; playing: boolean; reduced: boolean; onPlayer(): void; onSettled(settled: boolean): void;
-  tray: RefObject<THREE.Group | null>;
-  cdMountZ: number;
+  trayAnchor: React.RefObject<THREE.Group | null>;
 }) {
   const rig = useRef<THREE.Group>(null);
   const tilt = useRef<THREE.Group>(null);
@@ -173,29 +171,28 @@ function CdDisc({ label, mode, playing, reduced, tray, cdMountZ, onPlayer, onSet
   const velocity = useRef(0);
   const tiltTarget = useRef({ x: 0, y: 0 });
   const tiltDrag = useRef<{ id: number; x: number; y: number } | null>(null);
-  const detached = useRef(false);
   const CD_THICKNESS = CD_RADIUS * 0.012;
-  const mountPosition = useMemo(() => new THREE.Vector3(0, 0, cdMountZ), [cdMountZ]);
+  const trayPosition = useMemo(() => new THREE.Vector3(), []);
+  const trayQuaternion = useMemo(() => new THREE.Quaternion(), []);
+  const trayScale = useMemo(() => new THREE.Vector3(), []);
+  useLayoutEffect(() => {
+    if (!rig.current || !trayAnchor.current) return;
+    trayAnchor.current.updateWorldMatrix(true, false);
+    trayAnchor.current.matrixWorld.decompose(rig.current.position, rig.current.quaternion, rig.current.scale);
+  }, [trayAnchor]);
   useFrame((_, delta) => {
-    if (!rig.current) return;
+    if (!rig.current || !trayAnchor.current) return;
     const ease = reduced ? 1 : 1 - Math.exp(-7 * delta);
     const player = mode === 'PLAYER_FOCUS';
-    if (player && !detached.current) {
-      scene.attach(rig.current);
-      detached.current = true;
-    }
     const playerPosition = new THREE.Vector3(size.width <= 700 ? 0 : -1.55, size.width <= 700 ? viewport.height * 0.16 : 0.08, 0.34);
-    const trayWorld = tray.current
-      ? tray.current.localToWorld(mountPosition.clone())
-      : rig.current.position.clone();
-    const targetPosition = player ? playerPosition : (detached.current ? trayWorld : mountPosition);
+    trayAnchor.current.updateWorldMatrix(true, false);
+    trayAnchor.current.matrixWorld.decompose(trayPosition, trayQuaternion, trayScale);
+    const targetPosition = player ? playerPosition : trayPosition;
     rig.current.position.lerp(targetPosition, ease);
-    const trayQuaternion = tray.current?.getWorldQuaternion(new THREE.Quaternion()) ?? new THREE.Quaternion();
-    const targetQuaternion = player || !detached.current ? new THREE.Quaternion() : trayQuaternion;
+    const targetQuaternion = player ? new THREE.Quaternion() : trayQuaternion;
     rig.current.quaternion.slerp(targetQuaternion, ease);
     const playerScale = size.width <= 700 ? viewport.width * 0.7 / (CD_RADIUS * 2) : JI_PLAYER_TARGET_RADIUS / CD_RADIUS;
-    const trayScale = tray.current?.getWorldScale(new THREE.Vector3()).x ?? 1;
-    const targetScale = player ? playerScale : (detached.current ? trayScale : 1);
+    const targetScale = player ? playerScale : trayScale.x;
     const scale = THREE.MathUtils.lerp(rig.current.scale.x, targetScale, ease);
     rig.current.scale.setScalar(scale);
     velocity.current = THREE.MathUtils.lerp(velocity.current, playing && !reduced ? Math.PI / 9 : 0, 1 - Math.exp(-3 * delta));
@@ -207,17 +204,10 @@ function CdDisc({ label, mode, playing, reduced, tray, cdMountZ, onPlayer, onSet
       tilt.current.rotation.y = THREE.MathUtils.lerp(tilt.current.rotation.y, tiltTarget.current.y, tiltEase);
     }
     const positionError = rig.current.position.distanceTo(targetPosition);
-    if (!player && detached.current && positionError < 0.012 && tray.current) {
-      tray.current.attach(rig.current);
-      rig.current.position.copy(mountPosition);
-      rig.current.quaternion.identity();
-      rig.current.scale.setScalar(1);
-      detached.current = false;
-    }
-    onSettled(positionError + Math.abs(rig.current.scale.x - targetScale) < 0.015);
+    onSettled(positionError + rig.current.quaternion.angleTo(targetQuaternion) + Math.abs(rig.current.scale.x - targetScale) < 0.015);
   });
-  return (
-    <group ref={rig} position={[0, 0, cdMountZ]} onClick={(event) => {
+  return createPortal(
+    <group ref={rig} onClick={(event) => {
       event.stopPropagation();
       if (mode === 'ALBUM_OPEN') onPlayer();
     }} onPointerDown={(event) => {
@@ -248,7 +238,8 @@ function CdDisc({ label, mode, playing, reduced, tray, cdMountZ, onPlayer, onSet
       </mesh>
       </group>
       </group>
-    </group>
+    </group>,
+    scene,
   );
 }
 
@@ -256,8 +247,7 @@ function TrayRig({ texture, label, dimensions, layout, mode, playing, reduced, o
   texture: THREE.Texture; label: THREE.Texture; dimensions: PackageDimensions; layout: ReturnType<typeof getPackageLayout>; mode: ExperienceMode; playing: boolean; reduced: boolean;
   onPlayer(): void; onSettled(settled: boolean): void; onDiscSettled(settled: boolean): void;
 }) {
-  const { scene, size } = useThree();
-  const cdTray = useRef<THREE.Group>(null);
+  const cdTrayAnchor = useRef<THREE.Group>(null);
   const trayContext = useRef<THREE.Group>(null);
   const contextFactor = mode === 'PLAYER_FOCUS' ? 0 : mode === 'BOOKLET_FOCUS' ? 0.48 : 1;
   useFrame((_, delta) => {
@@ -283,7 +273,7 @@ function TrayRig({ texture, label, dimensions, layout, mode, playing, reduced, o
     <>
     <group>
       <mesh position={[0, 0, layout.backInnerZ]} receiveShadow><planeGeometry args={[dimensions.backWidth, dimensions.backHeight]} /><PaperMaterial texture={texture} /></mesh>
-      <group ref={cdTray}>
+      <group>
         <group ref={trayContext}>
         <mesh position={[0, 0, layout.trayPlateZ]} receiveShadow userData={{ baseOpacity: 0.5 }}>
           <boxGeometry args={[dimensions.backWidth * 0.95, dimensions.backHeight * 0.95, TRAY_THICKNESS]} />
@@ -299,25 +289,18 @@ function TrayRig({ texture, label, dimensions, layout, mode, playing, reduced, o
           <TrayClearPlasticMaterial opacity={0.3} thickness={0.012} />
         </mesh>
         </group>
-        <CdDisc label={label} tray={cdTray} cdMountZ={layout.cdMountZ} mode={mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={onDiscSettled} />
+        <group ref={cdTrayAnchor} position={[0, 0, layout.cdMountZ]} />
       </group>
     </group>
-    {mode === 'PLAYER_FOCUS' && createPortal(
-      <mesh position={[size.width <= 700 ? 0 : -1.55, size.width <= 700 ? 0.3 : -0.72, 0.05]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[2.25, 0.62]} />
-        <meshBasicMaterial color="#5a4840" transparent opacity={0.1} depthWrite={false} toneMapped={false} />
-      </mesh>,
-      scene,
-    )}
+    <CdDisc label={label} trayAnchor={cdTrayAnchor} mode={mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={onDiscSettled} />
     </>
   );
 }
 
 type PageTurn = { key: number; source: number; target: number; direction: -1 | 1 };
 
-function BookletPages({ album, page, mobile, reduced, active, visualPhase, onReady, onPageTurnStart, onPageTurnComplete, onPrevious, onNext }: {
+function BookletPages({ album, page, mobile, reduced, active, onReady, onPageTurnStart, onPageTurnComplete, onPrevious, onNext }: {
   album: Album; page: number; mobile: boolean; reduced: boolean; active: boolean;
-  visualPhase: BookletVisualPhase;
   onPrevious(): void; onNext(): void;
   onReady(): void; onPageTurnStart(direction: 'forward' | 'backward'): void; onPageTurnComplete(): void;
 }) {
@@ -407,13 +390,10 @@ function BookletPages({ album, page, mobile, reduced, active, visualPhase, onRea
     ? (turn.direction > 0 ? turn.source : turn.target)
     : settled;
   const leftStackZ = 0.006 + leftSpreadIndex * 0.004;
-  // HTML owns only a fully settled READING frame. Three.js keeps both static
-  // pages present for entry, return, and the entire paper-turn interval.
-  const showStaticPages = mobile || turn !== null || visualPhase !== 'READING';
   return (
     <group>
-      <mesh visible={showStaticPages} position={[-width / 2, 0, leftStackZ]} castShadow receiveShadow><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={left} /></mesh>
-      <mesh visible={showStaticPages} position={[width / 2, 0, 0]} castShadow receiveShadow onClick={active ? (event) => { event.stopPropagation(); onNext(); } : undefined}><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={right} /></mesh>
+      <mesh position={[-width / 2, 0, leftStackZ]} castShadow receiveShadow><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={left} /></mesh>
+      <mesh position={[width / 2, 0, 0]} castShadow receiveShadow onClick={active ? (event) => { event.stopPropagation(); onNext(); } : undefined}><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={right} /></mesh>
       {active && <mesh position={[-width / 2, 0, leftStackZ + 0.001]} userData={{ keepOpacity: true }} onClick={(event) => { event.stopPropagation(); onPrevious(); }}>
         <planeGeometry args={[width, PAGE_HEIGHT]} /><meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>}
@@ -467,6 +447,7 @@ function TurningPage({ pages, width, turn, onDone, frontTexture, backTexture, du
         positions.setZ(i, arcZ[column]);
       }
       positions.needsUpdate = true;
+      mesh.geometry.computeVertexNormals();
     });
     if (t === 1 && !done.current) { done.current = true; onDone(); }
   });
@@ -499,6 +480,7 @@ function BookletRig({ album, p1, mode, page, bookletPhase, mobile, reduced, onBo
   const coverOpacity = useRef(1);
   const readerOpacity = useRef(0);
   const lastBounds = useRef<BookletBounds | null>(null);
+  const turnTransform = useRef<{ position: THREE.Vector3; quaternion: THREE.Quaternion; scale: THREE.Vector3 } | null>(null);
   const p1Width = PAGE_HEIGHT * textureAspect(p1);
 
   const setGroupOpacity = (group: THREE.Group | null, value: number) => {
@@ -538,10 +520,15 @@ function BookletRig({ album, p1, mode, page, bookletPhase, mobile, reduced, onBo
     }
     const turning = bookletPhase === 'TURNING_FORWARD' || bookletPhase === 'TURNING_BACKWARD';
     if (turning) {
-      rig.current.position.copy(targetPosition);
-      rig.current.quaternion.copy(targetQuaternion);
-      rig.current.scale.copy(targetScale);
+      if (!turnTransform.current) turnTransform.current = {
+        position: rig.current.position.clone(), quaternion: rig.current.quaternion.clone(), scale: rig.current.scale.clone(),
+      };
+      const snapshot = turnTransform.current;
+      rig.current.position.copy(snapshot.position);
+      rig.current.quaternion.copy(snapshot.quaternion);
+      rig.current.scale.copy(snapshot.scale);
     } else {
+      turnTransform.current = null;
       rig.current.position.lerp(targetPosition, ease);
       rig.current.quaternion.slerp(targetQuaternion, ease);
       rig.current.scale.lerp(targetScale, ease);
@@ -601,8 +588,8 @@ function BookletRig({ album, p1, mode, page, bookletPhase, mobile, reduced, onBo
 
   return (
     <group ref={rig} position={[-p1Width / 2, 0, 0.08]} onClick={(event) => { event.stopPropagation(); if (mode === 'ALBUM_OPEN') onBooklet(); }}>
-      <group ref={reader} visible={bookletPhase !== 'RESTING'}>
-        {bookletPhase !== 'RESTING' && <Suspense fallback={null}><BookletPages album={album} page={page} mobile={mobile} reduced={reduced} active={mode === 'BOOKLET_FOCUS'} visualPhase={bookletPhase} onReady={() => { detailsReady.current = true; }} onPageTurnStart={onPageTurnStart} onPageTurnComplete={onPageTurnComplete} onPrevious={onPrevious} onNext={onNext} /></Suspense>}
+      <group ref={reader}>
+        {bookletPhase !== 'RESTING' && <Suspense fallback={null}><BookletPages album={album} page={page} mobile={mobile} reduced={reduced} active={mode === 'BOOKLET_FOCUS'} onReady={() => { detailsReady.current = true; }} onPageTurnStart={onPageTurnStart} onPageTurnComplete={onPageTurnComplete} onPrevious={onPrevious} onNext={onNext} /></Suspense>}
       </group>
       <group ref={cover} position={[0, 0, 0.035]}>
         <mesh position={[p1Width / 2, 0, 0]} castShadow><planeGeometry args={[p1Width, PAGE_HEIGHT]} /><PaperMaterial texture={p1} /></mesh>
@@ -670,7 +657,7 @@ function Scene(props: ExperienceProps) {
   const bookletSettled = useRef(mode === 'CLOSED');
   const traySettled = useRef(true);
   const discSettled = useRef(true);
-  const playerReturnPending = useRef(false);
+  const holdPackageBack = useRef(false);
   const setBookletSettled = useCallback((value: boolean) => { bookletSettled.current = value; }, []);
   const setTraySettled = useCallback((value: boolean) => { traySettled.current = value; }, []);
   const setDiscSettled = useCallback((value: boolean) => { discSettled.current = value; }, []);
@@ -706,7 +693,7 @@ function Scene(props: ExperienceProps) {
       discSettled.current = false;
     }
     if (previousMode.current === 'PLAYER_FOCUS' && mode === 'ALBUM_OPEN') {
-      playerReturnPending.current = true;
+      holdPackageBack.current = true;
       discSettled.current = false;
     }
     const openingFromClosed = previousMode.current === 'CLOSED' && mode !== 'CLOSED';
@@ -778,12 +765,12 @@ function Scene(props: ExperienceProps) {
         : mode === 'PLAYER_FOCUS'
           ? (mobile ? mobilePlayerScale : 1.18)
           : (mobile ? mobileOpenScale : hanOpenScale);
-    if (playerReturnPending.current && discSettled.current) playerReturnPending.current = false;
+    if (holdPackageBack.current && discSettled.current) holdPackageBack.current = false;
     packageRig.current.position.x = THREE.MathUtils.lerp(packageRig.current.position.x, x, ease);
     packageRig.current.position.y = THREE.MathUtils.lerp(packageRig.current.position.y, y, ease);
     const playerPackageRetreated = !mobile && (mode === 'PLAYER_FOCUS'
       ? discSettled.current
-      : playerReturnPending.current);
+      : holdPackageBack.current);
     const packageZ = mode === 'BOOKLET_FOCUS' ? -1 : (playerPackageRetreated ? -2.5 : 0);
     packageRig.current.position.z = THREE.MathUtils.lerp(packageRig.current.position.z, packageZ, ease);
     packageRig.current.scale.setScalar(THREE.MathUtils.lerp(packageRig.current.scale.x, scale, ease));
