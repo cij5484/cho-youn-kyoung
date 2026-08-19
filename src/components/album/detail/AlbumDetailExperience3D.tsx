@@ -69,8 +69,8 @@ const CD_RADIUS = PANEL * 0.45;
 const PAGE_TURN_DURATION = 0.86;
 const BOOKLET_EDGE_INSET = 0.003;
 const DETAIL_BACKGROUND = {
-  desktop: { sourceWidth: 3840, sourceHeight: 2160, x: 1369 / 3840 },
-  mobile: { sourceWidth: 1440, sourceHeight: 2560, x: 720 / 1440 },
+  desktop: { sourceWidth: 3840, sourceHeight: 2160, x: 0.5 },
+  mobile: { sourceWidth: 1440, sourceHeight: 2560, x: 0.5 },
 } as const;
 type OpeningPhase = 'IDLE' | 'ALIGN_CLOSED' | 'POSITION_FOR_OPEN' | 'HINGE_OPEN';
 
