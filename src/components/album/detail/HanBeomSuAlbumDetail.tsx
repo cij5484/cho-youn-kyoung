@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import type { Album } from '../../../data/albums';
 import { assetUrl } from '../../../utils/assetUrl';
-import type { BookletBounds, ExperienceMode } from './HanBeomSuAlbumDetailExperience3D';
+import type { BookletBounds, BookletVisualPhase, ExperienceMode } from './HanBeomSuAlbumDetailExperience3D';
 import { useAlbumAudio } from './useAlbumAudio';
 import { AlbumAdjacentNavigation } from './AlbumAdjacentNavigation';
 import { useHanBeomSuStage } from '../HanBeomSuPersistentStage';
@@ -137,6 +137,9 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
   const { setDetailProps } = useHanBeomSuStage();
   const [mode, setMode] = useState<ExperienceMode>(() => autoOpenAlbum ? 'ALBUM_OPEN' : 'CLOSED');
   const [spread, setSpread] = useState(0);
+  const [settledSpread, setSettledSpread] = useState(0);
+  const [bookletPhase, setBookletPhase] = useState<BookletVisualPhase>('RESTING');
+  const [turnDirection, setTurnDirection] = useState<'forward' | 'backward' | null>(null);
   const [mobilePage, setMobilePage] = useState(0);
   const [sceneTransitioning, setSceneTransitioning] = useState(autoOpenAlbum);
   const [openingFromClosed, setOpeningFromClosed] = useState(autoOpenAlbum);
@@ -209,20 +212,18 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
   }, []);
 
   const previous = useCallback(() => {
-    if (pageTurning || sceneTransitioning) return;
-    if ((mobile && mobilePage === 0) || (!mobile && spread === 0)) return;
-    setPageTurning(true);
-    if (mobile) setMobilePage((value) => Math.max(0, value - 1));
+    if (pageTurning || sceneTransitioning || (!mobile && spread !== settledSpread)) return;
+    if ((mobile && mobilePage === 0) || (!mobile && settledSpread === 0)) return;
+    if (mobile) { setPageTurning(true); setMobilePage((value) => Math.max(0, value - 1)); }
     else setSpread((value) => Math.max(0, value - 1));
-  }, [mobile, mobilePage, pageTurning, sceneTransitioning, spread]);
+  }, [mobile, mobilePage, pageTurning, sceneTransitioning, settledSpread, spread]);
 
   const next = useCallback(() => {
-    if (pageTurning || sceneTransitioning) return;
-    if ((mobile && mobilePage === readablePageCount - 1) || (!mobile && spread === spreadCount - 1)) return;
-    setPageTurning(true);
-    if (mobile) setMobilePage((value) => Math.min(readablePageCount - 1, value + 1));
+    if (pageTurning || sceneTransitioning || (!mobile && spread !== settledSpread)) return;
+    if ((mobile && mobilePage === readablePageCount - 1) || (!mobile && settledSpread === spreadCount - 1)) return;
+    if (mobile) { setPageTurning(true); setMobilePage((value) => Math.min(readablePageCount - 1, value + 1)); }
     else setSpread((value) => Math.min(spreadCount - 1, value + 1));
-  }, [mobile, mobilePage, pageTurning, readablePageCount, sceneTransitioning, spread, spreadCount]);
+  }, [mobile, mobilePage, pageTurning, readablePageCount, sceneTransitioning, settledSpread, spread, spreadCount]);
 
   const openAlbum = useCallback(() => {
     if (sceneTransitioning || mode !== 'CLOSED') return;
@@ -233,6 +234,7 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
 
   const openBooklet = useCallback(() => {
     setSpread(0);
+    setSettledSpread(0);
     setMobilePage(0);
     if (sceneTransitioning) return;
     setSceneTransitioning(true);
@@ -253,18 +255,31 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
       setMode('PLAYER_FOCUS');
     }
   }, [mode, sceneTransitioning]);
+  const handlePageTurnStart = useCallback((direction: 'forward' | 'backward') => {
+    if (mobile) return;
+    setTurnDirection(direction);
+    setPageTurning(true);
+  }, [mobile]);
+  const handlePageTurnComplete = useCallback(() => {
+    if (!mobile) {
+      setSettledSpread(spread);
+      setTurnDirection(null);
+    }
+    setPageTurning(false);
+  }, [mobile, spread]);
 
   useEffect(() => () => setDetailProps(null), [setDetailProps]);
   useEffect(() => {
     setDetailProps({
       album, backgroundSize, openingFromClosed, mobile, mode, page: mobile ? mobilePage : spread, detailActive: true,
       playing: player.playing, reduced, homeActivationKey: 0, onTransitionChange: handleTransitionChange,
-      onPageTurnComplete: () => setPageTurning(false), onBooklet: openBooklet,
+      onBookletPhaseChange: setBookletPhase, onPageTurnStart: handlePageTurnStart,
+      onPageTurnComplete: handlePageTurnComplete, onBooklet: openBooklet,
       onBookletBounds: handleBookletBounds,
       onPrevious: previous, onNext: next, onOpen: openAlbum, onPlayer: enterPlayer,
     });
   }, [album, backgroundSize, enterPlayer, handleBookletBounds, handleTransitionChange, mobile, mobilePage, mode,
-    next, openAlbum, openBooklet, openingFromClosed, player.playing, previous, reduced,
+    handlePageTurnComplete, handlePageTurnStart, next, openAlbum, openBooklet, openingFromClosed, player.playing, previous, reduced,
     setDetailProps, spread]);
 
   useEffect(() => {
@@ -373,24 +388,30 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
         )}
         {mode === 'BOOKLET_FOCUS' && !sceneTransitioning && (
           <>
-            {bookletBounds && !pageTurning && (
+            {bookletBounds && (mobile ? !pageTurning : bookletPhase === 'READING' || turnDirection !== null) && (
               <div className={`han-detail__booklet-images${mobile ? ' is-mobile' : ''}`} style={bookletBounds} aria-hidden="true">
-                {(mobile ? [pages[mobilePage + 1]] : [pages[spread * 2 + 1], pages[spread * 2 + 2]])
+                {(mobile
+                  ? [pages[mobilePage + 1]]
+                  : turnDirection === 'forward'
+                    ? [pages[settledSpread * 2 + 1], pages[spread * 2 + 2]]
+                    : turnDirection === 'backward'
+                      ? [pages[spread * 2 + 1], pages[settledSpread * 2 + 2]]
+                      : [pages[settledSpread * 2 + 1], pages[settledSpread * 2 + 2]])
                   .filter(Boolean)
                   .map((page) => <img key={page.src} src={assetUrl(page.src)} alt="" />)}
               </div>
             )}
             {!mobile && (
               <div className="han-detail__booklet-hit-areas" aria-label="북클릿 페이지 이동" style={bookletBounds}>
-                <button type="button" aria-label="이전 북클릿 펼침면" disabled={pageTurning || spread === 0} onClick={previous} />
-                <button type="button" aria-label="다음 북클릿 펼침면" disabled={pageTurning || spread === spreadCount - 1} onClick={next} />
+                <button type="button" aria-label="이전 북클릿 펼침면" disabled={bookletPhase !== 'READING' || pageTurning || settledSpread === 0} onClick={previous} />
+                <button type="button" aria-label="다음 북클릿 펼침면" disabled={bookletPhase !== 'READING' || pageTurning || settledSpread === spreadCount - 1} onClick={next} />
               </div>
             )}
             <BookletNavigation
               mobile={mobile}
               mobilePage={mobilePage}
-              spread={spread}
-              disabled={sceneTransitioning || pageTurning}
+              spread={mobile ? spread : settledSpread}
+              disabled={sceneTransitioning || pageTurning || (!mobile && bookletPhase !== 'READING')}
               bounds={bookletBounds}
               pageCount={pages.length}
               onBack={backToAlbum}
