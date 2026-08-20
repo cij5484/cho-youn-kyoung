@@ -500,7 +500,10 @@ function BookletRig({ album, p1, mountAnchor, mode, page, bookletPhase, mobile, 
 }) {
   const { camera, gl, scene, size, viewport } = useThree();
   const rig = useRef<THREE.Group>(null);
+  const coverSurface = useRef<THREE.Group>(null);
+  const spreadSurface = useRef<THREE.Group>(null);
   const detailsReady = useRef(false);
+  const spreadProgress = useRef(bookletPhase === 'RESTING' ? 0 : 1);
   const lastBounds = useRef<BookletBounds | null>(null);
   const p1Width = PAGE_HEIGHT * textureAspect(p1);
   const mountPosition = useMemo(() => new THREE.Vector3(), []);
@@ -515,6 +518,22 @@ function BookletRig({ album, p1, mountAnchor, mode, page, bookletPhase, mobile, 
     mountAnchor.current.updateWorldMatrix(true, false);
     mountAnchor.current.matrixWorld.decompose(rig.current.position, rig.current.quaternion, rig.current.scale);
   }, [mountAnchor]);
+
+  useEffect(() => {
+    if (bookletPhase === 'RESTING') detailsReady.current = false;
+  }, [bookletPhase]);
+
+  const setSurfaceOpacity = (surface: THREE.Group | null, opacity: number) => {
+    surface?.traverse((object) => {
+      if (!(object instanceof THREE.Mesh) || object.userData.keepOpacity) return;
+      const materials = Array.isArray(object.material) ? object.material : [object.material];
+      materials.forEach((material) => {
+        material.transparent = opacity < 1;
+        material.opacity = opacity;
+        material.depthWrite = opacity > 0.5;
+      });
+    });
+  };
 
   useFrame((_, delta) => {
     if (!rig.current || !mountAnchor.current) return;
@@ -547,10 +566,23 @@ function BookletRig({ album, p1, mountAnchor, mode, page, bookletPhase, mobile, 
     }
     const transformError = rig.current.position.distanceTo(targetPosition)
       + rig.current.quaternion.angleTo(targetQuaternion) + rig.current.scale.distanceTo(targetScale);
-    if (bookletPhase === 'ENTERING' && detailsReady.current && transformError < 0.025) onPhaseChange?.('READING');
+    const entryReady = bookletPhase === 'ENTERING' && detailsReady.current && transformError < 0.025;
+    const spreadTarget = bookletPhase === 'RESTING' || bookletPhase === 'RETURNING_FINISH' ? 0
+      : bookletPhase === 'ENTERING' && !entryReady ? 0 : 1;
+    const handoffEase = reduced ? 1 : 1 - Math.exp(-12 * delta);
+    spreadProgress.current = THREE.MathUtils.lerp(spreadProgress.current, spreadTarget, handoffEase);
+    if (Math.abs(spreadProgress.current - spreadTarget) < 0.002) spreadProgress.current = spreadTarget;
+    setSurfaceOpacity(coverSurface.current, 1 - spreadProgress.current);
+    setSurfaceOpacity(spreadSurface.current, spreadProgress.current);
+
+    if (entryReady && spreadProgress.current > 0.998) onPhaseChange?.('READING');
     if (returning && transformError < 0.025) onPhaseChange?.('RETURNING_FINISH');
-    if (bookletPhase === 'RETURNING_FINISH') onPhaseChange?.('RESTING');
-    onSettled((bookletPhase === 'RESTING' || bookletPhase === 'READING') && transformError < 0.025);
+    if (bookletPhase === 'RETURNING_FINISH' && spreadProgress.current === 0) {
+      detailsReady.current = false;
+      onPhaseChange?.('RESTING');
+    }
+    const handoffSettled = spreadProgress.current === spreadTarget;
+    onSettled((bookletPhase === 'RESTING' || bookletPhase === 'READING') && transformError < 0.025 && handoffSettled);
 
     if (mode === 'BOOKLET_FOCUS' && onBounds) {
       const horizontalExtent = mobile ? p1Width / 2 : p1Width;
@@ -570,12 +602,14 @@ function BookletRig({ album, p1, mountAnchor, mode, page, bookletPhase, mobile, 
     }
   });
 
-  const showPages = bookletPhase !== 'RESTING' && bookletPhase !== 'RETURNING_FINISH';
-  const showCover = bookletPhase === 'RESTING' || bookletPhase === 'ENTERING' || bookletPhase === 'RETURNING_FINISH';
   return createPortal(
     <group ref={rig} onClick={(event) => { event.stopPropagation(); if (mode === 'ALBUM_OPEN') onBooklet(); }}>
-      {showPages && <Suspense fallback={null}><BookletPages album={album} page={page} mobile={mobile} reduced={reduced} active={mode === 'BOOKLET_FOCUS'} onReady={() => { detailsReady.current = true; }} onPageTurnStart={onPageTurnStart} onPageTurnComplete={onPageTurnComplete} onPrevious={onPrevious} onNext={onNext} /></Suspense>}
-      {showCover && <mesh position={[p1Width / 2, 0, 0.035]} castShadow><planeGeometry args={[p1Width, PAGE_HEIGHT]} /><PaperMaterial texture={p1} /></mesh>}
+      <group ref={(node) => { spreadSurface.current = node; setSurfaceOpacity(node, spreadProgress.current); }}>
+        {bookletPhase !== 'RESTING' && <Suspense fallback={null}><BookletPages album={album} page={page} mobile={mobile} reduced={reduced} active={mode === 'BOOKLET_FOCUS'} onReady={() => { detailsReady.current = true; }} onPageTurnStart={onPageTurnStart} onPageTurnComplete={onPageTurnComplete} onPrevious={onPrevious} onNext={onNext} /></Suspense>}
+      </group>
+      <group ref={(node) => { coverSurface.current = node; setSurfaceOpacity(node, 1 - spreadProgress.current); }}>
+        <mesh position={[p1Width / 2, 0, 0.035]} castShadow><planeGeometry args={[p1Width, PAGE_HEIGHT]} /><PaperMaterial texture={p1} /></mesh>
+      </group>
     </group>,
     scene,
   );
@@ -665,11 +699,16 @@ function Scene(props: ExperienceProps) {
   useEffect(() => {
     if (prewarming) {
       autoRotate.current = false;
-      yawPitch.current = { x: 0, y: 0 };
       return;
     }
     if (homeActivationKey > 0) autoRotate.current = !reduced;
   }, [homeActivationKey, prewarming, reduced]);
+
+  useLayoutEffect(() => {
+    if (!packageRig.current) return;
+    if (prewarming) packageRig.current.quaternion.identity();
+    else packageRig.current.quaternion.setFromEuler(new THREE.Euler(yawPitch.current.x, yawPitch.current.y, 0));
+  }, [prewarming]);
 
   useLayoutEffect(() => {
     const was = previousMode.current;
@@ -712,7 +751,6 @@ function Scene(props: ExperienceProps) {
       perspectiveCamera.current.position.z = 7;
       perspectiveCamera.current.fov = 42;
       perspectiveCamera.current.updateProjectionMatrix();
-      yawPitch.current = { x: 0, y: 0 };
       return;
     }
     const closed = mode === 'CLOSED';
