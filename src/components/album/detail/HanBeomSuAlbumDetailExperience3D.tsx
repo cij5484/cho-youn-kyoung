@@ -210,7 +210,7 @@ function setCdVisualOpacity(cdRig: THREE.Group, opacity: number) {
 }
 
 function CdDisc({ label, mode, playing, reduced, trayAnchor, packageRig, onPlayer, onMotion }: {
-  label: THREE.Texture; mode: ExperienceMode; playing: boolean; reduced: boolean; onPlayer(): void; onMotion(settled: boolean, docked: boolean): void;
+  label: THREE.Texture; mode: ExperienceMode; playing: boolean; reduced: boolean; onPlayer(): void; onMotion(settled: boolean, docked: boolean, opacity: number): void;
   trayAnchor: React.RefObject<THREE.Group | null>;
   packageRig: React.RefObject<THREE.Group | null>;
 }) {
@@ -271,10 +271,13 @@ function CdDisc({ label, mode, playing, reduced, trayAnchor, packageRig, onPlaye
       rig.current.scale.copy(trayScale);
     }
     const packageOpacity = typeof packageRig.current?.userData.visualOpacity === 'number' ? Number(packageRig.current.userData.visualOpacity) : 1;
-    const opacityTarget = mode === 'PLAYER_FOCUS' ? 1 : packageOpacity;
-    rig.current.userData.visualOpacity = opacityTarget;
-    setCdVisualOpacity(rig.current, opacityTarget);
-    onMotion(docked.current || transformError < 0.015, docked.current);
+    const returningToTray = mode === 'ALBUM_OPEN' && !docked.current;
+    const opacityTarget = mode === 'PLAYER_FOCUS' || returningToTray ? 1 : packageOpacity;
+    const currentOpacity = typeof rig.current.userData.visualOpacity === 'number' ? Number(rig.current.userData.visualOpacity) : 1;
+    const visualOpacity = THREE.MathUtils.lerp(currentOpacity, opacityTarget, reduced ? 1 : 1 - Math.exp(-7 * delta));
+    rig.current.userData.visualOpacity = Math.abs(visualOpacity - opacityTarget) < 0.002 ? opacityTarget : visualOpacity;
+    setCdVisualOpacity(rig.current, Number(rig.current.userData.visualOpacity));
+    onMotion(docked.current || transformError < 0.015, docked.current, Number(rig.current.userData.visualOpacity));
   });
   return createPortal(
     <group ref={rig} onClick={(event) => {
@@ -316,7 +319,7 @@ function CdDisc({ label, mode, playing, reduced, trayAnchor, packageRig, onPlaye
 function TrayRig({ texture, label, dimensions, layout, mode, packageRig, playing, reduced, onPlayer, onSettled, onDiscMotion }: {
   texture: THREE.Texture; label: THREE.Texture; dimensions: PackageDimensions; layout: ReturnType<typeof getPackageLayout>; mode: ExperienceMode; playing: boolean; reduced: boolean;
   packageRig: React.RefObject<THREE.Group | null>;
-  onPlayer(): void; onSettled(settled: boolean): void; onDiscMotion(settled: boolean, docked: boolean): void;
+  onPlayer(): void; onSettled(settled: boolean): void; onDiscMotion(settled: boolean, docked: boolean, opacity: number): void;
 }) {
   const cdTrayAnchor = useRef<THREE.Group>(null);
   const trayContext = useRef<THREE.Group>(null);
@@ -528,7 +531,7 @@ function TurningPage({ pages, width, turn, onDone, frontTexture, backTexture, du
 function BookletRig({ album, p1, mountAnchor, packageRig, mode, page, bookletPhase, mobile, reduced, onBooklet, onSettled, onPhaseChange, onPageTurnStart, onPageTurnComplete, onPrevious, onNext, onBounds }: {
   album: Album; p1: THREE.Texture; mountAnchor: React.RefObject<THREE.Group | null>; packageRig: React.RefObject<THREE.Group | null>; mode: ExperienceMode; page: number; mobile: boolean; reduced: boolean;
   bookletPhase: BookletVisualPhase;
-  onBooklet(): void; onSettled(settled: boolean): void; onPageTurnComplete(): void; onPrevious(): void; onNext(): void;
+  onBooklet(): void; onSettled(settled: boolean, opacity: number): void; onPageTurnComplete(): void; onPrevious(): void; onNext(): void;
   onPhaseChange?(phase: BookletVisualPhase): void; onPageTurnStart(direction: 'forward' | 'backward'): void;
   onBounds?(bounds: BookletBounds): void;
 }) {
@@ -607,12 +610,17 @@ function BookletRig({ album, p1, mountAnchor, packageRig, mode, page, bookletPha
     const handoffEase = reduced ? 1 : 1 - Math.exp(-12 * delta);
     spreadProgress.current = THREE.MathUtils.lerp(spreadProgress.current, spreadTarget, handoffEase);
     if (Math.abs(spreadProgress.current - spreadTarget) < 0.002) spreadProgress.current = spreadTarget;
+    const handoffSettled = spreadProgress.current === spreadTarget;
+    const settled = (bookletPhase === 'RESTING' || bookletPhase === 'READING') && transformError < 0.025 && handoffSettled;
     const packageOpacity = typeof packageRig.current?.userData.visualOpacity === 'number' ? Number(packageRig.current.userData.visualOpacity) : 1;
-    const opacityTarget = mode === 'BOOKLET_FOCUS' ? 1 : packageOpacity;
-    rig.current.userData.visualOpacity = opacityTarget;
-    const visualOpacity = opacityTarget;
-    setSurfaceOpacity(coverSurface.current, (1 - spreadProgress.current) * visualOpacity);
-    setSurfaceOpacity(spreadSurface.current, spreadProgress.current * visualOpacity);
+    const returningToMount = mode === 'ALBUM_OPEN' && !settled;
+    const opacityTarget = mode === 'BOOKLET_FOCUS' || returningToMount ? 1 : packageOpacity;
+    const currentOpacity = typeof rig.current.userData.visualOpacity === 'number' ? Number(rig.current.userData.visualOpacity) : 1;
+    const visualOpacity = THREE.MathUtils.lerp(currentOpacity, opacityTarget, reduced ? 1 : 1 - Math.exp(-7 * delta));
+    rig.current.userData.visualOpacity = Math.abs(visualOpacity - opacityTarget) < 0.002 ? opacityTarget : visualOpacity;
+    const appliedOpacity = Number(rig.current.userData.visualOpacity);
+    setSurfaceOpacity(coverSurface.current, (1 - spreadProgress.current) * appliedOpacity);
+    setSurfaceOpacity(spreadSurface.current, spreadProgress.current * appliedOpacity);
 
     if (entryReady && spreadProgress.current > 0.998) onPhaseChange?.('READING');
     if (returning && transformError < 0.025) onPhaseChange?.('RETURNING_FINISH');
@@ -620,8 +628,7 @@ function BookletRig({ album, p1, mountAnchor, packageRig, mode, page, bookletPha
       detailsReady.current = false;
       onPhaseChange?.('RESTING');
     }
-    const handoffSettled = spreadProgress.current === spreadTarget;
-    onSettled((bookletPhase === 'RESTING' || bookletPhase === 'READING') && transformError < 0.025 && handoffSettled);
+    onSettled(settled, appliedOpacity);
 
     if (mode === 'BOOKLET_FOCUS' && onBounds) {
       const horizontalExtent = mobile ? p1Width / 2 : p1Width;
@@ -658,7 +665,7 @@ function FrontInterior({ album, dimensions, packageRig, mode, page, bookletPhase
   album: Album; dimensions: PackageDimensions; mode: ExperienceMode; page: number; mobile: boolean; reduced: boolean;
   packageRig: React.RefObject<THREE.Group | null>;
   bookletPhase: BookletVisualPhase;
-  onBooklet(): void; onSettled(settled: boolean): void; onPageTurnComplete(): void; onPrevious(): void; onNext(): void; onBounds?(bounds: BookletBounds): void;
+  onBooklet(): void; onSettled(settled: boolean, opacity: number): void; onPageTurnComplete(): void; onPrevious(): void; onNext(): void; onBounds?(bounds: BookletBounds): void;
   onPhaseChange?(phase: BookletVisualPhase): void; onPageTurnStart(direction: 'forward' | 'backward'): void;
 }) {
   const textures = useInteriorTextures(album);
@@ -676,7 +683,7 @@ function FrontInterior({ album, dimensions, packageRig, mode, page, bookletPhase
 function TrayInterior({ album, dimensions, layout, packageRig, mode, playing, reduced, onPlayer, onSettled, onDiscMotion, onPrewarmReady }: {
   album: Album; dimensions: PackageDimensions; layout: ReturnType<typeof getPackageLayout>; mode: ExperienceMode; playing: boolean; reduced: boolean;
   packageRig: React.RefObject<THREE.Group | null>;
-  onPlayer(): void; onSettled(settled: boolean): void; onDiscMotion(settled: boolean, docked: boolean): void;
+  onPlayer(): void; onSettled(settled: boolean): void; onDiscMotion(settled: boolean, docked: boolean, opacity: number): void;
   onPrewarmReady?(): void;
 }) {
   const textures = useInteriorTextures(album);
@@ -717,11 +724,15 @@ function Scene(props: ExperienceProps) {
   const discDocked = useRef(mode !== 'PLAYER_FOCUS');
   const openingSnapshot = useRef<OpeningSnapshot | null>(null);
   const targetQuaternion = useMemo(() => new THREE.Quaternion(), []);
-  const setBookletSettled = useCallback((value: boolean) => { bookletSettled.current = value; }, []);
+  const setBookletSettled = useCallback((value: boolean, opacity: number) => {
+    bookletSettled.current = value;
+    if (packageRig.current) packageRig.current.userData.bookletVisualOpacity = opacity;
+  }, []);
   const setTraySettled = useCallback((value: boolean) => { traySettled.current = value; }, []);
-  const setDiscMotion = useCallback((settled: boolean, docked: boolean) => {
+  const setDiscMotion = useCallback((settled: boolean, docked: boolean, opacity: number) => {
     discSettled.current = settled;
     discDocked.current = docked;
+    if (packageRig.current) packageRig.current.userData.discVisualOpacity = opacity;
   }, []);
   const keepInternalsClosed = openingFromClosed;
   const backgroundSource = mobile
@@ -868,8 +879,12 @@ function Scene(props: ExperienceProps) {
     rig.userData.visualOpacity = Math.abs(packageOpacity - packageOpacityTarget) < 0.002 ? packageOpacityTarget : packageOpacity;
     setPackageVisualOpacity(rig, Number(rig.userData.visualOpacity));
     const packageOpacityError = Math.abs(Number(rig.userData.visualOpacity) - packageOpacityTarget);
+    const bookletOpacityTarget = mode === 'PLAYER_FOCUS' ? 0 : 1;
+    const discOpacityTarget = mode === 'BOOKLET_FOCUS' ? 0 : 1;
+    const focusVisualError = Math.abs(Number(rig.userData.bookletVisualOpacity ?? 1) - bookletOpacityTarget)
+      + Math.abs(Number(rig.userData.discVisualOpacity ?? 1) - discOpacityTarget);
     const discTransitionComplete = mode === 'PLAYER_FOCUS' ? discSettled.current : discDocked.current;
-    const complete = packageError < 0.04 && hingeError < 0.025 && cameraError < 0.025 && packageOpacityError < 0.01
+    const complete = packageError < 0.04 && hingeError < 0.025 && cameraError < 0.025 && packageOpacityError < 0.01 && focusVisualError < 0.02
       && bookletSettled.current && traySettled.current && discTransitionComplete;
     if (complete && !reported.current) { reported.current = true; onTransitionChange?.(false); }
   });
