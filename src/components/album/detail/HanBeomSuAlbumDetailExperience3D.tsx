@@ -604,7 +604,7 @@ function BookletRig({ album, p1, mountAnchor, mode, page, bookletPhase, mobile, 
   });
 
   return createPortal(
-    <group ref={rig} onClick={(event) => { event.stopPropagation(); if (mode === 'ALBUM_OPEN') onBooklet(); }}>
+    <group ref={rig} visible={mobile ? mode !== 'PLAYER_FOCUS' : true} onClick={(event) => { event.stopPropagation(); if (mode === 'ALBUM_OPEN') onBooklet(); }}>
       <group ref={(node) => { spreadSurface.current = node; setSurfaceOpacity(node, spreadProgress.current); }}>
         {bookletPhase !== 'RESTING' && <Suspense fallback={null}><BookletPages album={album} page={page} mobile={mobile} reduced={reduced} active={mode === 'BOOKLET_FOCUS'} onReady={() => { detailsReady.current = true; }} onPageTurnStart={onPageTurnStart} onPageTurnComplete={onPageTurnComplete} onPrevious={onPrevious} onNext={onNext} /></Suspense>}
       </group>
@@ -811,8 +811,11 @@ function Scene(props: ExperienceProps) {
     const packageError = rig.position.distanceTo(targetPosition) + Math.abs(rig.scale.x - targetScale) + rig.quaternion.angleTo(targetQuaternion);
     const hingeError = Math.abs(hinge.current.rotation.y - (closed ? 0 : OPEN_ANGLE));
     const cameraError = Math.abs(perspectiveCamera.current.position.z - targetCameraZ) + Math.abs(perspectiveCamera.current.fov - targetFov);
+    const discTransitionComplete = mode === 'PLAYER_FOCUS'
+      ? discSettled.current
+      : !awaitingDiscDock.current && discDocked.current;
     const complete = packageError < 0.04 && hingeError < 0.025 && cameraError < 0.025
-      && bookletSettled.current && traySettled.current && discSettled.current;
+      && bookletSettled.current && traySettled.current && discTransitionComplete;
     if (complete && !reported.current) { reported.current = true; onTransitionChange?.(false); }
   });
 
