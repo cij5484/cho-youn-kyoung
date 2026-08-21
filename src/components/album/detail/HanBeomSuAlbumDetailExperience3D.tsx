@@ -528,9 +528,10 @@ function BookletRig({ album, p1, mountAnchor, mode, page, bookletPhase, mobile, 
       if (!(object instanceof THREE.Mesh) || object.userData.keepOpacity) return;
       const materials = Array.isArray(object.material) ? object.material : [object.material];
       materials.forEach((material) => {
-        material.transparent = true;
-        material.opacity = opacity;
-        material.depthWrite = false;
+        const opaque = opacity === 1;
+        material.transparent = !opaque;
+        material.opacity = opaque ? 1 : opacity;
+        material.depthWrite = opaque;
       });
     });
   };
@@ -623,9 +624,12 @@ function FrontInterior({ album, dimensions, mode, page, bookletPhase, mobile, re
 }) {
   const textures = useInteriorTextures(album);
   const bookletMountAnchor = useRef<THREE.Group>(null);
+  const p1Width = PAGE_HEIGHT * textureAspect(textures.p1);
   return <>
     <mesh position={[0, 0, -COVER_DEPTH / 2 - SURFACE_OFFSET]} rotation={[0, Math.PI, 0]} receiveShadow><planeGeometry args={[dimensions.frontWidth, dimensions.frontHeight]} /><PaperMaterial texture={textures.interiorBooklet} /></mesh>
-    <group ref={bookletMountAnchor} position={[0, 0, 0.064]} rotation={[0, Math.PI, 0]} />
+    <group position={[0, 0, 0.064]} rotation={[0, Math.PI, 0]}>
+      <group ref={bookletMountAnchor} position={[-p1Width / 2, 0, 0.08]} />
+    </group>
     <BookletRig album={album} p1={textures.p1} mountAnchor={bookletMountAnchor} mode={mode} page={page} bookletPhase={bookletPhase} mobile={mobile} reduced={reduced} onBooklet={onBooklet} onSettled={onSettled} onPhaseChange={onPhaseChange} onPageTurnStart={onPageTurnStart} onPageTurnComplete={onPageTurnComplete} onPrevious={onPrevious} onNext={onNext} onBounds={onBounds} />
   </>;
 }
@@ -662,7 +666,6 @@ function Scene(props: ExperienceProps) {
   const packageRig = useRef<THREE.Group>(null);
   const hinge = useRef<THREE.Group>(null);
   const drag = useRef<{ id: number; x: number; y: number; startX: number; startY: number; canvas: HTMLCanvasElement; intent: 'pending' | 'rotate' | 'scroll' } | null>(null);
-  const homeYawPitch = useRef(readHanRotation({ x: -0.06, y: 0.1 }));
   const yawPitch = useRef(prewarming ? { x: 0, y: 0 } : readHanRotation({ x: -0.06, y: 0.1 }));
   const autoRotate = useRef(true);
   const persistFrame = useRef(0);
@@ -758,8 +761,7 @@ function Scene(props: ExperienceProps) {
     if (closed && autoRotate.current && !reduced) yawPitch.current.y += delta * Math.PI / 11;
     persistFrame.current += 1;
     if (closed && persistFrame.current % 12 === 0) {
-      homeYawPitch.current = { ...yawPitch.current };
-      sessionStorage.setItem(HAN_ROTATION_KEY, JSON.stringify(homeYawPitch.current));
+      sessionStorage.setItem(HAN_ROTATION_KEY, JSON.stringify(yawPitch.current));
     }
 
     const mobileClosedScale = 0.48;
