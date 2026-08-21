@@ -519,7 +519,7 @@ function BookletRig({ album, p1, mountAnchor, mode, page, bookletPhase, mobile, 
     mountAnchor.current.matrixWorld.decompose(rig.current.position, rig.current.quaternion, rig.current.scale);
   }, [mountAnchor]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (bookletPhase === 'RESTING') detailsReady.current = false;
   }, [bookletPhase]);
 
@@ -528,9 +528,9 @@ function BookletRig({ album, p1, mountAnchor, mode, page, bookletPhase, mobile, 
       if (!(object instanceof THREE.Mesh) || object.userData.keepOpacity) return;
       const materials = Array.isArray(object.material) ? object.material : [object.material];
       materials.forEach((material) => {
-        material.transparent = opacity < 1;
+        material.transparent = true;
         material.opacity = opacity;
-        material.depthWrite = opacity > 0.5;
+        material.depthWrite = false;
       });
     });
   };
