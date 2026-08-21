@@ -662,7 +662,8 @@ function Scene(props: ExperienceProps) {
   const packageRig = useRef<THREE.Group>(null);
   const hinge = useRef<THREE.Group>(null);
   const drag = useRef<{ id: number; x: number; y: number; startX: number; startY: number; canvas: HTMLCanvasElement; intent: 'pending' | 'rotate' | 'scroll' } | null>(null);
-  const yawPitch = useRef(readHanRotation({ x: -0.06, y: 0.1 }));
+  const homeYawPitch = useRef(readHanRotation({ x: -0.06, y: 0.1 }));
+  const yawPitch = useRef(prewarming ? { x: 0, y: 0 } : readHanRotation({ x: -0.06, y: 0.1 }));
   const autoRotate = useRef(true);
   const persistFrame = useRef(0);
   const previousMode = useRef(mode);
@@ -756,7 +757,10 @@ function Scene(props: ExperienceProps) {
     const closed = mode === 'CLOSED';
     if (closed && autoRotate.current && !reduced) yawPitch.current.y += delta * Math.PI / 11;
     persistFrame.current += 1;
-    if (closed && persistFrame.current % 12 === 0) sessionStorage.setItem(HAN_ROTATION_KEY, JSON.stringify(yawPitch.current));
+    if (closed && persistFrame.current % 12 === 0) {
+      homeYawPitch.current = { ...yawPitch.current };
+      sessionStorage.setItem(HAN_ROTATION_KEY, JSON.stringify(homeYawPitch.current));
+    }
 
     const mobileClosedScale = 0.48;
     const mobileOpenScale = viewport.width * 0.9 / (packageDimensions.frontWidth * 1.94);
@@ -856,7 +860,7 @@ function Scene(props: ExperienceProps) {
   };
   return (
     <>
-      <group ref={packageRig} position={[closedX, closedY, 0]} scale={mobile ? 0.48 : 0.7}
+      <group ref={packageRig} visible={mobile ? mode !== 'PLAYER_FOCUS' : true} position={[closedX, closedY, 0]} scale={mobile ? 0.48 : 0.7}
         onPointerDown={down} onPointerMove={move} onPointerUp={(event) => finish(event.pointerId, true)} onPointerCancel={(event) => finish(event.pointerId, false)}>
         <mesh castShadow><boxGeometry args={[packageDimensions.trayWidth, packageDimensions.trayHeight, packageDimensions.trayDepth]} /><HanOuterPlasticMaterial /></mesh>
         <mesh position={[0, 0, -(packageDimensions.trayDepth / 2 + COVER_DEPTH / 2)]} material={outerMaterials.back} castShadow><boxGeometry args={[packageDimensions.backWidth, packageDimensions.backHeight, COVER_DEPTH]} /></mesh>

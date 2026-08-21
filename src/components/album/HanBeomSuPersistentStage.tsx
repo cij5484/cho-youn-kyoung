@@ -150,7 +150,7 @@ export function HanBeomSuPersistentStage({ children }: { children: ReactNode }) 
           <source media="(max-width:700px)" srcSet={assetUrl(album.albumHero!.background.mobile)} />
           <img src={assetUrl(album.albumHero!.background.desktop)} alt="" />
         </picture>
-        <div className={`han-persistent-stage__canvas${detailRoute ? '' : ' is-home'}`}>
+        <div className="han-persistent-stage__canvas">
           <Suspense fallback={null}>
             <Experience3D {...(detailRoute && detailProps ? detailProps : fallbackProps)} />
           </Suspense>
