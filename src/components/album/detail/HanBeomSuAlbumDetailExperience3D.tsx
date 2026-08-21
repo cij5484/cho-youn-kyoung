@@ -272,8 +272,9 @@ function CdDisc({ label, mode, playing, reduced, trayAnchor, packageRig, onPlaye
     }
     const packageOpacity = typeof packageRig.current?.userData.visualOpacity === 'number' ? Number(packageRig.current.userData.visualOpacity) : 1;
     const returningToTray = mode === 'ALBUM_OPEN' && !docked.current;
-    const opacityTarget = mode === 'PLAYER_FOCUS' || returningToTray ? 1 : packageOpacity;
     const currentOpacity = typeof rig.current.userData.visualOpacity === 'number' ? Number(rig.current.userData.visualOpacity) : 1;
+    const keepForegroundVisible = mode === 'ALBUM_OPEN' && packageOpacity < 1 && currentOpacity > packageOpacity;
+    const opacityTarget = mode === 'PLAYER_FOCUS' || returningToTray || keepForegroundVisible ? 1 : packageOpacity;
     const visualOpacity = THREE.MathUtils.lerp(currentOpacity, opacityTarget, reduced ? 1 : 1 - Math.exp(-7 * delta));
     rig.current.userData.visualOpacity = Math.abs(visualOpacity - opacityTarget) < 0.002 ? opacityTarget : visualOpacity;
     setCdVisualOpacity(rig.current, Number(rig.current.userData.visualOpacity));
@@ -614,8 +615,9 @@ function BookletRig({ album, p1, mountAnchor, packageRig, mode, page, bookletPha
     const settled = (bookletPhase === 'RESTING' || bookletPhase === 'READING') && transformError < 0.025 && handoffSettled;
     const packageOpacity = typeof packageRig.current?.userData.visualOpacity === 'number' ? Number(packageRig.current.userData.visualOpacity) : 1;
     const returningToMount = mode === 'ALBUM_OPEN' && !settled;
-    const opacityTarget = mode === 'BOOKLET_FOCUS' || returningToMount ? 1 : packageOpacity;
     const currentOpacity = typeof rig.current.userData.visualOpacity === 'number' ? Number(rig.current.userData.visualOpacity) : 1;
+    const keepForegroundVisible = mode === 'ALBUM_OPEN' && packageOpacity < 1 && currentOpacity > packageOpacity;
+    const opacityTarget = mode === 'BOOKLET_FOCUS' || returningToMount || keepForegroundVisible ? 1 : packageOpacity;
     const visualOpacity = THREE.MathUtils.lerp(currentOpacity, opacityTarget, reduced ? 1 : 1 - Math.exp(-7 * delta));
     rig.current.userData.visualOpacity = Math.abs(visualOpacity - opacityTarget) < 0.002 ? opacityTarget : visualOpacity;
     const appliedOpacity = Number(rig.current.userData.visualOpacity);
