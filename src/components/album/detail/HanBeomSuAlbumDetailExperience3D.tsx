@@ -70,6 +70,20 @@ const DETAIL_BACKGROUND = {
 type PackageDimensions = ReturnType<typeof getPackageDimensions>;
 type TransformSnapshot = { position: THREE.Vector3; quaternion: THREE.Quaternion; scale: THREE.Vector3 };
 type OpeningSnapshot = TransformSnapshot & { hinge: number; cameraZ: number; cameraFov: number; elapsed: number };
+type AlbumOpenTransform = TransformSnapshot & { hinge: number; cameraZ: number; cameraFov: number; yaw: number; pitch: number };
+
+function getAlbumOpenTransform(halfPanel: number, y: number, scale: number, pitch: number): AlbumOpenTransform {
+  return {
+    position: new THREE.Vector3(halfPanel, y, 0),
+    quaternion: new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch, 0, 0)),
+    scale: new THREE.Vector3(scale, scale, scale),
+    hinge: OPEN_ANGLE,
+    cameraZ: 7,
+    cameraFov: 42,
+    yaw: 0,
+    pitch,
+  };
+}
 
 function getPackageLayout(dimensions: PackageDimensions) {
   const halfDepth = dimensions.printedSpineDepth / 2;
@@ -157,18 +171,8 @@ function useInteriorTextures(album: Album): InteriorTextures {
   return { interiorBooklet: loaded[0], interiorTray: loaded[1], cdLabel: loaded[2], p1: loaded[3] };
 }
 
-function PaperMaterial({ texture }: { texture: THREE.Texture }) {
-  return <PrintedPaperMaterial texture={texture} />;
-}
-
-function TurningPaperMaterial({ texture, side }: { texture: THREE.Texture; side: THREE.Side }) {
-  return <meshStandardMaterial
-    map={texture}
-    color="#ffffff"
-    metalness={0}
-    roughness={0.94}
-    side={side}
-  />;
+function PaperMaterial({ texture, side = THREE.FrontSide }: { texture: THREE.Texture; side?: THREE.Side }) {
+  return <PrintedPaperMaterial texture={texture} side={side} />;
 }
 
 function CdDisc({ label, mode, playing, reduced, trayAnchor, onPlayer, onMotion }: {
@@ -270,8 +274,9 @@ function CdDisc({ label, mode, playing, reduced, trayAnchor, onPlayer, onMotion 
   );
 }
 
-function TrayRig({ texture, label, dimensions, layout, mode, playing, reduced, onPlayer, onSettled, onDiscMotion }: {
+function TrayRig({ texture, label, dimensions, layout, mode, packageVisualVisible, playing, reduced, onPlayer, onSettled, onDiscMotion }: {
   texture: THREE.Texture; label: THREE.Texture; dimensions: PackageDimensions; layout: ReturnType<typeof getPackageLayout>; mode: ExperienceMode; playing: boolean; reduced: boolean;
+  packageVisualVisible: boolean;
   onPlayer(): void; onSettled(settled: boolean): void; onDiscMotion(settled: boolean, docked: boolean): void;
 }) {
   const cdTrayAnchor = useRef<THREE.Group>(null);
@@ -298,7 +303,7 @@ function TrayRig({ texture, label, dimensions, layout, mode, playing, reduced, o
   });
   return (
     <>
-    <group>
+    <group visible={packageVisualVisible}>
       <mesh position={[0, 0, layout.backInnerZ]} receiveShadow><planeGeometry args={[dimensions.backWidth, dimensions.backHeight]} /><PaperMaterial texture={texture} /></mesh>
       <group>
         <group ref={trayContext}>
@@ -481,10 +486,10 @@ function TurningPage({ pages, width, turn, onDone, frontTexture, backTexture, du
   return (
     <group position={[0, 0, 0.025]}>
       <mesh ref={(node) => { frontSurface.current = node; if (node && !node.geometry.userData.original) node.geometry.userData.original = Float32Array.from(Array.from({ length: node.geometry.attributes.position.count }, (_, i) => (node.geometry.attributes.position as THREE.BufferAttribute).getX(i))); }} castShadow frustumCulled={false}>
-        <planeGeometry args={[width, PAGE_HEIGHT, 28, 3]} /><TurningPaperMaterial texture={front} side={THREE.FrontSide} />
+        <planeGeometry args={[width, PAGE_HEIGHT, 28, 3]} /><PaperMaterial texture={front} side={THREE.FrontSide} />
       </mesh>
       <mesh ref={(node) => { backSurface.current = node; if (node && !node.geometry.userData.original) { node.geometry.userData.original = Float32Array.from(Array.from({ length: node.geometry.attributes.position.count }, (_, i) => (node.geometry.attributes.position as THREE.BufferAttribute).getX(i))); const uv = node.geometry.attributes.uv as THREE.BufferAttribute; for (let i = 0; i < uv.count; i += 1) uv.setX(i, 1 - uv.getX(i)); uv.needsUpdate = true; } }} position={[0, 0, -0.002]} castShadow frustumCulled={false}>
-        <planeGeometry args={[width, PAGE_HEIGHT, 28, 3]} /><TurningPaperMaterial texture={back} side={THREE.BackSide} />
+        <planeGeometry args={[width, PAGE_HEIGHT, 28, 3]} /><PaperMaterial texture={back} side={THREE.BackSide} />
       </mesh>
     </group>
   );
@@ -616,8 +621,9 @@ function BookletRig({ album, p1, mountAnchor, mode, page, bookletPhase, mobile, 
   );
 }
 
-function FrontInterior({ album, dimensions, mode, page, bookletPhase, mobile, reduced, onBooklet, onSettled, onPhaseChange, onPageTurnStart, onPageTurnComplete, onPrevious, onNext, onBounds }: {
+function FrontInterior({ album, dimensions, mode, packageVisualVisible, page, bookletPhase, mobile, reduced, onBooklet, onSettled, onPhaseChange, onPageTurnStart, onPageTurnComplete, onPrevious, onNext, onBounds }: {
   album: Album; dimensions: PackageDimensions; mode: ExperienceMode; page: number; mobile: boolean; reduced: boolean;
+  packageVisualVisible: boolean;
   bookletPhase: BookletVisualPhase;
   onBooklet(): void; onSettled(settled: boolean): void; onPageTurnComplete(): void; onPrevious(): void; onNext(): void; onBounds?(bounds: BookletBounds): void;
   onPhaseChange?(phase: BookletVisualPhase): void; onPageTurnStart(direction: 'forward' | 'backward'): void;
@@ -626,7 +632,7 @@ function FrontInterior({ album, dimensions, mode, page, bookletPhase, mobile, re
   const bookletMountAnchor = useRef<THREE.Group>(null);
   const p1Width = PAGE_HEIGHT * textureAspect(textures.p1);
   return <>
-    <mesh position={[0, 0, -COVER_DEPTH / 2 - SURFACE_OFFSET]} rotation={[0, Math.PI, 0]} receiveShadow><planeGeometry args={[dimensions.frontWidth, dimensions.frontHeight]} /><PaperMaterial texture={textures.interiorBooklet} /></mesh>
+    <mesh visible={packageVisualVisible} position={[0, 0, -COVER_DEPTH / 2 - SURFACE_OFFSET]} rotation={[0, Math.PI, 0]} receiveShadow><planeGeometry args={[dimensions.frontWidth, dimensions.frontHeight]} /><PaperMaterial texture={textures.interiorBooklet} /></mesh>
     <group position={[0, 0, 0.064]} rotation={[0, Math.PI, 0]}>
       <group ref={bookletMountAnchor} position={[-p1Width / 2, 0, 0.08]} />
     </group>
@@ -634,13 +640,14 @@ function FrontInterior({ album, dimensions, mode, page, bookletPhase, mobile, re
   </>;
 }
 
-function TrayInterior({ album, dimensions, layout, mode, playing, reduced, onPlayer, onSettled, onDiscMotion, onPrewarmReady }: {
+function TrayInterior({ album, dimensions, layout, mode, packageVisualVisible, playing, reduced, onPlayer, onSettled, onDiscMotion, onPrewarmReady }: {
   album: Album; dimensions: PackageDimensions; layout: ReturnType<typeof getPackageLayout>; mode: ExperienceMode; playing: boolean; reduced: boolean;
+  packageVisualVisible: boolean;
   onPlayer(): void; onSettled(settled: boolean): void; onDiscMotion(settled: boolean, docked: boolean): void;
   onPrewarmReady?(): void;
 }) {
   const textures = useInteriorTextures(album);
-  return <><TrayRig texture={textures.interiorTray} label={textures.cdLabel} dimensions={dimensions} layout={layout} mode={mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={onSettled} onDiscMotion={onDiscMotion} /><PrewarmReady onReady={onPrewarmReady} /></>;
+  return <><TrayRig texture={textures.interiorTray} label={textures.cdLabel} dimensions={dimensions} layout={layout} mode={mode} packageVisualVisible={packageVisualVisible} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={onSettled} onDiscMotion={onDiscMotion} /><PrewarmReady onReady={onPrewarmReady} /></>;
 }
 
 function Scene(props: ExperienceProps) {
@@ -676,7 +683,7 @@ function Scene(props: ExperienceProps) {
   const discSettled = useRef(true);
   const discDocked = useRef(mode !== 'PLAYER_FOCUS');
   const openingSnapshot = useRef<OpeningSnapshot | null>(null);
-  const awaitingDiscDock = useRef(false);
+  const [packageVisualVisible, setPackageVisualVisible] = useState(true);
   const targetQuaternion = useMemo(() => new THREE.Quaternion(), []);
   const setBookletSettled = useCallback((value: boolean) => { bookletSettled.current = value; }, []);
   const setTraySettled = useCallback((value: boolean) => { traySettled.current = value; }, []);
@@ -721,7 +728,6 @@ function Scene(props: ExperienceProps) {
       discDocked.current = false;
     }
     if (was === 'PLAYER_FOCUS' && mode === 'ALBUM_OPEN') {
-      awaitingDiscDock.current = true;
       discSettled.current = false;
       discDocked.current = false;
     }
@@ -769,8 +775,9 @@ function Scene(props: ExperienceProps) {
     const openScale = mobile ? mobileOpenScale : (PACKAGE_PANEL * 1.08) / packageDimensions.frontHeight;
     const closedScale = mobile ? mobileClosedScale : detailActive ? 1.18 : 0.7;
     const closedTargetX = detailActive ? detailClosedX : closedX;
-    const openPosition = new THREE.Vector3(halfPanel, mobile ? viewport.height * 0.1 : -0.08, 0);
-    const openQuaternion = targetQuaternion.identity();
+    const albumOpen = getAlbumOpenTransform(halfPanel, mobile ? viewport.height * 0.1 : -0.08, openScale, openPitch);
+    const openPosition = albumOpen.position;
+    const openQuaternion = albumOpen.quaternion;
     const snapshot = openingSnapshot.current;
     if (snapshot) {
       snapshot.elapsed = reduced ? 1.6 : Math.min(1.6, snapshot.elapsed + delta);
@@ -779,12 +786,22 @@ function Scene(props: ExperienceProps) {
       const hingeProgress = THREE.MathUtils.smoothstep(Math.max(0, (progress - 0.35) / 0.65), 0, 1);
       rig.position.lerpVectors(snapshot.position, openPosition, transformProgress);
       rig.quaternion.copy(snapshot.quaternion).slerp(openQuaternion, transformProgress);
-      rig.scale.lerpVectors(snapshot.scale, new THREE.Vector3(openScale, openScale, openScale), transformProgress);
-      hinge.current.rotation.y = THREE.MathUtils.lerp(snapshot.hinge, OPEN_ANGLE, hingeProgress);
-      perspectiveCamera.current.position.z = THREE.MathUtils.lerp(snapshot.cameraZ, 7, transformProgress);
-      perspectiveCamera.current.fov = THREE.MathUtils.lerp(snapshot.cameraFov, 42, transformProgress);
+      rig.scale.lerpVectors(snapshot.scale, albumOpen.scale, transformProgress);
+      hinge.current.rotation.y = THREE.MathUtils.lerp(snapshot.hinge, albumOpen.hinge, hingeProgress);
+      perspectiveCamera.current.position.z = THREE.MathUtils.lerp(snapshot.cameraZ, albumOpen.cameraZ, transformProgress);
+      perspectiveCamera.current.fov = THREE.MathUtils.lerp(snapshot.cameraFov, albumOpen.cameraFov, transformProgress);
       perspectiveCamera.current.updateProjectionMatrix();
-      if (progress >= 1) openingSnapshot.current = null;
+      if (progress >= 1) {
+        rig.position.copy(albumOpen.position);
+        rig.quaternion.copy(albumOpen.quaternion);
+        rig.scale.copy(albumOpen.scale);
+        hinge.current.rotation.y = albumOpen.hinge;
+        perspectiveCamera.current.position.z = albumOpen.cameraZ;
+        perspectiveCamera.current.fov = albumOpen.cameraFov;
+        perspectiveCamera.current.updateProjectionMatrix();
+        yawPitch.current = { x: albumOpen.pitch, y: albumOpen.yaw };
+        openingSnapshot.current = null;
+      }
       return;
     }
 
@@ -795,25 +812,27 @@ function Scene(props: ExperienceProps) {
     perspectiveCamera.current.fov = THREE.MathUtils.lerp(perspectiveCamera.current.fov, targetFov, ease);
     perspectiveCamera.current.updateProjectionMatrix();
 
+    if (!closed && mode !== 'ALBUM_OPEN') yawPitch.current = { x: albumOpen.pitch, y: albumOpen.yaw };
     targetQuaternion.setFromEuler(new THREE.Euler(yawPitch.current.x, yawPitch.current.y, 0));
     rig.quaternion.slerp(targetQuaternion, ease);
     hinge.current.rotation.y = THREE.MathUtils.lerp(hinge.current.rotation.y, closed ? 0 : OPEN_ANGLE, ease);
 
-    if (awaitingDiscDock.current && discDocked.current) awaitingDiscDock.current = false;
-    const playerRetreated = !mobile && ((mode === 'PLAYER_FOCUS' && discSettled.current) || awaitingDiscDock.current);
     const targetPosition = closed
       ? new THREE.Vector3(closedTargetX, closedY, 0)
-      : new THREE.Vector3(halfPanel, mobile ? viewport.height * 0.1 : -0.08, playerRetreated ? -2.5 : 0);
-    const targetScale = closed ? closedScale : openScale;
+      : openPosition;
+    const targetScale = closed ? closedScale : albumOpen.scale.x;
     rig.position.lerp(targetPosition, ease);
     rig.scale.setScalar(THREE.MathUtils.lerp(rig.scale.x, targetScale, ease));
 
     const packageError = rig.position.distanceTo(targetPosition) + Math.abs(rig.scale.x - targetScale) + rig.quaternion.angleTo(targetQuaternion);
     const hingeError = Math.abs(hinge.current.rotation.y - (closed ? 0 : OPEN_ANGLE));
     const cameraError = Math.abs(perspectiveCamera.current.position.z - targetCameraZ) + Math.abs(perspectiveCamera.current.fov - targetFov);
-    const discTransitionComplete = mode === 'PLAYER_FOCUS'
-      ? discSettled.current
-      : !awaitingDiscDock.current && discDocked.current;
+    if ((mode === 'BOOKLET_FOCUS' && bookletSettled.current) || (mode === 'PLAYER_FOCUS' && discSettled.current)) {
+      if (packageVisualVisible) setPackageVisualVisible(false);
+    } else if ((mode === 'CLOSED' || mode === 'ALBUM_OPEN') && bookletSettled.current && discDocked.current) {
+      if (!packageVisualVisible) setPackageVisualVisible(true);
+    }
+    const discTransitionComplete = mode === 'PLAYER_FOCUS' ? discSettled.current : discDocked.current;
     const complete = packageError < 0.04 && hingeError < 0.025 && cameraError < 0.025
       && bookletSettled.current && traySettled.current && discTransitionComplete;
     if (complete && !reported.current) { reported.current = true; onTransitionChange?.(false); }
@@ -865,19 +884,21 @@ function Scene(props: ExperienceProps) {
   };
   return (
     <>
-      <group ref={packageRig} visible={mobile ? mode !== 'PLAYER_FOCUS' : true} position={[closedX, closedY, 0]} scale={mobile ? 0.48 : 0.7}
+      <group ref={packageRig} position={[closedX, closedY, 0]} scale={mobile ? 0.48 : 0.7}
         onPointerDown={down} onPointerMove={move} onPointerUp={(event) => finish(event.pointerId, true)} onPointerCancel={(event) => finish(event.pointerId, false)}>
-        <mesh castShadow><boxGeometry args={[packageDimensions.trayWidth, packageDimensions.trayHeight, packageDimensions.trayDepth]} /><HanOuterPlasticMaterial /></mesh>
-        <mesh position={[0, 0, -(packageDimensions.trayDepth / 2 + COVER_DEPTH / 2)]} material={outerMaterials.back} castShadow><boxGeometry args={[packageDimensions.backWidth, packageDimensions.backHeight, COVER_DEPTH]} /></mesh>
-        {detailActive && <Suspense fallback={null}><TrayInterior album={album} dimensions={packageDimensions} layout={layout} mode={keepInternalsClosed ? 'CLOSED' : mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={setTraySettled} onDiscMotion={setDiscMotion} onPrewarmReady={onPrewarmReady} /></Suspense>}
+        <group visible={packageVisualVisible}>
+          <mesh castShadow><boxGeometry args={[packageDimensions.trayWidth, packageDimensions.trayHeight, packageDimensions.trayDepth]} /><HanOuterPlasticMaterial /></mesh>
+          <mesh position={[0, 0, -(packageDimensions.trayDepth / 2 + COVER_DEPTH / 2)]} material={outerMaterials.back} castShadow><boxGeometry args={[packageDimensions.backWidth, packageDimensions.backHeight, COVER_DEPTH]} /></mesh>
+          <mesh position={[-Math.max(packageDimensions.frontWidth, packageDimensions.backWidth) / 2 - SPINE_SURFACE_OFFSET, 0, 0]} rotation={[0, -Math.PI / 2, 0]} castShadow><planeGeometry args={[packageDimensions.printedSpineDepth, packageDimensions.frontHeight]} /><PaperMaterial texture={textures.spine} /></mesh>
+          <mesh position={[-Math.max(packageDimensions.frontWidth, packageDimensions.backWidth) / 2 + SPINE_SURFACE_OFFSET, 0, 0]} rotation={[0, Math.PI / 2, 0]} castShadow><planeGeometry args={[packageDimensions.printedSpineDepth, packageDimensions.frontHeight]} /><PaperMaterial texture={textures.spine} /></mesh>
+        </group>
+        {detailActive && <Suspense fallback={null}><TrayInterior album={album} dimensions={packageDimensions} layout={layout} mode={keepInternalsClosed ? 'CLOSED' : mode} packageVisualVisible={packageVisualVisible} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={setTraySettled} onDiscMotion={setDiscMotion} onPrewarmReady={onPrewarmReady} /></Suspense>}
         <group ref={hinge} position={[-packageDimensions.frontWidth / 2, 0, 0]}>
           <group position={[packageDimensions.frontWidth / 2, 0, layout.frontCenterZ]}>
-            <mesh material={outerMaterials.front} castShadow><boxGeometry args={[packageDimensions.frontWidth, packageDimensions.frontHeight, COVER_DEPTH]} /></mesh>
-            {detailActive && <Suspense fallback={null}><FrontInterior album={album} dimensions={packageDimensions} mode={keepInternalsClosed ? 'CLOSED' : mode} page={page} bookletPhase={bookletPhase} mobile={mobile} reduced={reduced} onBooklet={onBooklet} onSettled={setBookletSettled} onPhaseChange={onBookletPhaseChange} onPageTurnStart={(direction) => onPageTurnStart?.(direction)} onPageTurnComplete={() => props.onPageTurnComplete?.()} onPrevious={onPrevious} onNext={onNext} onBounds={onBookletBounds} /></Suspense>}
+            <mesh visible={packageVisualVisible} material={outerMaterials.front} castShadow><boxGeometry args={[packageDimensions.frontWidth, packageDimensions.frontHeight, COVER_DEPTH]} /></mesh>
+            {detailActive && <Suspense fallback={null}><FrontInterior album={album} dimensions={packageDimensions} mode={keepInternalsClosed ? 'CLOSED' : mode} packageVisualVisible={packageVisualVisible} page={page} bookletPhase={bookletPhase} mobile={mobile} reduced={reduced} onBooklet={onBooklet} onSettled={setBookletSettled} onPhaseChange={onBookletPhaseChange} onPageTurnStart={(direction) => onPageTurnStart?.(direction)} onPageTurnComplete={() => props.onPageTurnComplete?.()} onPrevious={onPrevious} onNext={onNext} onBounds={onBookletBounds} /></Suspense>}
           </group>
         </group>
-        <mesh position={[-Math.max(packageDimensions.frontWidth, packageDimensions.backWidth) / 2 - SPINE_SURFACE_OFFSET, 0, 0]} rotation={[0, -Math.PI / 2, 0]} castShadow><planeGeometry args={[packageDimensions.printedSpineDepth, packageDimensions.frontHeight]} /><PaperMaterial texture={textures.spine} /></mesh>
-        <mesh position={[-Math.max(packageDimensions.frontWidth, packageDimensions.backWidth) / 2 + SPINE_SURFACE_OFFSET, 0, 0]} rotation={[0, Math.PI / 2, 0]} castShadow><planeGeometry args={[packageDimensions.printedSpineDepth, packageDimensions.frontHeight]} /><PaperMaterial texture={textures.spine} /></mesh>
       </group>
       {/* This screen-facing interaction surface intentionally lives outside
           packageRig, so its usable width never collapses at spine/back angles. */}
