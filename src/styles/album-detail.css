@@ -129,6 +129,9 @@
 .ji-detail__selected { font-family:var(--serif); font-size:1.15rem; }
 .ji-detail__transport { display:grid; grid-template-columns:auto auto 1fr auto; gap:14px; align-items:center; font-size:.68rem; }
 .ji-detail__transport input { width:100%; accent-color:var(--ji-accent); }
+.ji-detail__volume { display:flex; align-items:center; gap:8px; width:min(150px,45%); margin-top:8px; }
+.ji-detail__volume svg { width:14px; height:14px; flex:0 0 auto; color:var(--ji-accent); }
+.ji-detail__volume input { width:100%; accent-color:var(--ji-accent); }
 .ji-detail__audio-status { color:var(--ji-accent); font-size:.65rem; letter-spacing:.16em; }
 .ji-detail__player-back { margin-top:18px; }
 .ji-detail__editorial { width:min(1120px,calc(100% - 40px)); margin:auto; padding:70px 0 120px; }

@@ -114,6 +114,28 @@ function PlayerPanel({
         />
         <span>{player.track.duration ?? formatTime(player.duration)}</span>
       </div>
+      <div className="han-detail__volume">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M4 9v6h4l5 4V5L8 9H4zm11.5 1.5a3 3 0 010 3"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <input
+          aria-label="볼륨"
+          aria-valuetext={`${Math.round(player.volume * 100)}%`}
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          value={player.volume}
+          onChange={(event) => player.setVolume(Number(event.target.value))}
+        />
+      </div>
       {!player.hasAudio && <p className="han-detail__audio-status">ROTATION PREVIEW · AUDIO COMING SOON</p>}
       {player.error && <p role="status">{player.error}</p>}
       <button
