@@ -219,11 +219,36 @@ export const albums: Album[] = [
     },
     featured: true,
     tracks: [
-      { number: 1, title: '다스름' },
-      { number: 2, title: '긴 산조 - 진양' },
-      { number: 3, title: '긴 산조 - 중모리' },
-      { number: 4, title: '긴 산조 - 중중모리' },
-      { number: 5, title: '긴 산조 - 자진모리' },
+      {
+        number: 1,
+        title: '다스름',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/hanbeomsu/01_daseureum.mp3',
+      },
+      {
+        number: 2,
+        title: '긴 산조 - 진양',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/hanbeomsu/02_long-sanjo_jinyang.mp3',
+      },
+      {
+        number: 3,
+        title: '긴 산조 - 중모리',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/hanbeomsu/03_long-sanjo_jungmori.mp3',
+      },
+      {
+        number: 4,
+        title: '긴 산조 - 중중모리',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/hanbeomsu/04_long-sanjo_jungjungmori.mp3',
+      },
+      {
+        number: 5,
+        title: '긴 산조 - 자진모리',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/hanbeomsu/05_long-sanjo_jajinmori.mp3',
+      },
+      {
+        number: 6,
+        title: '짧은 산조',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/hanbeomsu/06_short-sanjo.mp3',
+      },
     ],
     booklet: {
       previewImages: Array.from({ length: 11 }, (_, index) => ({
