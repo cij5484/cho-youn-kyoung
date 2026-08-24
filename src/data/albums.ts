@@ -159,12 +159,42 @@ export const albums: Album[] = [
     },
     detailsPath: '/album/ji-young-hee-ryu-haegeum-sanjo-2026',
     tracks: [
-      { number: 1, title: '진양', duration: '12:51' },
-      { number: 2, title: '중모리', duration: '09:49' },
-      { number: 3, title: '중중모리', duration: '03:06' },
-      { number: 4, title: '굿거리', duration: '02:20' },
-      { number: 5, title: '자진모리', duration: '02:43' },
-      { number: 6, title: '짧은산조', duration: '12:06' },
+      {
+        number: 1,
+        title: '진양',
+        duration: '12:51',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/jiyounghee/01_jinyang.mp3',
+      },
+      {
+        number: 2,
+        title: '중모리',
+        duration: '09:49',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/jiyounghee/02_jungmori.mp3',
+      },
+      {
+        number: 3,
+        title: '중중모리',
+        duration: '03:06',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/jiyounghee/03_jungjungmori.mp3',
+      },
+      {
+        number: 4,
+        title: '굿거리',
+        duration: '02:20',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/jiyounghee/04_gutgeori.mp3',
+      },
+      {
+        number: 5,
+        title: '자진모리',
+        duration: '02:43',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/jiyounghee/05_jajinmori.mp3',
+      },
+      {
+        number: 6,
+        title: '짧은산조',
+        duration: '12:06',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/jiyounghee/06_short-sanjo.mp3',
+      },
     ],
     credits: [
       { role: 'Recording · Mixing · Mastering', names: ['떨기나무'] },
