@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import type { Album } from '../../../data/albums';
 import { assetUrl } from '../../../utils/assetUrl';
-import type { BookletBounds, BookletVisualPhase, ExperienceMode } from './HanBeomSuAlbumDetailExperience3D';
+import type { BookletBounds, ExperienceMode } from './HanBeomSuAlbumDetailExperience3D';
 import { useAlbumAudio } from './useAlbumAudio';
-import { AlbumAdjacentNavigation } from './AlbumAdjacentNavigation';
 import { useHanBeomSuStage } from '../HanBeomSuPersistentStage';
 
 const statusLabel = { 'coming-soon': 'COMING SOON', released: 'RELEASED' } as const;
@@ -134,11 +133,9 @@ function PlayerPanel({
 export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
   const location = useLocation();
   const autoOpenAlbum = Boolean((location.state as { autoOpenAlbum?: boolean } | null)?.autoOpenAlbum);
-  const { setDetailProps } = useHanBeomSuStage();
+  const { setDetailProps, setDetailStageVisible } = useHanBeomSuStage();
   const [mode, setMode] = useState<ExperienceMode>(() => autoOpenAlbum ? 'ALBUM_OPEN' : 'CLOSED');
   const [spread, setSpread] = useState(0);
-  const [settledSpread, setSettledSpread] = useState(0);
-  const [bookletPhase, setBookletPhase] = useState<BookletVisualPhase>('RESTING');
   const [mobilePage, setMobilePage] = useState(0);
   const [sceneTransitioning, setSceneTransitioning] = useState(autoOpenAlbum);
   const [openingFromClosed, setOpeningFromClosed] = useState(autoOpenAlbum);
@@ -147,6 +144,7 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
   const [reduced, setReduced] = useState(false);
   const [backgroundSize, setBackgroundSize] = useState({ width: 0, height: 0 });
   const [bookletBounds, setBookletBounds] = useState<BookletBounds>();
+  const [stageVisible, setStageVisible] = useState(true);
   const [webgl] = useState(canUseWebGL);
   const stage = useRef<HTMLElement>(null);
   const swipe = useRef<number | undefined>(undefined);
@@ -181,24 +179,19 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
   }, []);
 
   useEffect(() => {
-    const urls = (album.booklet?.previewImages ?? []).slice(1, 4).map((page) => assetUrl(page.src)!);
-    let cancelled = false;
-    const preload = async () => {
-      for (const url of urls) {
-        if (cancelled) return;
-        const image = new Image();
-        image.src = url;
-        try { await image.decode(); } catch { /* The 3D loader remains the fallback. */ }
-      }
-    };
-    const idle = window.requestIdleCallback?.(() => { void preload(); }, { timeout: 1800 })
-      ?? window.setTimeout(() => { void preload(); }, 700);
+    const element = stage.current;
+    if (!element) return undefined;
+    const observer = new IntersectionObserver(([entry]) => {
+      const visible = entry.isIntersecting && entry.intersectionRatio > 0.72;
+      setStageVisible(visible);
+      setDetailStageVisible(visible);
+    }, { threshold: [0, 0.72, 0.85] });
+    observer.observe(element);
     return () => {
-      cancelled = true;
-      if (window.cancelIdleCallback) window.cancelIdleCallback(idle);
-      else window.clearTimeout(idle);
+      observer.disconnect();
+      setDetailStageVisible(true);
     };
-  }, [album]);
+  }, [setDetailStageVisible]);
 
   useEffect(() => {
     const element = stage.current;
@@ -211,18 +204,20 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
   }, []);
 
   const previous = useCallback(() => {
-    if (pageTurning || sceneTransitioning || (!mobile && spread !== settledSpread)) return;
-    if ((mobile && mobilePage === 0) || (!mobile && settledSpread === 0)) return;
-    if (mobile) { setPageTurning(true); setMobilePage((value) => Math.max(0, value - 1)); }
+    if (pageTurning || sceneTransitioning) return;
+    if ((mobile && mobilePage === 0) || (!mobile && spread === 0)) return;
+    setPageTurning(true);
+    if (mobile) setMobilePage((value) => Math.max(0, value - 1));
     else setSpread((value) => Math.max(0, value - 1));
-  }, [mobile, mobilePage, pageTurning, sceneTransitioning, settledSpread, spread]);
+  }, [mobile, mobilePage, pageTurning, sceneTransitioning, spread]);
 
   const next = useCallback(() => {
-    if (pageTurning || sceneTransitioning || (!mobile && spread !== settledSpread)) return;
-    if ((mobile && mobilePage === readablePageCount - 1) || (!mobile && settledSpread === spreadCount - 1)) return;
-    if (mobile) { setPageTurning(true); setMobilePage((value) => Math.min(readablePageCount - 1, value + 1)); }
+    if (pageTurning || sceneTransitioning) return;
+    if ((mobile && mobilePage === readablePageCount - 1) || (!mobile && spread === spreadCount - 1)) return;
+    setPageTurning(true);
+    if (mobile) setMobilePage((value) => Math.min(readablePageCount - 1, value + 1));
     else setSpread((value) => Math.min(spreadCount - 1, value + 1));
-  }, [mobile, mobilePage, pageTurning, readablePageCount, sceneTransitioning, settledSpread, spread, spreadCount]);
+  }, [mobile, mobilePage, pageTurning, readablePageCount, sceneTransitioning, spread, spreadCount]);
 
   const openAlbum = useCallback(() => {
     if (sceneTransitioning || mode !== 'CLOSED') return;
@@ -233,19 +228,16 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
 
   const openBooklet = useCallback(() => {
     setSpread(0);
-    setSettledSpread(0);
     setMobilePage(0);
     if (sceneTransitioning) return;
-    setBookletPhase('ENTERING');
     setSceneTransitioning(true);
     setMode('BOOKLET_FOCUS');
-    if (!mobile) stage.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
-  }, [mobile, reduced, sceneTransitioning]);
+    stage.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+  }, [reduced, sceneTransitioning]);
 
   const backToAlbum = () => {
     if (sceneTransitioning || pageTurning) return;
     player.pause();
-    if (mode === 'BOOKLET_FOCUS') setBookletPhase(mobile ? 'RETURNING_FINISH' : 'RETURNING_MOVE');
     setSceneTransitioning(true);
     setMode('ALBUM_OPEN');
   };
@@ -256,31 +248,18 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
       setMode('PLAYER_FOCUS');
     }
   }, [mode, sceneTransitioning]);
-  const handlePageTurnStart = useCallback((direction: 'forward' | 'backward') => {
-    if (mobile) return;
-    setBookletPhase(direction === 'forward' ? 'TURNING_FORWARD' : 'TURNING_BACKWARD');
-    setPageTurning(true);
-  }, [mobile]);
-  const handlePageTurnComplete = useCallback(() => {
-    if (!mobile) {
-      setSettledSpread(spread);
-      setBookletPhase('READING');
-    }
-    setPageTurning(false);
-  }, [mobile, spread]);
 
   useEffect(() => () => setDetailProps(null), [setDetailProps]);
-  useLayoutEffect(() => {
+  useEffect(() => {
     setDetailProps({
-      album, backgroundSize, openingFromClosed, mobile, mode, page: mobile ? mobilePage : spread, bookletPhase, detailActive: true,
+      album, backgroundSize, openingFromClosed, mobile, mode, page: mobile ? mobilePage : spread,
       playing: player.playing, reduced, homeActivationKey: 0, onTransitionChange: handleTransitionChange,
-      onBookletPhaseChange: setBookletPhase, onPageTurnStart: handlePageTurnStart,
-      onPageTurnComplete: handlePageTurnComplete, onBooklet: openBooklet,
+      onPageTurnComplete: () => setPageTurning(false), onBooklet: openBooklet,
       onBookletBounds: handleBookletBounds,
       onPrevious: previous, onNext: next, onOpen: openAlbum, onPlayer: enterPlayer,
     });
-  }, [album, backgroundSize, bookletPhase, enterPlayer, handleBookletBounds, handleTransitionChange, mobile, mobilePage, mode,
-    handlePageTurnComplete, handlePageTurnStart, next, openAlbum, openBooklet, openingFromClosed, player.playing, previous, reduced,
+  }, [album, backgroundSize, enterPlayer, handleBookletBounds, handleTransitionChange, mobile, mobilePage, mode,
+    next, openAlbum, openBooklet, openingFromClosed, player.playing, previous, reduced,
     setDetailProps, spread]);
 
   useEffect(() => {
@@ -318,9 +297,6 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
         ref={stage}
         aria-label="한범수류 앨범 인터랙티브 전시"
       >
-        {(mode === 'CLOSED' || mode === 'ALBUM_OPEN') && !sceneTransitioning && (
-          <AlbumAdjacentNavigation currentId={album.id} tone="han" />
-        )}
         {mobile && mode === 'BOOKLET_FOCUS' && (
           <div
             className="han-detail__swipe-surface"
@@ -346,7 +322,7 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
           </div>
         )}
         {mode === 'ALBUM_OPEN' && !sceneTransitioning && (
-          <div className="han-detail__open-ui">
+          <div className={`han-detail__open-ui${stageVisible ? '' : ' is-editorial-hidden'}`}>
             <section className="han-detail__open-info" aria-labelledby="open-album-info">
               <p id="open-album-info" className="han-detail__open-label">ALBUM · {album.year}</p>
               <h1>조윤경 해금산조</h1>
@@ -374,10 +350,12 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
               <span>BOOKLET</span>
               <svg viewBox="0 0 210 32" aria-hidden="true">
                 <path d="M1 16 H178 L195 3" pathLength="1" />
+                <circle cx="199" cy="3" r="2.5" />
               </svg>
             </button>
             <button className="han-detail__callout han-detail__callout--tracks" type="button" onClick={enterPlayer}>
               <svg viewBox="0 0 210 32" aria-hidden="true">
+                <circle cx="11" cy="3" r="2.5" />
                 <path d="M15 3 L32 16 H209" pathLength="1" />
               </svg>
               <span>TRACKS</span>
@@ -387,32 +365,25 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
             </button>
           </div>
         )}
-        {(mode === 'BOOKLET_FOCUS' || bookletPhase !== 'RESTING') && (
+        {mode === 'BOOKLET_FOCUS' && !sceneTransitioning && (
           <>
-            {mobile && bookletBounds && !pageTurning && (
-              <div className="han-detail__booklet-images is-mobile" style={bookletBounds} aria-hidden="true">
-                {[pages[mobilePage + 1]]
-                  .filter(Boolean)
-                  .map((page) => <img key={page.src} src={assetUrl(page.src)} alt="" />)}
-              </div>
-            )}
-            {!mobile && mode === 'BOOKLET_FOCUS' && (
+            {!mobile && (
               <div className="han-detail__booklet-hit-areas" aria-label="북클릿 페이지 이동" style={bookletBounds}>
-                <button type="button" aria-label="이전 북클릿 펼침면" disabled={bookletPhase !== 'READING' || pageTurning || settledSpread === 0} onClick={previous} />
-                <button type="button" aria-label="다음 북클릿 펼침면" disabled={bookletPhase !== 'READING' || pageTurning || settledSpread === spreadCount - 1} onClick={next} />
+                <button type="button" aria-label="이전 북클릿 펼침면" disabled={pageTurning || spread === 0} onClick={previous} />
+                <button type="button" aria-label="다음 북클릿 펼침면" disabled={pageTurning || spread === spreadCount - 1} onClick={next} />
               </div>
             )}
-            {mode === 'BOOKLET_FOCUS' && <BookletNavigation
+            <BookletNavigation
               mobile={mobile}
               mobilePage={mobilePage}
-              spread={mobile ? spread : settledSpread}
-              disabled={sceneTransitioning || pageTurning || (!mobile && bookletPhase !== 'READING')}
+              spread={spread}
+              disabled={sceneTransitioning || pageTurning}
               bounds={bookletBounds}
               pageCount={pages.length}
               onBack={backToAlbum}
               onNext={next}
               onPrevious={previous}
-            />}
+            />
           </>
         )}
         {mode === 'PLAYER_FOCUS' && !sceneTransitioning && (
