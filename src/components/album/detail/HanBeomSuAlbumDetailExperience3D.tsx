@@ -225,11 +225,11 @@ function CdDisc({ label, mountZ, mode, playing, reduced, tray, onPlayer, onSettl
       <group ref={spin}>
       <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
         <cylinderGeometry args={[CD_RADIUS, CD_RADIUS, CD_THICKNESS, 96, 1, true]} />
-        <meshBasicMaterial color="#77736b" toneMapped={false} />
+        <meshStandardMaterial color="#77736b" roughness={0.34} metalness={0.16} envMapIntensity={0.7} />
       </mesh>
       <mesh position={[0, 0, CD_THICKNESS / 2 + SURFACE_OFFSET]} castShadow>
         <circleGeometry args={[CD_RADIUS, 96]} />
-        <meshBasicMaterial map={label} toneMapped={false} />
+        <meshPhysicalMaterial map={label} roughness={0.3} metalness={0} clearcoat={0.24} clearcoatRoughness={0.22} specularIntensity={0.62} envMapIntensity={0.7} toneMapped={false} />
       </mesh>
       </group>
       </group>
