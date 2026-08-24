@@ -56,6 +56,7 @@ const PAGE_HEIGHT = PANEL * 0.92;
 const CD_RADIUS = PANEL * 0.45;
 const PAGE_TURN_DURATION = 0.86;
 const BOOKLET_EDGE_INSET = 0.003;
+const HAN_PLAYER_DESKTOP_X = -0.95;
 const DETAIL_BACKGROUND = {
   desktop: { sourceWidth: 3840, sourceHeight: 2160, x: 0.43 },
   mobile: { sourceWidth: 1440, sourceHeight: 2560, x: 0.5 },
@@ -161,7 +162,7 @@ function CdDisc({ label, mountZ, mode, playing, reduced, tray, onPlayer, onSettl
       scene.attach(rig.current);
       detached.current = true;
     }
-    const playerPosition = new THREE.Vector3(size.width <= 700 ? 0 : -1.55, size.width <= 700 ? viewport.height * 0.16 : 0.08, 0.34);
+    const playerPosition = new THREE.Vector3(size.width <= 700 ? 0 : HAN_PLAYER_DESKTOP_X, size.width <= 700 ? viewport.height * 0.16 : 0.08, 0.34);
     const trayWorld = tray.current
       ? tray.current.localToWorld(mountPosition.clone())
       : rig.current.position.clone();
@@ -288,7 +289,7 @@ function TrayRig({ texture, label, dimensions, layout, mode, playing, reduced, o
       </group>
     </group>
     {mode === 'PLAYER_FOCUS' && createPortal(
-      <mesh position={[size.width <= 700 ? 0 : -1.55, size.width <= 700 ? 0.3 : -0.72, 0.05]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[size.width <= 700 ? 0 : HAN_PLAYER_DESKTOP_X, size.width <= 700 ? 0.3 : -0.72, 0.05]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[2.25, 0.62]} />
         <meshBasicMaterial color="#5a4840" transparent opacity={0.1} depthWrite={false} toneMapped={false} />
       </mesh>,
