@@ -108,7 +108,12 @@ export const getRecentWorks = (slides: HomeHeroSlide[]) =>
   [...slides].sort((a, b) => (b.date ?? `${b.displayDate.slice(0, 4)}-00-00`)
     .localeCompare(a.date ?? `${a.displayDate.slice(0, 4)}-00-00`));
 
+export const DEFAULT_HOME_HERO_ID = 'ji-young-hee-ryu-haegeum-sanjo-2026';
+
 export const getDefaultHomeHeroIndex = (slides: HomeHeroSlide[], today = getSeoulDateString()) => {
+  const preferredIndex = slides.findIndex((slide) => slide.id === DEFAULT_HOME_HERO_ID);
+  if (preferredIndex >= 0) return preferredIndex;
+
   const upcoming = slides
     .map((slide, index) => ({ slide, index }))
     .filter(({ slide }) => Boolean(slide.date && slide.date >= today))
