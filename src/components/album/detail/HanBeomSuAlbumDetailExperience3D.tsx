@@ -7,6 +7,7 @@ import type { Album } from '../../../data/albums';
 import { assetUrl } from '../../../utils/assetUrl';
 import { COVER_DEPTH, getPackageDimensions, PACKAGE_PANEL } from '../packageGeometry';
 import { HanOuterPlasticMaterial, PrintedPaperMaterial, TrayClearPlasticMaterial } from '../HanBeomSuPackageModel';
+import { CdPolycarbonateMaterial } from '../JiYoungHeePackageModel';
 
 export type ExperienceMode = 'CLOSED' | 'ALBUM_OPEN' | 'BOOKLET_FOCUS' | 'PLAYER_FOCUS';
 export type BookletBounds = { left: number; top: number; width: number; height: number };
@@ -153,7 +154,21 @@ function CdDisc({ label, mountZ, mode, playing, reduced, tray, onPlayer, onSettl
   const tiltDrag = useRef<{ id: number; x: number; y: number } | null>(null);
   const detached = useRef(false);
   const CD_THICKNESS = CD_RADIUS * 0.012;
+  const CENTER_HOLE_RADIUS = CD_RADIUS * 0.12;
+  const HUB_RADIUS = CD_RADIUS * 0.235;
+  const LABEL_OUTER_RADIUS = CD_RADIUS * 0.955;
   const mountPosition = useMemo(() => new THREE.Vector3(0, 0, mountZ), [mountZ]);
+  const discShapes = useMemo(() => {
+    const annulus = (innerRadius: number, outerRadius: number) => {
+      const shape = new THREE.Shape();
+      shape.absarc(0, 0, outerRadius, 0, Math.PI * 2);
+      const hole = new THREE.Path();
+      hole.absarc(0, 0, innerRadius, 0, Math.PI * 2);
+      shape.holes.push(hole);
+      return shape;
+    };
+    return { substrate: annulus(CENTER_HOLE_RADIUS, CD_RADIUS) };
+  }, [CENTER_HOLE_RADIUS]);
   useFrame((_, delta) => {
     if (!rig.current) return;
     const ease = reduced ? 1 : 1 - Math.exp(-7 * delta);
@@ -224,13 +239,21 @@ function CdDisc({ label, mountZ, mode, playing, reduced, tray, onPlayer, onSettl
     }} onPointerCancel={() => { tiltDrag.current = null; }} onLostPointerCapture={() => { tiltDrag.current = null; }}>
       <group ref={tilt}>
       <group ref={spin}>
-      <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
-        <cylinderGeometry args={[CD_RADIUS, CD_RADIUS, CD_THICKNESS, 96, 1, true]} />
-        <meshStandardMaterial color="#77736b" roughness={0.34} metalness={0.16} envMapIntensity={0.7} />
+      <mesh castShadow>
+        <extrudeGeometry args={[discShapes.substrate, { depth: CD_THICKNESS, bevelEnabled: false, curveSegments: 96 }]} />
+        <CdPolycarbonateMaterial opacity={0.3} thickness={CD_THICKNESS} />
       </mesh>
-      <mesh position={[0, 0, CD_THICKNESS / 2 + SURFACE_OFFSET]} castShadow>
-        <circleGeometry args={[CD_RADIUS, 96]} />
-        <meshPhysicalMaterial map={label} roughness={0.3} metalness={0} clearcoat={0.24} clearcoatRoughness={0.22} specularIntensity={0.62} envMapIntensity={0.7} toneMapped={false} />
+      <mesh position={[0, 0, CD_THICKNESS + SURFACE_OFFSET]} castShadow>
+        <ringGeometry args={[HUB_RADIUS, LABEL_OUTER_RADIUS, 96]} />
+        <meshPhysicalMaterial map={label} roughness={0.3} metalness={0} clearcoat={0.24} clearcoatRoughness={0.22} specularIntensity={0.62} toneMapped={false} />
+      </mesh>
+      <mesh position={[0, 0, CD_THICKNESS + SURFACE_OFFSET * 2]}>
+        <ringGeometry args={[LABEL_OUTER_RADIUS, CD_RADIUS, 96]} />
+        <CdPolycarbonateMaterial opacity={0.42} thickness={CD_THICKNESS} />
+      </mesh>
+      <mesh position={[0, 0, CD_THICKNESS + SURFACE_OFFSET * 2]}>
+        <ringGeometry args={[CENTER_HOLE_RADIUS, HUB_RADIUS, 96]} />
+        <CdPolycarbonateMaterial opacity={0.38} thickness={CD_THICKNESS} />
       </mesh>
       </group>
       </group>
