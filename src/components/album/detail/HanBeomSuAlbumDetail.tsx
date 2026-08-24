@@ -4,6 +4,7 @@ import type { Album } from '../../../data/albums';
 import { assetUrl } from '../../../utils/assetUrl';
 import type { BookletBounds, ExperienceMode } from './HanBeomSuAlbumDetailExperience3D';
 import { useAlbumAudio } from './useAlbumAudio';
+import { AlbumAdjacentNavigation } from './AlbumAdjacentNavigation';
 import { useHanBeomSuStage } from '../HanBeomSuPersistentStage';
 
 const statusLabel = { 'coming-soon': 'COMING SOON', released: 'RELEASED' } as const;
@@ -232,8 +233,8 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
     if (sceneTransitioning) return;
     setSceneTransitioning(true);
     setMode('BOOKLET_FOCUS');
-    stage.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
-  }, [reduced, sceneTransitioning]);
+    if (!mobile) stage.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+  }, [mobile, reduced, sceneTransitioning]);
 
   const backToAlbum = () => {
     if (sceneTransitioning || pageTurning) return;
@@ -297,6 +298,9 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
         ref={stage}
         aria-label="한범수류 앨범 인터랙티브 전시"
       >
+        {(mode === 'CLOSED' || mode === 'ALBUM_OPEN') && !sceneTransitioning && (
+          <AlbumAdjacentNavigation currentId={album.id} tone="han" />
+        )}
         {mobile && mode === 'BOOKLET_FOCUS' && (
           <div
             className="han-detail__swipe-surface"
