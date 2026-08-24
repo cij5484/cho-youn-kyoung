@@ -565,6 +565,7 @@ function Scene(props: ExperienceProps) {
   const cdMountZ = recessZ + 0.046;
   const layout = { frontCenterZ, backInnerZ, trayPlateZ, recessZ, hubZ: recessZ + 0.009, cdMountZ };
   const halfPanel = packageDimensions.frontWidth / 2;
+  const desktopAlbumOpenScale = 0.65;
   const { size, viewport } = useThree();
   const packageRig = useRef<THREE.Group>(null);
   const hinge = useRef<THREE.Group>(null);
@@ -652,7 +653,7 @@ function Scene(props: ExperienceProps) {
     const targetHinge = opening ? OPEN_ANGLE : 0;
     hinge.current.rotation.y = THREE.MathUtils.lerp(hinge.current.rotation.y, targetHinge, ease);
     const keepClosedTransform = closed || openingPhaseRef.current === 'ALIGN_CLOSED';
-    const x = keepClosedTransform ? closedX : mode === 'BOOKLET_FOCUS' ? 1.05 : mode === 'PLAYER_FOCUS' ? (mobile ? 0 : 0.32) : (mobile ? 0 : halfPanel);
+    const x = keepClosedTransform ? closedX : mode === 'BOOKLET_FOCUS' ? 1.05 : mode === 'PLAYER_FOCUS' ? (mobile ? 0 : 0.32) : (mobile ? 0 : halfPanel * desktopAlbumOpenScale);
     const y = mobile
       ? (keepClosedTransform ? closedY : mode === 'PLAYER_FOCUS' ? viewport.height * 0.2 : viewport.height * 0.1)
       : (keepClosedTransform ? closedY : 0.05);
@@ -665,7 +666,7 @@ function Scene(props: ExperienceProps) {
         ? (mobile ? mobileOpenScale : 0.76)
         : mode === 'PLAYER_FOCUS'
           ? (mobile ? mobilePlayerScale : 1.18)
-          : (mobile ? mobileOpenScale : 0.65);
+          : (mobile ? mobileOpenScale : desktopAlbumOpenScale);
     packageRig.current.position.x = THREE.MathUtils.lerp(packageRig.current.position.x, x, ease);
     packageRig.current.position.y = THREE.MathUtils.lerp(packageRig.current.position.y, y, ease);
     packageRig.current.position.z = THREE.MathUtils.lerp(packageRig.current.position.z, mode === 'BOOKLET_FOCUS' ? -1 : 0, ease);
