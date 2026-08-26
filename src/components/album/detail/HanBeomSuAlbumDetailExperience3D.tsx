@@ -654,13 +654,16 @@ function Scene(props: ExperienceProps) {
     const targetHinge = opening ? OPEN_ANGLE : 0;
     hinge.current.rotation.y = THREE.MathUtils.lerp(hinge.current.rotation.y, targetHinge, ease);
     const keepClosedTransform = closed || openingPhaseRef.current === 'ALIGN_CLOSED';
-    const x = keepClosedTransform ? closedX : mode === 'BOOKLET_FOCUS' ? 1.05 : mode === 'PLAYER_FOCUS' ? (mobile ? 0 : 0.32) : (mobile ? 0 : halfPanel * desktopAlbumOpenScale);
-    const y = mobile
-      ? (keepClosedTransform ? closedY : mode === 'PLAYER_FOCUS' ? viewport.height * 0.2 : viewport.height * 0.1)
-      : (keepClosedTransform ? closedY : 0.05);
     const mobileClosedScale = 0.48;
     const mobileOpenScale = viewport.width * 0.9 / (packageDimensions.frontWidth * 1.94);
     const mobilePlayerScale = viewport.width * 0.62 / (CD_RADIUS * 2);
+    const mobileOpenX = halfPanel * mobileOpenScale;
+    const mobileHeaderWorld = (mobileHeader / size.height) * viewport.height;
+    const mobileOpenY = viewport.height * 0.1 - mobileHeaderWorld;
+    const x = keepClosedTransform ? closedX : mode === 'BOOKLET_FOCUS' ? 1.05 : mode === 'PLAYER_FOCUS' ? (mobile ? 0 : 0.32) : (mobile ? mobileOpenX : halfPanel * desktopAlbumOpenScale);
+    const y = mobile
+      ? (keepClosedTransform ? closedY : mode === 'PLAYER_FOCUS' ? viewport.height * 0.2 : mobileOpenY)
+      : (keepClosedTransform ? closedY : 0.05);
     const scale = keepClosedTransform
       ? (mobile ? mobileClosedScale : 0.7)
       : mode === 'BOOKLET_FOCUS'
@@ -752,7 +755,7 @@ function Scene(props: ExperienceProps) {
       {/* This screen-facing interaction surface intentionally lives outside
           packageRig, so its usable width never collapses at spine/back angles. */}
       {mode === 'CLOSED' && (
-        <mesh position={[closedX, mobile ? viewport.height * 0.2 : 0.05, 1.2]}
+        <mesh position={[closedX, closedY, 1.2]}
           onPointerDown={down} onPointerMove={move} onPointerUp={(e) => finish(e.pointerId, true)} onPointerCancel={(e) => finish(e.pointerId, false)}>
           <planeGeometry args={[mobile ? viewport.width * 0.78 : 5.5, mobile ? viewport.width * 0.78 : 4.4]} />
           <meshBasicMaterial transparent opacity={0} colorWrite={false} depthWrite={false} />
