@@ -723,6 +723,13 @@ html[data-home-hero-theme="album-package"] .home-creative-credit {
   --credit-color: rgba(43, 43, 40, .74);
   --credit-personal-color: rgba(43, 43, 40, .58);
 }
+html[data-home-hero-work="ji-young-hee-ryu-haegeum-sanjo-2026"] .ji-persistent-stage__canvas,
+html[data-home-hero-work="ji-young-hee-ryu-haegeum-sanjo-2026"] .ji-persistent-stage__canvas canvas,
+html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .han-persistent-stage__canvas,
+html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .han-persistent-stage__canvas canvas {
+  touch-action: none;
+}
+
 html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .home-creative-credit {
   --credit-color: rgba(242, 238, 229, .78);
   --credit-personal-color: rgba(242, 238, 229, .58);

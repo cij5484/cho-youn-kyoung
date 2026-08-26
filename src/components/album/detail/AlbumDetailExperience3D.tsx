@@ -663,13 +663,14 @@ function Scene(props: ExperienceProps) {
     const targetHinge = opening ? OPEN_ANGLE : 0;
     hinge.current.rotation.y = THREE.MathUtils.lerp(hinge.current.rotation.y, targetHinge, ease);
     const keepClosedTransform = closed || openingPhaseRef.current === 'ALIGN_CLOSED';
-    const x = keepClosedTransform ? closedX : mode === 'BOOKLET_FOCUS' ? 1.05 : mode === 'PLAYER_FOCUS' ? (mobile ? 0 : 0.32) : (mobile ? 0 : HALF_PANEL);
-    const y = mobile
-      ? (keepClosedTransform ? viewport.height * 0.2 : mode === 'PLAYER_FOCUS' ? viewport.height * 0.2 : viewport.height * 0.1)
-      : 0.05;
     const mobileClosedScale = getMobileClosedScale(viewport.width);
     const mobileOpenScale = viewport.width * 0.9 / (PANEL_WIDTH * 1.94);
     const mobilePlayerScale = viewport.width * 0.62 / (CD_RADIUS * 2);
+    const mobileOpenX = HALF_PANEL * mobileOpenScale;
+    const x = keepClosedTransform ? closedX : mode === 'BOOKLET_FOCUS' ? 1.05 : mode === 'PLAYER_FOCUS' ? (mobile ? 0 : 0.32) : (mobile ? mobileOpenX : HALF_PANEL);
+    const y = mobile
+      ? (keepClosedTransform ? viewport.height * 0.2 : mode === 'PLAYER_FOCUS' ? viewport.height * 0.2 : viewport.height * 0.1)
+      : 0.05;
     const scale = keepClosedTransform
       ? (mobile ? mobileClosedScale : 1.18)
       : mode === 'BOOKLET_FOCUS'
