@@ -41,7 +41,7 @@ export type ArchiveMaterial = {
 };
 
 export type HomeHeroSettings = {
-  theme: 'haegeum-recital' | 'sanjo-matiere';
+  theme: 'haegeum-recital' | 'sanjo-matiere' | 'haegeum-jeongak';
 };
 
 export type Performance = {
@@ -56,6 +56,7 @@ export type Performance = {
   performer: string;
   featured: boolean;
   heroImage: string;
+  heroImageMobile?: string;
   archiveLabel: string;
   listDescription: string;
   introduction: string[];
@@ -64,6 +65,7 @@ export type Performance = {
   artistSignature: string;
   programEras: ProgramEra[];
   collaborators: PerformanceCollaborator[];
+  simpleCast?: { name: string; role: string }[];
   archiveMaterials?: ArchiveMaterial[];
   runningTime?: string;
   ticketPrice?: string;
@@ -117,6 +119,44 @@ const collaborators: PerformanceCollaborator[] = [
 ];
 
 export const performances: Performance[] = [
+  {
+    id: 'haegeum-jeongak-2026-09-22',
+    title: '풀고, 엮다',
+    subtitle: '조윤경의 해금정악 - 해금상령산풀이·관악영산회상',
+    date: '2026-09-22',
+    displayDate: '2026. 9. 22. (화) 19:30',
+    venue: '국립부산국악원 예지당',
+    venueAddress: '부산광역시 부산진구 국악로 2',
+    performer: '조윤경',
+    featured: false,
+    heroImage: 'assets/performances/haegeum-jeongak-2026-09-22/web/home-hero-desktop.png',
+    heroImageMobile: 'assets/performances/haegeum-jeongak-2026-09-22/web/home-hero-mobile.png',
+    homeHero: { theme: 'haegeum-jeongak' },
+    archiveLabel: 'HAEGEUM JEONGAK',
+    listDescription: '해금상령산풀이·관악영산회상',
+    ticketPrice: '전석 초대석',
+    seating: '지정석',
+    ageRestriction: '미취학 아동 입장 불가',
+    introduction: [],
+    artistNote: [
+      '정악은 오랜 세월 우리 음악의 정신과 미학을 담아 전승되어 온 음악입니다. 여러 악기가 서로의 소리를 존중하며 하나의 울림을 이루는 과정에는 절제와 균형, 긴 호흡이 빚어내는 깊은 아름다움이 있습니다.',
+      '저는 오랫동안 정악을 연주하며 익숙한 음악을 새로운 시선으로 바라보고자 했습니다. 풍성한 합주의 아름다움도 소중하지만, 그 안에서 각 악기가 들려주는 선율과 호흡에 더욱 귀 기울이고 싶었습니다.',
+      '이번 무대에서는 피리·대금·해금·장구 편성으로 관악영산회상 전바탕을 연주합니다. 삼현육각의 풍성한 음향에서 악기 수를 덜어내고, 피리와 대금, 해금이 각자의 음색과 선율을 드러내면서 서로의 가락을 주고받는 과정에 집중했습니다. 악기를 덜어낸 자리에 생긴 여백과 세 악기의 유기적인 호흡을 통해 관악영산회상의 또 다른 울림을 전하고자 합니다.',
+      '이어지는 「해금 상령산풀이」는 정악의 선율을 독주자의 시선으로 다시 바라본 작업입니다. 2020년 독주회에서는 피리의 상령산풀이 가락을 해금으로 연주하며 두 악기의 선율적 가능성을 살펴보았습니다. 이번에는 해금 고유의 가락에 주목했습니다. 관악영산회상 상령산의 해금 선율을 바탕으로, 합주 안에서 이어져 온 가락을 해금 한 대의 호흡으로 풀어내고자 합니다.',
+      '합주 속에서 서로의 소리를 듣고 호흡하는 일과, 그 안의 한 선율을 꺼내 홀로 마주하는 일은 서로 달라 보이지만 결국 같은 음악을 깊이 들여다보는 과정이라고 생각합니다. 이번 무대에서 익숙한 정악의 선율 속에 담긴 각 악기의 소리와 호흡, 그리고 그 사이의 여백을 함께 느껴주시기 바랍니다.',
+    ],
+    artistSignature: '조윤경',
+    programEras: [
+      { roman: '01', title: '관악영산회상(管樂靈山會相)', description: '상령산 · 중령산 · 세령산 · 가락덜이 · 삼현도드리 · 염불도드리 · 타령 · 군악', works: [{ number: 1, composer: '', composerYears: '', title: '관악영산회상', year: 'PROGRAM 01', instrumentation: ['피리 · 김성준', '대금 · 허유진', '해금 · 조윤경', '장구 · 윤승환'], composerNote: '관악영산회상은 영산회상 계열의 대표적인 정악으로, 표정만방지곡(表正萬方之曲)이라고도 한다.', workNote: '본래 삼현육각 편성으로 연주되는 기악 모음곡이며, 이번 공연에서는 피리·대금·해금·장구의 간결한 편성으로 관악영산회상 전바탕을 연주한다. 피리·대금·해금이 서로 가락을 주고받고 장구가 절제된 장단으로 흐름을 이끈다.' }] },
+      { roman: '02', title: '해금 상령산풀이', description: '', works: [{ number: 2, composer: '', composerYears: '', title: '해금 상령산풀이', year: 'PROGRAM 02', instrumentation: ['해금 · 조윤경'], composerNote: '상령산은 평조회상(유초신지곡)의 첫 악장으로, 정악의 절제된 아름다움과 깊은 호흡을 보여주는 악곡이다. 상령산의 선율을 한 악기의 호흡으로 풀어내는 상령산풀이 독주 전통으로도 이어져 왔다.', workNote: '이번 무대는 기존 독주곡을 단순히 해금으로 옮긴 것이 아니다. 상령산의 해금 가락을 바탕으로 해금의 음색·시김새·호흡에 맞는 독주 가락을 새롭게 구성해, 해금 한 대를 통해 상령산의 또 다른 모습을 바라보는 작업이다.' }] },
+    ],
+    collaborators: [],
+    simpleCast: [{ role: '해금', name: '조윤경' }, { role: '피리', name: '김성준' }, { role: '대금', name: '허유진' }, { role: '장구', name: '윤승환' }],
+    archiveMaterials: [
+      { label: 'POSTER', viewLabel: 'VIEW POSTER', previewImages: [{ src: 'assets/performances/haegeum-jeongak-2026-09-22/viewer/poster.png', alt: '풀고, 엮다 공연 포스터' }], downloadUrl: 'assets/performances/haegeum-jeongak-2026-09-22/downloads/poster.pdf', downloadLabel: 'DOWNLOAD PDF' },
+      { label: 'LEAFLET', viewLabel: 'VIEW LEAFLET', previewImages: [{ src: 'assets/performances/haegeum-jeongak-2026-09-22/viewer/leaflet-outer.png', alt: '풀고, 엮다 리플렛 바깥면', label: 'OUTER' }, { src: 'assets/performances/haegeum-jeongak-2026-09-22/viewer/leaflet-inner.png', alt: '풀고, 엮다 리플렛 안쪽면', label: 'INNER' }], downloadUrl: 'assets/performances/haegeum-jeongak-2026-09-22/downloads/leaflet.pdf', downloadLabel: 'DOWNLOAD PDF' },
+    ],
+  },
   {
     id: 'sanjo-gil-2026-08-16',
     title: '산조길, 둘',

@@ -74,6 +74,16 @@ html[data-home-hero-theme="sanjo-matiere"] .site-header {
   background: linear-gradient(180deg, rgba(245, 239, 230, 0.46), rgba(245, 239, 230, 0));
   box-shadow: none;
 }
+html[data-home-hero-theme="haegeum-jeongak"] .site-header {
+  background: linear-gradient(180deg, rgba(239, 237, 242, .72), rgba(239, 237, 242, 0));
+  box-shadow: none;
+}
+html[data-home-hero-theme="haegeum-jeongak"] .brand,
+html[data-home-hero-theme="haegeum-jeongak"] .desktop-nav a,
+html[data-home-hero-theme="haegeum-jeongak"] .menu-button { color: #29272d; }
+html[data-home-hero-theme="haegeum-jeongak"] .desktop-nav a.active,
+html[data-home-hero-theme="haegeum-jeongak"] .desktop-nav a:hover,
+html[data-home-hero-theme="haegeum-jeongak"] .desktop-nav a:focus-visible { color: #68517c; }
 html[data-home-hero-theme="album-package"] .site-header {
   background: linear-gradient(180deg, rgba(238, 234, 224, .58), rgba(238, 234, 224, 0));
   box-shadow: none;

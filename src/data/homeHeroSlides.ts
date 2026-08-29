@@ -1,7 +1,7 @@
 import { performances } from './performances';
 import { albums, type AlbumHeroBackgroundAnchor, type AlbumHeroPackageGeometry, type AlbumHeroTextures } from './albums';
 
-export type HomeHeroTheme = 'haegeum-recital' | 'sanjo-matiere' | 'album-package';
+export type HomeHeroTheme = 'haegeum-recital' | 'sanjo-matiere' | 'haegeum-jeongak' | 'album-package';
 
 export type HomeHeroSlide = {
   id: string;
@@ -15,6 +15,7 @@ export type HomeHeroSlide = {
   theme: HomeHeroTheme;
   detailLink: string;
   heroImage?: string;
+  heroImageMobile?: string;
   workType: 'PERFORMANCE' | 'ALBUM';
   cardImage: string;
   cardTitle?: string;
@@ -54,6 +55,7 @@ const performanceHeroSlides: HomeHeroSlide[] = performances
       theme: performance.homeHero!.theme,
       detailLink: `/performance/${performance.id}`,
       heroImage: performance.heroImage,
+      heroImageMobile: performance.heroImageMobile,
       workType: 'PERFORMANCE' as const,
       cardImage: poster,
     }];
@@ -108,7 +110,7 @@ export const getRecentWorks = (slides: HomeHeroSlide[]) =>
   [...slides].sort((a, b) => (b.date ?? `${b.displayDate.slice(0, 4)}-00-00`)
     .localeCompare(a.date ?? `${a.displayDate.slice(0, 4)}-00-00`));
 
-export const DEFAULT_HOME_HERO_ID = 'ji-young-hee-ryu-haegeum-sanjo-2026';
+export const DEFAULT_HOME_HERO_ID = 'haegeum-jeongak-2026-09-22';
 
 export const getDefaultHomeHeroIndex = (slides: HomeHeroSlide[], today = getSeoulDateString()) => {
   const preferredIndex = slides.findIndex((slide) => slide.id === DEFAULT_HOME_HERO_ID);
