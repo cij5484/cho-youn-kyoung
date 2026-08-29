@@ -41,7 +41,15 @@ export function HaegeumJeongak20260922Page({ performance }: { performance: Perfo
 
       <section className="hj-detail__section hj-detail__program" aria-labelledby="hj-program-title">
         <header><span>02</span><h2 id="hj-program-title">PROGRAM</h2></header>
-        <div className="hj-detail__programs">{programs.map(({ era, work }) => <article key={era.roman}><p>PROGRAM {era.roman}</p><h3>{era.title}</h3>{era.description && <p className="hj-detail__sequence">{era.description}</p>}<ul>{work.instrumentation?.map((line) => <li key={line}>{line}</li>)}</ul><div className="hj-detail__program-note"><p>{work.composerNote}</p><p>{work.workNote}</p></div></article>)}</div>
+        <div className="hj-detail__programs">{programs.map(({ era, work }) => <article key={era.roman}><p>PROGRAM {era.roman}</p><h3>{era.title}</h3>{era.description && <p className="hj-detail__sequence">{era.description}</p>}<ul>{work.instrumentation?.map((line) => <li key={line}>{line}</li>)}</ul><div className="hj-detail__program-note">
+          <p>{work.composerNote}</p>
+          {work.workNote
+            .split(/\n{2,}/)
+            .filter(Boolean)
+            .map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
+        </div></article>)}</div>
       </section>
 
       <section className="hj-detail__section hj-detail__artists" aria-labelledby="hj-artists-title">
