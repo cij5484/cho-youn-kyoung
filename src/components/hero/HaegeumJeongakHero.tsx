@@ -5,12 +5,12 @@ import '../../styles/haegeum-jeongak-hero.css';
 
 export function HaegeumJeongakHero({ slide, isActive }: { slide: HomeHeroSlide; isActive: boolean }) {
   return (
-    <section className="hj-hero" aria-labelledby={`${slide.id}-hero-title`}>
+    <section className={`hj-hero${isActive ? ' is-active' : ''}`} aria-labelledby={`${slide.id}-hero-title`}>
       <picture className="hj-hero__picture" aria-hidden="true">
         {slide.heroImageMobile && <source media="(max-width: 700px)" srcSet={assetUrl(slide.heroImageMobile)} />}
         <img src={assetUrl(slide.heroImage ?? '')} alt="" decoding="async" />
       </picture>
-      <div className="hj-hero__copy" key={isActive ? `${slide.id}-active` : slide.id}>
+      <div className="hj-hero__copy">
         <p className="hj-hero__eyebrow">HAEGEUM JEONGAK</p>
         <h1 id={`${slide.id}-hero-title`}>풀고, 엮다</h1>
         <p className="hj-hero__subtitle"><span>조윤경의 해금정악</span><span>해금상령산풀이 · 관악영산회상</span></p>

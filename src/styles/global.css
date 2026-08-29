@@ -729,6 +729,11 @@ html[data-home-hero-theme="sanjo-matiere"] .home-creative-credit {
   --credit-color: rgba(31, 47, 65, 0.8);
   --credit-personal-color: rgba(40, 48, 57, 0.70);
 }
+
+html[data-home-hero-theme="haegeum-jeongak"] .home-creative-credit {
+  --credit-color: rgba(113, 93, 130, 0.88);
+  --credit-personal-color: rgba(113, 93, 130, 0.58);
+}
 html[data-home-hero-theme="album-package"] .home-creative-credit {
   --credit-color: rgba(43, 43, 40, .74);
   --credit-personal-color: rgba(43, 43, 40, .58);
