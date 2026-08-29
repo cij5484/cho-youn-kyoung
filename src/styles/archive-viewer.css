@@ -127,6 +127,22 @@
   color: #1f4f7a;
 }
 
+.archive-viewer__backdrop--violet {
+  background: #f3f1f5;
+}
+
+.archive-viewer--violet {
+  color: #715d82;
+}
+
+.archive-viewer--violet .archive-viewer__header {
+  background: linear-gradient(180deg, rgba(243, 241, 245, .98) 0%, rgba(243, 241, 245, .9) 70%, rgba(243, 241, 245, 0) 100%);
+}
+
+.archive-viewer--violet .archive-viewer__images figcaption {
+  color: #715d82;
+}
+
 @media (max-width: 720px) {
   .archive-viewer,
   .archive-viewer--poster,

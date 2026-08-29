@@ -4,7 +4,7 @@ import { SafeImage } from '../common/SafeImage';
 import type { ArchiveMaterial } from '../../data/performances';
 import { assetUrl } from '../../utils/assetUrl';
 
-export type ArchiveViewerTone = 'gold' | 'navy';
+export type ArchiveViewerTone = 'gold' | 'navy' | 'violet';
 
 const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 

@@ -63,7 +63,7 @@ export function HaegeumJeongak20260922Page({ performance }: { performance: Perfo
           <figcaption><span>{material.label}{image.label && ` / ${image.label}`}</span><button type="button" onClick={(event) => archiveViewer.openMaterial(material, event.currentTarget)}>VIEW</button>{material.downloadUrl && <a href={assetUrl(material.downloadUrl)} download>PDF</a>}</figcaption>
         </figure>))}</div>
       </section>
-      <ArchiveViewer activeMaterial={archiveViewer.activeMaterial} closeMaterial={archiveViewer.closeMaterial} lastTriggerRef={archiveViewer.lastTriggerRef} tone="gold" />
+      <ArchiveViewer activeMaterial={archiveViewer.activeMaterial} closeMaterial={archiveViewer.closeMaterial} lastTriggerRef={archiveViewer.lastTriggerRef} tone="violet" />
     </article>
   );
 }
