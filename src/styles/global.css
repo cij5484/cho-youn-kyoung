@@ -731,6 +731,8 @@ html[data-home-hero-theme="sanjo-matiere"] .home-creative-credit {
 }
 
 html[data-home-hero-theme="haegeum-jeongak"] .home-creative-credit {
+  left: auto;
+  right: max(2px, env(safe-area-inset-right));
   --credit-color: rgba(113, 93, 130, 0.88);
   --credit-personal-color: rgba(113, 93, 130, 0.58);
 }
@@ -878,6 +880,18 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .home-creative-credit
 }
 .home-hero-rotator[data-theme="sanjo-matiere"] .recent-works {
   color: rgba(18, 31, 51, 0.9);
+}
+.home-hero-rotator[data-theme="haegeum-jeongak"] .recent-works {
+  color: rgba(74, 58, 86, 0.94);
+}
+.home-hero-rotator[data-theme="haegeum-jeongak"] .recent-works__trigger {
+  background: rgba(243, 241, 245, 0.68);
+  backdrop-filter: blur(5px);
+}
+.home-hero-rotator[data-theme="haegeum-jeongak"] .recent-work-card__meta {
+  text-shadow:
+    0 1px 6px rgba(243, 241, 245, 0.95),
+    0 0 12px rgba(243, 241, 245, 0.8);
 }
 .home-hero-rotator[data-theme="album-package"] .recent-works {
   color: rgba(43, 43, 40, 0.86);
