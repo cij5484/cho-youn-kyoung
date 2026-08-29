@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 type PerformanceBackLinkProps = {
   className?: string;
-  tone?: 'gold' | 'navy';
+  tone?: 'gold' | 'navy' | 'violet';
 };
 
 export function PerformanceBackLink({ className = '', tone = 'gold' }: PerformanceBackLinkProps) {

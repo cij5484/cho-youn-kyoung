@@ -33,11 +33,18 @@
 .hj-detail__section { padding: clamp(6.5rem, 10vw, 10rem) clamp(1.5rem, 10vw, 12rem); border-top: 1px solid var(--hj-rule); }
 .hj-detail__section header { display: flex; align-items: baseline; gap: 1.5rem; margin-bottom: clamp(4rem, 7vw, 7rem); }
 .hj-detail__section h2 { margin: 0; font-size: clamp(1.2rem, 2vw, 1.8rem); font-weight: 500; letter-spacing: .08em; }
+.hj-detail__note { position: relative; overflow: hidden; }
+.hj-detail__note::before { content: "풀고, 엮다"; position: absolute; right: -3vw; bottom: -0.18em; color: var(--hj-violet); font-family: var(--serif); font-size: clamp(7rem, 18vw, 20rem); font-weight: 700; letter-spacing: -.1em; line-height: 1; opacity: .045; pointer-events: none; user-select: none; white-space: nowrap; }
+.hj-detail__note header, .hj-detail__note blockquote { position: relative; z-index: 1; }
 .hj-detail__note blockquote { max-width: 800px; margin: 0 auto; font-family: var(--serif); font-size: clamp(1rem, 1.25vw, 1.18rem); line-height: 2; }
 .hj-detail__note blockquote p { margin: 0 0 1.8rem; }
 .hj-detail__note cite { display: block; margin-top: 3rem; color: var(--hj-violet); font-size: .9rem; font-style: normal; text-align: right; }
+.hj-detail__program { position: relative; overflow: hidden; }
+.hj-detail__program::before { content: ""; position: absolute; top: 0; bottom: 0; left: -6vw; width: clamp(18rem, 27vw, 34rem); background: rgba(113, 93, 130, .05); pointer-events: none; }
+.hj-detail__program header, .hj-detail__programs { position: relative; z-index: 1; }
 .hj-detail__programs { max-width: 1000px; margin-left: auto; }
 .hj-detail__programs > article { position: relative; padding: 0 0 clamp(6rem, 10vw, 10rem) clamp(5rem, 9vw, 9rem); }
+.hj-detail__programs > article + article::before { content: ""; position: absolute; top: calc(clamp(3rem, 5vw, 5rem) * -1); left: 0; right: 0; height: 1px; background: rgba(113, 93, 130, .14); }
 .hj-detail__programs > article:last-child { padding-bottom: 0; }
 .hj-detail__program-number { position: absolute; left: 0; top: -.7rem; color: var(--hj-violet); font-size: clamp(3rem, 5vw, 5rem); font-weight: 300; line-height: 1; }
 .hj-detail__programs h3 { margin: 0 0 1.5rem; font-family: var(--serif); font-size: clamp(1.8rem, 3vw, 3rem); font-weight: 400; }
@@ -45,22 +52,23 @@
 .hj-detail__programs ul { display: flex; flex-wrap: wrap; gap: .45rem 2rem; max-width: 850px; margin: 2rem 0 2.5rem; padding: 1rem 0; border-block: 1px solid var(--hj-rule); list-style: none; font-size: .83rem; }
 .hj-detail__program-note { max-width: 880px; line-height: 1.9; }
 .hj-detail__program-note p { margin: 0 0 1.6rem; }
+.hj-detail__artists { position: relative; }
+.hj-detail__artists::after { content: ""; position: absolute; top: clamp(6.5rem, 10vw, 10rem); bottom: clamp(6.5rem, 10vw, 10rem); left: clamp(1.5rem, 5vw, 6rem); width: 1px; background: rgba(113, 93, 130, .16); pointer-events: none; }
 .hj-detail__artists > div { max-width: 850px; margin-left: auto; border-top: 1px solid var(--hj-rule); }
 .hj-detail__artists article { display: grid; grid-template-columns: minmax(5rem, 25%) 1fr; align-items: baseline; padding: 1.4rem 0; border-bottom: 1px solid var(--hj-rule); }
 .hj-detail__artists small { color: var(--hj-violet); font-size: .75rem; }
 .hj-detail__artists strong { font-family: var(--serif); font-size: clamp(1.35rem, 2vw, 1.8rem); font-weight: 400; }
-.hj-detail__gallery { display: grid; grid-template-columns: 1fr 1.45fr 1.45fr; gap: clamp(1.5rem, 3vw, 4rem); align-items: start; }
-.hj-detail__gallery figure { margin: 0; }
-.hj-detail__archive-image { display: block; width: 100%; border: 0; padding: 0; }
-.hj-detail__archive-image img { display: block; width: 100%; height: auto; object-fit: contain; }
-.hj-detail__gallery figcaption { display: flex; align-items: center; gap: 1rem; padding-top: 1rem; font-size: .62rem; letter-spacing: .14em; }
-.hj-detail__gallery figcaption span { margin-right: auto; color: var(--hj-muted); }
+.hj-detail__archive { background: rgba(113, 93, 130, .025); }
+.hj-detail__archive-list { border-top: 1px solid var(--hj-rule); }
+.hj-detail__archive-list article { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2rem; padding: clamp(1.5rem, 2.5vw, 2.25rem) 0; border-bottom: 1px solid var(--hj-rule); }
+.hj-detail__archive-copy { display: grid; grid-template-columns: minmax(7rem, 20%) 1fr; align-items: baseline; }
+.hj-detail__archive-copy strong { color: var(--hj-violet); font-size: .72rem; letter-spacing: .18em; }
+.hj-detail__archive-copy small { color: var(--hj-muted); font-family: var(--serif); font-size: 1rem; }
+.hj-detail__archive-actions { display: flex; align-items: center; gap: clamp(1.5rem, 3vw, 3rem); }
 @media (max-width: 900px) {
   .hj-detail__hero { grid-template-columns: minmax(250px, 43%) 1fr; gap: 3rem; }
   .hj-detail__event { display: block; }
   .hj-detail__venue { margin-top: 2rem; padding-left: 0; border-left: 0; }
-  .hj-detail__gallery { grid-template-columns: 1fr 1fr; }
-  .hj-detail__gallery figure:first-child { grid-row: span 2; }
 }
 @media (max-width: 760px) {
   .hj-detail__hero { grid-template-columns: 1fr; gap: clamp(4rem, 14vw, 6rem); padding: calc(var(--header) + 4rem) 1.5rem 5rem; }
@@ -76,8 +84,12 @@
   .hj-detail__program-number { top: 0; }
   .hj-detail__programs ul { display: grid; grid-template-columns: 1fr 1fr; }
   .hj-detail__artists > div { margin-left: 0; }
-  .hj-detail__gallery { grid-template-columns: 1fr; gap: 4rem; }
-  .hj-detail__gallery figure:first-child { grid-row: auto; }
+  .hj-detail__note::before { right: -1.5rem; bottom: .12em; font-size: clamp(6rem, 30vw, 10rem); opacity: .035; }
+  .hj-detail__program::before { left: -8rem; width: 17rem; }
+  .hj-detail__artists::after { display: none; }
+  .hj-detail__archive-list article { grid-template-columns: 1fr; gap: 1.5rem; }
+  .hj-detail__archive-copy { grid-template-columns: 1fr; gap: .55rem; }
+  .hj-detail__archive-actions { justify-content: space-between; }
 }
 @media (max-width: 420px) {
   .hj-detail__event { gap: 1rem; }

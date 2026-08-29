@@ -8,6 +8,7 @@
 .performance-adjacent__performance-link strong b { font:inherit; transition:transform 260ms cubic-bezier(.22,1,.36,1); }
 .performance-adjacent--gold { color:#d6ad6c; background:#111312; }
 .performance-adjacent--navy { color:#1f4f7a; background:#f3ede2; }
+.performance-adjacent--violet { color:#715d82; background:#ebe7ef; }
 .performance-adjacent__performance-link:focus-visible { outline:3px solid currentColor; outline-offset:4px; }
 .performance-adjacent__performance-link:focus-visible strong span::after { transform:scaleX(1); }
 .performance-adjacent__performance-link:focus-visible strong b { transform:translateX(4px); }

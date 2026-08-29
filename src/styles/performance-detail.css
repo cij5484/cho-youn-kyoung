@@ -3,6 +3,7 @@
 .performance-back-link:hover span, .performance-back-link:focus-visible span { transform: translateX(-5px); }
 .performance-back-link--gold { color: rgba(241,237,229,.8); }
 .performance-back-link--navy { color: #1f4f7a; }
+.performance-back-link--violet { color: #715d82; }
 
 .performance-detail { min-height: 100svh; color: #151515; background: #d8cdb8; overflow-x: clip; }
 .performance-detail__hero { position: relative; display: grid; grid-template-columns: minmax(280px,.44fr) minmax(0,.56fr); gap: clamp(34px,5vw,76px); min-height: clamp(660px,88svh,920px); padding: calc(var(--header) + 52px) clamp(22px,6vw,92px) 78px; background: #e4dccf; isolation: isolate; }
