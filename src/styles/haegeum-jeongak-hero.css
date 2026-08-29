@@ -1,7 +1,7 @@
 .hj-hero { position: relative; min-height: 620px; height: 100svh; overflow: hidden; color: #29272d; }
 .hj-hero__picture, .hj-hero__picture img { position: absolute; inset: 0; width: 100%; height: 100%; }
 .hj-hero__picture img { object-fit: cover; }
-.hj-hero__copy { position: relative; z-index: 1; width: min(38rem, 42vw); margin-left: clamp(3rem, 8vw, 9rem); padding-top: clamp(8rem, 18vh, 12rem); }
+.hj-hero__copy { position: relative; z-index: 1; width: min(34rem, 34vw); margin-left: auto; margin-right: clamp(4rem, 9vw, 10rem); padding-top: clamp(9rem, 19vh, 13rem); }
 .hj-hero__eyebrow { margin: 0 0 1.6rem; color: #76638a; font-size: .72rem; font-weight: 700; letter-spacing: .22em; }
 .hj-hero h1 { margin: 0; font-family: var(--serif); font-size: clamp(4.4rem, 7.2vw, 8rem); font-weight: 400; letter-spacing: -.07em; line-height: .88; }
 .hj-hero h1 span { display: block; }
