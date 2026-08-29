@@ -23,13 +23,12 @@ export function HaegeumJeongak20260922Page({ performance }: { performance: Perfo
         <div className="hj-detail__hero-copy">
           <p className="hj-detail__eyebrow">{performance.archiveLabel}</p>
           <h1 id="hj-detail-title">{performance.title}</h1>
-          <p className="hj-detail__subtitle">{performance.subtitle}</p>
-          <dl className="hj-detail__facts">
-            <div><dt>DATE</dt><dd>{performance.displayDate}</dd></div>
-            <div><dt>VENUE</dt><dd>{performance.venue}<small>{performance.venueAddress}</small></dd></div>
-            <div><dt>ARTIST</dt><dd>{performance.performer}</dd></div>
-            <div><dt>ADMISSION</dt><dd>{performance.ticketPrice} · {performance.seating}<small>{performance.ageRestriction}</small></dd></div>
-          </dl>
+          <p className="hj-detail__subtitle"><span>조윤경의 해금정악</span><span>해금상령산풀이 · 관악영산회상</span></p>
+          <div className="hj-detail__event">
+            <time className="hj-detail__date" dateTime={performance.date}><strong>22</strong><span>SEP</span><span>2026</span></time>
+            <div className="hj-detail__venue"><strong>19:30</strong><p>{performance.venue}</p><small>{performance.venueAddress}</small></div>
+          </div>
+          <div className="hj-detail__attendance"><strong>{performance.performer}</strong><p>{performance.ticketPrice} · {performance.seating}</p><small>{performance.ageRestriction}</small></div>
           <div className="hj-detail__actions">{openButton('POSTER')}{openButton('LEAFLET')}</div>
         </div>
       </section>
@@ -41,7 +40,7 @@ export function HaegeumJeongak20260922Page({ performance }: { performance: Perfo
 
       <section className="hj-detail__section hj-detail__program" aria-labelledby="hj-program-title">
         <header><span>02</span><h2 id="hj-program-title">PROGRAM</h2></header>
-        <div className="hj-detail__programs">{programs.map(({ era, work }) => <article key={era.roman}><p>PROGRAM {era.roman}</p><h3>{era.title}</h3>{era.description && <p className="hj-detail__sequence">{era.description}</p>}<ul>{work.instrumentation?.map((line) => <li key={line}>{line}</li>)}</ul><div className="hj-detail__program-note">
+        <div className="hj-detail__programs">{programs.map(({ era, work }) => <article key={era.roman}><span className="hj-detail__program-number">{era.roman}</span><h3>{era.title}</h3>{era.description && <p className="hj-detail__sequence">{era.description}</p>}<ul>{work.instrumentation?.map((line) => <li key={line}>{line}</li>)}</ul><div className="hj-detail__program-note">
           <p>{work.composerNote}</p>
           {work.workNote
             .split(/\n{2,}/)
@@ -59,9 +58,12 @@ export function HaegeumJeongak20260922Page({ performance }: { performance: Perfo
 
       <section className="hj-detail__section hj-detail__archive" aria-labelledby="hj-archive-title">
         <header><span>04</span><h2 id="hj-archive-title">ARCHIVE MATERIALS</h2></header>
-        <div>{performance.archiveMaterials?.map((material) => <article key={material.label}><h3>{material.label}</h3><p><button type="button" onClick={(event) => archiveViewer.openMaterial(material, event.currentTarget)}>{material.viewLabel}</button>{material.downloadUrl && <a href={assetUrl(material.downloadUrl)} download>{material.downloadLabel}</a>}</p></article>)}</div>
+        <div className="hj-detail__gallery">{performance.archiveMaterials?.flatMap((material) => material.previewImages.map((image) => <figure key={image.src}>
+          <button className="hj-detail__archive-image" type="button" aria-label={`${image.alt} 보기`} onClick={(event) => archiveViewer.openMaterial(material, event.currentTarget)}><SafeImage src={assetUrl(image.src)} alt={image.alt} fallbackClassName="safe-image-fallback" fallbackLabel={image.label ?? material.label} /></button>
+          <figcaption><span>{material.label}{image.label && ` / ${image.label}`}</span><button type="button" onClick={(event) => archiveViewer.openMaterial(material, event.currentTarget)}>VIEW</button>{material.downloadUrl && <a href={assetUrl(material.downloadUrl)} download>PDF</a>}</figcaption>
+        </figure>))}</div>
       </section>
-      <ArchiveViewer activeMaterial={archiveViewer.activeMaterial} closeMaterial={archiveViewer.closeMaterial} lastTriggerRef={archiveViewer.lastTriggerRef} tone="gold" />
+      <ArchiveViewer activeMaterial={archiveViewer.activeMaterial} closeMaterial={archiveViewer.closeMaterial} lastTriggerRef={archiveViewer.lastTriggerRef} tone="violet" />
     </article>
   );
 }
