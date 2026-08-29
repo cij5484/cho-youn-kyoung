@@ -6,6 +6,7 @@ import { ArchiveViewer } from '../components/performance/PerformanceArchive';
 import { useArchiveViewer } from '../components/performance/useArchiveViewer';
 import { PerformanceAdjacentNavigation } from '../components/performance/PerformanceAdjacentNavigation';
 import { SanjoGil20260816Page } from './SanjoGil20260816Page';
+import { HaegeumJeongak20260922Page } from './HaegeumJeongak20260922Page';
 import { SafeImage } from '../components/common/SafeImage';
 import { Reveal } from '../components/Reveal';
 import { performances, type PerformanceCollaborator, type ProgramWork } from '../data/performances';
@@ -58,6 +59,9 @@ export function PerformanceDetailPage() {
 
   if (performance.id === 'sanjo-gil-2026-08-16') {
     return <SanjoGil20260816Page performance={performance} />;
+  }
+  if (performance.id === 'haegeum-jeongak-2026-09-22') {
+    return <HaegeumJeongak20260922Page performance={performance} />;
   }
 
   const activeWork = selectedWork ?? works[0];

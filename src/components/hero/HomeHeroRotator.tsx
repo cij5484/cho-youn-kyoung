@@ -7,6 +7,7 @@ import {
 } from '../../data/homeHeroSlides';
 import { HomeHero } from './HomeHero';
 import { SanjoMatiereHero } from './SanjoMatiereHero';
+import { HaegeumJeongakHero } from './HaegeumJeongakHero';
 import { HomeCreativeCredit } from './HomeCreativeCredit';
 import { RecentWorks } from './recent-works/RecentWorks';
 
@@ -23,6 +24,9 @@ const renderSlide = (slide: HomeHeroSlide, isActive: boolean) => {
   }
   if (slide.theme === 'sanjo-matiere') {
     return <SanjoMatiereHero slide={slide} isActive={isActive} />;
+  }
+  if (slide.theme === 'haegeum-jeongak') {
+    return <HaegeumJeongakHero slide={slide} isActive={isActive} />;
   }
 
   return <HomeHero slide={slide} isActive={isActive} />;
