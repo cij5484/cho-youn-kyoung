@@ -1,20 +1,56 @@
+import { useEffect, useRef, useState } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
+import { ArtistProfilePanel } from '../components/performance/ArtistProfilePanel';
 import { ArchiveViewer } from '../components/performance/PerformanceArchive';
 import { PerformanceAdjacentNavigation } from '../components/performance/PerformanceAdjacentNavigation';
 import { PerformanceBackLink } from '../components/performance/PerformanceBackLink';
 import { useArchiveViewer } from '../components/performance/useArchiveViewer';
-import type { Performance } from '../data/performances';
+import type { Performance, PerformanceCollaborator } from '../data/performances';
 import { assetUrl } from '../utils/assetUrl';
 import '../styles/haegeum-jeongak-detail.css';
 
 export function HaegeumJeongak20260922Page({ performance }: { performance: Performance }) {
+  const [selectedArtist, setSelectedArtist] = useState<PerformanceCollaborator | null>(null);
+  const lastArtistButton = useRef<HTMLButtonElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
   const archiveViewer = useArchiveViewer();
   const poster = performance.archiveMaterials?.find((item) => item.label === 'POSTER');
   const programs = performance.programEras.map((era) => ({ era, work: era.works[0] }));
+  const guestArtists = (performance.simpleCast ?? [])
+    .filter((artist) => artist.role !== '해금')
+    .map((artist) => ({ ...artist, profile: performance.collaborators.find((profile) => profile.name === artist.name) }));
+  const activeArtistIndex = selectedArtist
+    ? performance.collaborators.findIndex((artist) => artist.id === selectedArtist.id)
+    : -1;
   const openButton = (label: 'POSTER' | 'LEAFLET') => {
     const material = performance.archiveMaterials?.find((item) => item.label === label);
     return material ? <button type="button" onClick={(event) => archiveViewer.openMaterial(material, event.currentTarget)}>{material.viewLabel}</button> : null;
   };
+
+  useEffect(() => {
+    if (!selectedArtist) return;
+    const previousOverflow = document.body.style.overflow;
+    const panel = panelRef.current;
+    const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    document.body.style.overflow = 'hidden';
+    panel?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSelectedArtist(null);
+      if (event.key !== 'Tab' || !panel) return;
+      const focusables = Array.from(panel.querySelectorAll<HTMLElement>(focusableSelector));
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', onKeyDown);
+      lastArtistButton.current?.focus();
+    };
+  }, [selectedArtist]);
 
   return (
     <article className="hj-detail">
@@ -54,7 +90,17 @@ export function HaegeumJeongak20260922Page({ performance }: { performance: Perfo
 
       <section className="hj-detail__section hj-detail__artists" aria-labelledby="hj-artists-title">
         <header><span>03</span><h2 id="hj-artists-title">ARTISTS</h2></header>
-        <div>{performance.simpleCast?.map((artist) => <article key={`${artist.role}-${artist.name}`}><small>{artist.role}</small><strong>{artist.name}</strong></article>)}</div>
+        <div className="hj-detail__artist-grid">{guestArtists.map((artist) => artist.profile ? (
+          <button className="hj-detail__artist" type="button" key={`${artist.role}-${artist.name}`} onClick={(event) => { lastArtistButton.current = event.currentTarget; setSelectedArtist(artist.profile ?? null); }}>
+            <span className="hj-detail__artist-photo"><SafeImage src={assetUrl(artist.profile.image)} alt={`${artist.name} ${artist.role} 사진`} fallbackClassName="safe-image-fallback" fallbackLabel={`${artist.role} ${artist.name}`} objectPosition="center top" loading="lazy" decoding="async" /></span>
+            <small>{artist.role}</small><strong>{artist.name}</strong><em>VIEW PROFILE</em>
+          </button>
+        ) : (
+          <article className="hj-detail__artist" key={`${artist.role}-${artist.name}`}>
+            <span className="hj-detail__artist-photo hj-detail__artist-photo--empty" aria-hidden="true" />
+            <small>{artist.role}</small><strong>{artist.name}</strong>
+          </article>
+        ))}</div>
       </section>
 
       <section className="hj-detail__section hj-detail__archive" aria-labelledby="hj-archive-title">
@@ -66,6 +112,7 @@ export function HaegeumJeongak20260922Page({ performance }: { performance: Perfo
       </section>
       <PerformanceAdjacentNavigation currentId={performance.id} tone="violet" />
       <ArchiveViewer activeMaterial={archiveViewer.activeMaterial} closeMaterial={archiveViewer.closeMaterial} lastTriggerRef={archiveViewer.lastTriggerRef} tone="violet" />
+      {selectedArtist && <ArtistProfilePanel artist={selectedArtist} artists={performance.collaborators} activeIndex={activeArtistIndex} panelRef={panelRef} onClose={() => setSelectedArtist(null)} onSelect={setSelectedArtist} tone="violet" />}
     </article>
   );
 }

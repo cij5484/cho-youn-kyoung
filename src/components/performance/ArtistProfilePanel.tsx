@@ -10,7 +10,7 @@ type ArtistProfilePanelProps = {
   panelRef: RefObject<HTMLDivElement | null>;
   onClose: () => void;
   onSelect: (artist: PerformanceCollaborator) => void;
-  tone?: 'gold' | 'navy';
+  tone?: 'gold' | 'navy' | 'violet';
 };
 
 export function ArtistProfilePanel({ artist, artists, activeIndex, panelRef, onClose, onSelect, tone = 'gold' }: ArtistProfilePanelProps) {

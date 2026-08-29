@@ -345,6 +345,24 @@
   --artist-panel-control-rule: rgba(31, 79, 122, 0.35);
 }
 
+.performance-detail__artist-panel--violet {
+  --artist-panel-bg: #f3f1f5;
+  --artist-panel-ink: #27252b;
+  --artist-panel-accent: #715d82;
+  --artist-panel-muted: #716d75;
+  --artist-panel-rule: rgba(113, 93, 130, 0.18);
+  --artist-panel-control-rule: rgba(113, 93, 130, 0.36);
+}
+
+.performance-detail__artist-panel--violet .performance-detail__panel-photo,
+.performance-detail__artist-panel--violet .performance-detail__panel-photo .safe-image-fallback {
+  background: #ebe7ef;
+}
+
+.performance-detail__artist-panel--violet .performance-detail__panel-photo img {
+  filter: none;
+}
+
 .performance-detail__artist-panel--navy .performance-detail__panel-photo,
 .performance-detail__artist-panel--navy .performance-detail__panel-photo .safe-image-fallback {
   background: #d9d3c8;
