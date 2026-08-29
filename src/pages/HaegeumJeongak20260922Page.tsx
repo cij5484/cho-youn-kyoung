@@ -1,5 +1,6 @@
 import { SafeImage } from '../components/common/SafeImage';
 import { ArchiveViewer } from '../components/performance/PerformanceArchive';
+import { PerformanceAdjacentNavigation } from '../components/performance/PerformanceAdjacentNavigation';
 import { PerformanceBackLink } from '../components/performance/PerformanceBackLink';
 import { useArchiveViewer } from '../components/performance/useArchiveViewer';
 import type { Performance } from '../data/performances';
@@ -18,7 +19,7 @@ export function HaegeumJeongak20260922Page({ performance }: { performance: Perfo
   return (
     <article className="hj-detail">
       <section className="hj-detail__hero" aria-labelledby="hj-detail-title">
-        <PerformanceBackLink className="hj-detail__back" tone="gold" />
+        <PerformanceBackLink className="hj-detail__back" tone="violet" />
         <div className="hj-detail__poster"><SafeImage src={assetUrl(poster?.previewImages[0]?.src ?? performance.heroImage)} alt="풀고, 엮다 공연 포스터" fallbackClassName="safe-image-fallback" fallbackLabel={performance.title} /></div>
         <div className="hj-detail__hero-copy">
           <p className="hj-detail__eyebrow">{performance.archiveLabel}</p>
@@ -58,11 +59,12 @@ export function HaegeumJeongak20260922Page({ performance }: { performance: Perfo
 
       <section className="hj-detail__section hj-detail__archive" aria-labelledby="hj-archive-title">
         <header><span>04</span><h2 id="hj-archive-title">ARCHIVE MATERIALS</h2></header>
-        <div className="hj-detail__gallery">{performance.archiveMaterials?.flatMap((material) => material.previewImages.map((image) => <figure key={image.src}>
-          <button className="hj-detail__archive-image" type="button" aria-label={`${image.alt} 보기`} onClick={(event) => archiveViewer.openMaterial(material, event.currentTarget)}><SafeImage src={assetUrl(image.src)} alt={image.alt} fallbackClassName="safe-image-fallback" fallbackLabel={image.label ?? material.label} /></button>
-          <figcaption><span>{material.label}{image.label && ` / ${image.label}`}</span><button type="button" onClick={(event) => archiveViewer.openMaterial(material, event.currentTarget)}>VIEW</button>{material.downloadUrl && <a href={assetUrl(material.downloadUrl)} download>PDF</a>}</figcaption>
-        </figure>))}</div>
+        <div className="hj-detail__archive-list">{performance.archiveMaterials?.map((material) => <article key={material.label}>
+          <div className="hj-detail__archive-copy"><strong>{material.label}</strong><small>{material.label === 'POSTER' ? '공연 포스터' : '4단 리플렛'}</small></div>
+          <div className="hj-detail__archive-actions"><button type="button" aria-label={`${material.label} 자료 보기`} onClick={(event) => archiveViewer.openMaterial(material, event.currentTarget)}>{material.viewLabel}</button>{material.downloadUrl && <a href={assetUrl(material.downloadUrl)} aria-label={`${material.label} PDF 다운로드`} download>PDF <span aria-hidden="true">→</span></a>}</div>
+        </article>)}</div>
       </section>
+      <PerformanceAdjacentNavigation currentId={performance.id} tone="violet" />
       <ArchiveViewer activeMaterial={archiveViewer.activeMaterial} closeMaterial={archiveViewer.closeMaterial} lastTriggerRef={archiveViewer.lastTriggerRef} tone="violet" />
     </article>
   );
