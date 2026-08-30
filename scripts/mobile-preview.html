@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>조윤경 웹사이트 — 모바일 화면 점검</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; padding: 24px; height: 100vh; overflow: hidden; background: #e9e9e9; color: #222; font: 14px/1.6 system-ui, sans-serif; }
+      h1 { margin: 0 0 8px; font-size: 20px; }
+      p { max-width: 450px; margin: 0 0 16px; }
+      nav { display: flex; max-width: 450px; flex-wrap: wrap; gap: 16px; margin-bottom: 16px; }
+      a { color: #17486a; }
+      label { margin-right: 18px; cursor: pointer; }
+      .device { position: absolute; left: 520px; top: 20px; width: 390px; outline: 1px solid #777; background: white; transform: scale(.8); transform-origin: top left; }
+      iframe { display: block; width: 100%; height: 844px; border: 0; }
+      #width-320:checked ~ .device { width: 320px; }
+      #width-390:checked ~ .device { width: 390px; }
+      #width-430:checked ~ .device { width: 430px; }
+    </style>
+  </head>
+  <body>
+    <h1>모바일 화면 점검</h1>
+    <p>프로덕션 미리보기(4173)의 화면 폭만 재현합니다. 전체 화면을 볼 수 있도록 80% 축소 표시하며 내부 뷰포트 높이는 844px입니다. 실제 기기의 터치·GPU·네트워크 성능 측정은 아닙니다.</p>
+    <nav aria-label="검증할 페이지">
+      <a target="mobile-page" href="http://127.0.0.1:4173/?mobile-check=1#/">홈</a>
+      <a target="mobile-page" href="http://127.0.0.1:4173/?mobile-check=1#/works">작품</a>
+      <a target="mobile-page" href="http://127.0.0.1:4173/?mobile-check=1#/album/ji-young-hee-ryu-haegeum-sanjo-2026">지영희류</a>
+      <a target="mobile-page" href="http://127.0.0.1:4173/?mobile-check=1#/album/han-beom-su-haegeum-sanjo-2020">한범수류</a>
+      <a target="mobile-page" href="http://127.0.0.1:4173/?mobile-check=1#/performance/sanjo-gil-2026-08-16">산조길 상세</a>
+    </nav>
+    <input type="radio" name="width" id="width-320" /><label for="width-320">320px</label>
+    <input type="radio" name="width" id="width-390" checked /><label for="width-390">390px</label>
+    <input type="radio" name="width" id="width-430" /><label for="width-430">430px</label>
+    <div class="device">
+      <iframe name="mobile-page" title="모바일 페이지 미리보기" src="http://127.0.0.1:4173/?mobile-check=1#/"></iframe>
+    </div>
+  </body>
+</html>

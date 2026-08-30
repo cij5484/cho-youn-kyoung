@@ -1,6 +1,6 @@
 # 홈페이지 운영 문서
 
-- 마지막 확인 날짜: 2026-08-13
+- 마지막 확인 날짜: 2026-08-30
 - 기준 main SHA: `13ff9af`
 - 저장소: `cij5484/cho-youn-kyoung`
 
@@ -24,6 +24,7 @@
 | [ALBUM-WORKFLOW.md](./ALBUM-WORKFLOW.md) | WORKS 앨범 등록, HOME Hero 연결, 향후 앨범 상세·재생·북클릿 운영 원칙 |
 | [MEDIA-WORKFLOW.md](./MEDIA-WORKFLOW.md) | MEDIA 공연 영상·언론 보도·특별 기록 등록 및 검수 절차 |
 | [ASSET-SPECIFICATIONS.md](./ASSET-SPECIFICATIONS.md) | 포스터·리플렛·웹 배경·출연자 사진의 실제 규격과 권장 규칙 |
+| [ASSET-OPTIMIZATION-PLAN.md](./ASSET-OPTIMIZATION-PLAN.md) | 대용량 웹 자산의 경량화 우선순위, 제공 규격, 교체·검수 순서 |
 | [ASSET-INVENTORY.md](./ASSET-INVENTORY.md) | 현재 저장소 자산 전수 목록과 참조 현황 |
 | [ASSET-MIGRATION-MAP.md](./ASSET-MIGRATION-MAP.md) | `public/assets/` 표준 구조로 이전한 경로 대응표와 최종 처리 결과 |
 | [ASSET-DUPLICATE-COMPARISON.md](./ASSET-DUPLICATE-COMPARISON.md) | 삭제된 루트 2026-08-16 자료 5개와 최종 사용본의 역사적 정밀 비교 및 처리 결과 |

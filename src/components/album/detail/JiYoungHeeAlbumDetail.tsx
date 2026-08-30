@@ -164,6 +164,8 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
   const [mode, setMode] = useState<ExperienceMode>(() => autoOpenAlbum ? 'ALBUM_OPEN' : 'CLOSED');
   const [spread, setSpread] = useState(0);
   const [mobilePage, setMobilePage] = useState(0);
+  const [visibleSpread, setVisibleSpread] = useState(0);
+  const [visibleMobilePage, setVisibleMobilePage] = useState(0);
   const [sceneTransitioning, setSceneTransitioning] = useState(autoOpenAlbum);
   const [openingFromClosed, setOpeningFromClosed] = useState(autoOpenAlbum);
   const [pageTurning, setPageTurning] = useState(false);
@@ -186,6 +188,11 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
     const stageRect = stage.current?.getBoundingClientRect();
     setBookletBounds(stageRect ? { ...bounds, left: bounds.left - stageRect.left, top: bounds.top - stageRect.top } : bounds);
   }, []);
+  const handlePageTurnComplete = useCallback(() => {
+    setVisibleSpread(spread);
+    setVisibleMobilePage(mobilePage);
+    setPageTurning(false);
+  }, [mobilePage, spread]);
 
   useEffect(() => {
     const mobileQuery = matchMedia('(max-width: 700px)');
@@ -254,6 +261,8 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
   const openBooklet = useCallback(() => {
     setSpread(0);
     setMobilePage(0);
+    setVisibleSpread(0);
+    setVisibleMobilePage(0);
     if (sceneTransitioning) return;
     setSceneTransitioning(true);
     setMode('BOOKLET_FOCUS');
@@ -279,11 +288,11 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
     setDetailProps({
       album, backgroundSize, openingFromClosed, mobile, mode, page: mobile ? mobilePage : spread,
       playing: player.playing, reduced, homeActivationKey: 0, onTransitionChange: handleTransitionChange,
-      onPageTurnComplete: () => setPageTurning(false), onBooklet: openBooklet,
+      onPageTurnComplete: handlePageTurnComplete, onBooklet: openBooklet,
       onBookletBounds: handleBookletBounds,
       onPrevious: previous, onNext: next, onOpen: openAlbum, onPlayer: enterPlayer,
     });
-  }, [album, backgroundSize, enterPlayer, handleBookletBounds, handleTransitionChange, mobile, mobilePage, mode,
+  }, [album, backgroundSize, enterPlayer, handleBookletBounds, handlePageTurnComplete, handleTransitionChange, mobile, mobilePage, mode,
     next, openAlbum, openBooklet, openingFromClosed, player.playing, previous, reduced,
     setDetailProps, spread]);
 
@@ -400,8 +409,8 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
             )}
             <BookletNavigation
               mobile={mobile}
-              mobilePage={mobilePage}
-              spread={spread}
+              mobilePage={visibleMobilePage}
+              spread={visibleSpread}
               disabled={sceneTransitioning || pageTurning}
               bounds={bookletBounds}
               onBack={backToAlbum}

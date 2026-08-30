@@ -132,8 +132,8 @@ export const albums: Album[] = [
     year: '2026',
     releaseStatus: 'coming-soon',
     description: '지영희류 해금산조 앨범.',
-    coverImage: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/front.png',
-    cdLabelImage: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/cd-label.png',
+    coverImage: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/front.webp',
+    cdLabelImage: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/cd-label.webp',
     detailExperience: {
       theme: 'ji-young-hee-paper',
       interior: {
@@ -144,17 +144,17 @@ export const albums: Album[] = [
     albumHero: {
       theme: 'album-package',
       background: {
-        desktop: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/home-hero-desktop.png',
-        mobile: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/home-hero-mobile.png',
+        desktop: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/home-hero-desktop.webp',
+        mobile: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/home-hero-mobile.webp',
       },
       backgroundAnchor: {
-        desktop: { sourceWidth: 3840, sourceHeight: 2160, x: 0.5 },
+        desktop: { sourceWidth: 2560, sourceHeight: 1440, x: 0.5 },
         mobile: { sourceWidth: 1440, sourceHeight: 2560, x: 0.5 },
       },
       textures: {
-        front: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/front.png',
-        back: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/back.png',
-        spineLeft: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/spine.png',
+        front: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/front.webp',
+        back: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/back.webp',
+        spineLeft: '/assets/albums/ji-young-hee-ryu-haegeum-sanjo-2026/web/spine.webp',
       },
     },
     detailsPath: '/album/ji-young-hee-ryu-haegeum-sanjo-2026',
@@ -217,23 +217,23 @@ export const albums: Album[] = [
     releaseDate: '2020-11-19',
     description: '한범수류 해금산조의 결을 담은 조윤경의 산조 음반.',
     coverImage: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/front.webp',
-    cdLabelImage: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/cd-label.png',
+    cdLabelImage: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/cd-label.webp',
     detailExperience: {
       theme: 'han-beom-su-paper',
       interior: {
-        bookletPanel: '/assets/albums/han-beom-su-haegeum-sanjo-2020/viewer/booklet-01.png',
-        trayPanel: '/assets/albums/han-beom-su-haegeum-sanjo-2020/viewer/booklet-01.png',
+        bookletPanel: '/assets/albums/han-beom-su-haegeum-sanjo-2020/viewer/booklet-01.webp',
+        trayPanel: '/assets/albums/han-beom-su-haegeum-sanjo-2020/viewer/booklet-01.webp',
       },
     },
     detailsPath: '/album/han-beom-su-haegeum-sanjo-2020',
     albumHero: {
       theme: 'album-package',
       background: {
-        desktop: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/home-hero-desktop.png',
-        mobile: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/home-hero-mobile.png',
+        desktop: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/home-hero-desktop.webp',
+        mobile: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/home-hero-mobile.webp',
       },
       backgroundAnchor: {
-        desktop: { sourceWidth: 3840, sourceHeight: 2160, x: 0.43 },
+        desktop: { sourceWidth: 2560, sourceHeight: 1440, x: 0.43 },
         mobile: { sourceWidth: 1440, sourceHeight: 2560, x: 0.5 },
       },
       packageGeometry: {
@@ -282,7 +282,7 @@ export const albums: Album[] = [
     ],
     booklet: {
       previewImages: Array.from({ length: 11 }, (_, index) => ({
-        src: `/assets/albums/han-beom-su-haegeum-sanjo-2020/viewer/booklet-${String(index + 1).padStart(2, '0')}.png`,
+        src: `/assets/albums/han-beom-su-haegeum-sanjo-2020/viewer/booklet-${String(index + 1).padStart(2, '0')}.webp`,
         alt: `한범수류 북클릿 ${index + 1}페이지`,
         label: `P${index + 1}`,
       })),

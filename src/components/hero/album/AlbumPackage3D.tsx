@@ -108,7 +108,9 @@ function usePackageMaterials(textures?: AlbumHeroTextures) {
 
 function Package({ textures, geometry, scale, position }: PackageProps) {
   const group = useRef<THREE.Group>(null);
-  const drag = useRef<{ pointerId: number; x: number; y: number } | null>(null);
+  const { size } = useThree();
+  const drag = useRef<{ pointerId: number; x: number; y: number; time: number } | null>(null);
+  const inertia = useRef({ x: 0, y: 0 });
   const target = useRef({ ...DEFAULT_ROTATION });
   const autoRotation = useRef(DEFAULT_ROTATION.y);
   const autoRotating = useRef(true);
@@ -140,6 +142,13 @@ function Package({ textures, geometry, scale, position }: PackageProps) {
     } else if (reducedMotion) {
       group.current.rotation.set(target.current.x, target.current.y, 0);
     } else {
+      if (!drag.current) {
+        target.current.x = THREE.MathUtils.clamp(target.current.x + inertia.current.x * delta, -TILT_LIMIT, TILT_LIMIT);
+        target.current.y += inertia.current.y * delta;
+        const decay = Math.exp(-5.2 * delta);
+        inertia.current.x *= decay;
+        inertia.current.y *= decay;
+      }
       const easing = 1 - Math.exp(-10 * delta);
       group.current.rotation.x = THREE.MathUtils.lerp(group.current.rotation.x, target.current.x, easing);
       group.current.rotation.y = THREE.MathUtils.lerp(group.current.rotation.y, target.current.y, easing);
@@ -158,7 +167,8 @@ function Package({ textures, geometry, scale, position }: PackageProps) {
       group.current.rotation.y = target.current.y;
     }
     autoRotating.current = false;
-    drag.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
+    inertia.current = { x: 0, y: 0 };
+    drag.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, time: event.timeStamp };
     (event.nativeEvent.currentTarget as HTMLCanvasElement).setPointerCapture(event.pointerId);
   };
 
@@ -166,12 +176,19 @@ function Package({ textures, geometry, scale, position }: PackageProps) {
     if (!drag.current || drag.current.pointerId !== event.pointerId) return;
     const dx = event.clientX - drag.current.x;
     const dy = event.clientY - drag.current.y;
+    const elapsed = Math.max(8, Math.min(40, event.timeStamp - drag.current.time)) / 1000;
+    const sensitivity = Math.PI / Math.max(size.width * 0.65, 700);
+    const yawDelta = dx * sensitivity;
+    const pitchDelta = dy * sensitivity * 0.76;
     drag.current.x = event.clientX;
     drag.current.y = event.clientY;
+    drag.current.time = event.timeStamp;
     // Yaw deliberately remains unbounded so the package can be spun through
     // any number of full turns; only the vertical tilt needs a physical limit.
-    target.current.y += dx * 0.008;
-    target.current.x = THREE.MathUtils.clamp(target.current.x + dy * 0.006, -TILT_LIMIT, TILT_LIMIT);
+    target.current.y += yawDelta;
+    target.current.x = THREE.MathUtils.clamp(target.current.x + pitchDelta, -TILT_LIMIT, TILT_LIMIT);
+    inertia.current.x = THREE.MathUtils.clamp(pitchDelta / elapsed, -2.4, 2.4);
+    inertia.current.y = THREE.MathUtils.clamp(yawDelta / elapsed, -3.2, 3.2);
   };
 
   const endDrag = (event: ThreeEvent<PointerEvent>) => {
