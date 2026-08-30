@@ -56,33 +56,6 @@ export function JiYoungHeePersistentStage({ children }: { children: ReactNode })
   }, []);
 
   useEffect(() => {
-    const preloadImage = (src: string | undefined) => {
-      if (!src) return;
-      const image = new Image();
-      image.src = assetUrl(src) ?? src;
-    };
-    const detail = album.detailExperience!;
-    const coreImages = [
-      album.albumHero!.textures.front, album.albumHero!.textures.back,
-      album.albumHero!.textures.spineLeft, detail.interior.bookletPanel,
-      detail.interior.trayPanel, album.cdLabelImage, album.booklet!.previewImages[0].src,
-    ];
-    // Begin after the initial paint. Dynamic imports share Vite's module cache
-    // with both lazy boundaries; Image preloads share the browser HTTP cache
-    // with TextureLoader without allocating a second WebGL texture.
-    const timer = window.setTimeout(() => {
-      void import('./detail/JiYoungHeeAlbumDetail');
-      void import('./detail/AlbumDetailExperience3D');
-      coreImages.forEach(preloadImage);
-      const preloadRemaining = () => album.booklet!.previewImages.slice(1).forEach(({ src }) => preloadImage(src));
-      const requestIdle = (window as Window & { requestIdleCallback?: (callback: () => void, options: { timeout: number }) => number }).requestIdleCallback;
-      if (requestIdle) requestIdle(preloadRemaining, { timeout: 2500 });
-      else globalThis.setTimeout(preloadRemaining, 800);
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, [album]);
-
-  useEffect(() => {
     const previous = previousPath.current;
     if (location.pathname === '/' && previous !== '/' && previous !== `/album/${ALBUM_ID}`) {
       setHomeActivationKey((key) => key + 1);
@@ -125,6 +98,7 @@ export function JiYoungHeePersistentStage({ children }: { children: ReactNode })
     playing: false,
     reduced,
     homeActivationKey,
+    preloadInterior: prewarming,
     onOpen: () => undefined,
     onBooklet: () => undefined,
     onPlayer: () => undefined,
@@ -152,20 +126,23 @@ export function JiYoungHeePersistentStage({ children }: { children: ReactNode })
   // takes ownership; mobile retains its existing route visibility behavior.
   const desktopDetailHandoff = !mobile && location.pathname === '/' && detailProps !== null;
   const visible = detailRoute || (location.pathname === '/' && (homeActive || desktopDetailHandoff));
+  const renderStage = visible || prewarming;
   const context = useMemo(() => ({ setDetailProps, setDetailStageVisible, setHomeActive: updateHomeActive, prepareDetail }), [prepareDetail, updateHomeActive]);
 
   return (
     <StageContext.Provider value={context}>
       <div ref={stage} className={`ji-persistent-stage${visible ? ' is-visible' : ''}`} aria-hidden={!visible}>
-        <picture className="ji-persistent-stage__background">
-          <source media="(max-width:700px)" srcSet={assetUrl(album.albumHero!.background.mobile)} />
-          <img src={assetUrl(album.albumHero!.background.desktop)} alt="" />
-        </picture>
-        <div className={`ji-persistent-stage__canvas${detailRoute && !detailStageVisible ? ' is-editorial-hidden' : ''}`}>
-          <Suspense fallback={null}>
-            <Experience3D {...(detailRoute && detailProps ? detailProps : fallbackProps)} />
-          </Suspense>
-        </div>
+        {renderStage ? <>
+          <picture className="ji-persistent-stage__background">
+            <source media="(max-width:700px)" srcSet={assetUrl(album.albumHero!.background.mobile)} />
+            <img src={assetUrl(album.albumHero!.background.desktop)} alt="" />
+          </picture>
+          <div className={`ji-persistent-stage__canvas${detailRoute && !detailStageVisible ? ' is-editorial-hidden' : ''}`}>
+            <Suspense fallback={null}>
+              <Experience3D {...(detailRoute && detailProps ? { ...detailProps, preloadInterior: true } : fallbackProps)} />
+            </Suspense>
+          </div>
+        </> : null}
       </div>
       {children}
     </StageContext.Provider>
