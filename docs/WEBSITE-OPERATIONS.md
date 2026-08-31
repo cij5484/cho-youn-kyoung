@@ -1,6 +1,6 @@
 # 홈페이지 구조와 운영 원칙
 
-- 마지막 확인 날짜: 2026-08-14
+- 코드 대조 날짜: 2026-08-31 (`41d082b`)
 - 저장소: `cij5484/cho-youn-kyoung`
 
 ## 확정된 기술 구조
@@ -8,6 +8,8 @@
 | 항목 | 확정 내용 |
 | --- | --- |
 | 프레임워크 | React + Vite + TypeScript |
+| 앨범 3D | Three.js + React Three Fiber, 앨범별 persistent stage |
+| 콘텐츠·음원 | TypeScript 정적 데이터, 앨범 트랙의 외부 R2 URL. 별도 앱 서버·DB·로그인 없음 |
 | 라우터 | `HashRouter` |
 | 배포 | GitHub Pages + GitHub Actions |
 | Vite base | `vite.config.ts`의 `base: '/'` 유지 |
@@ -60,9 +62,10 @@
 - 바이너리 파일은 사용자가 직접 업로드하고 Codex는 코드 연결만 담당합니다.
 - 같은 인물 사진은 기존 경로를 재사용할 수 있습니다.
 - HOME Hero는 자동 순환하지 않으며, 현재 대표 Work를 유지하고 사용자가 RECENT WORKS에서 다른 고유 Hero Scene을 선택합니다. 자세한 운영 원칙은 [HOME-HERO-WORKFLOW.md](./HOME-HERO-WORKFLOW.md)를 따릅니다.
-- HOME의 별도 `album-package` Hero theme과 Three.js + React Three Fiber 디지팩 Scene에 지영희류 앨범의 실제 front/back/왼쪽 spine texture를 연결했다. RECENT WORKS의 `ALBUM` 카드에서 선택하며 기존 공연 Hero와 공통 선택 동작은 유지한다.
+- HOME의 `album-package` theme에는 지영희류·한범수류 두 앨범을 연결한다. `App.tsx`의 앨범별 persistent stage가 HOME과 상세 사이의 배경·Canvas를 유지하고, `AlbumHero`는 해당 stage 활성 상태와 정보·링크를 담당한다.
+- 기본 Hero는 `homeHeroSlides.ts`의 `DEFAULT_HOME_HERO_ID`가 노출 목록에 있으면 날짜와 관계없이 우선한다. 현재 값은 `haegeum-jeongak-2026-09-22`다. 지정 ID가 없을 때만 서울 날짜 기준 가까운 예정 Work, 없으면 가장 최근 날짜의 Work, 날짜도 없으면 첫 항목 순으로 선택한다.
 - HOME 앨범은 실제 cover, `detailsPath`, `albumHero`와 확정 발매일이 있을 때 노출한다. 발매일 미정 `coming-soon`은 확인된 연도가 있으면 노출할 수 있지만 날짜 기반 기본 Hero 후보에서는 제외하여 공연 선정 로직을 바꾸지 않는다.
-- 지영희류 앨범은 발매일과 스트리밍 링크가 아직 없으며 CD Player, R2 재생과 Digital Booklet도 구현하지 않았다.
+- 두 앨범 모두 3D 상세, CD Player와 Digital Booklet이 구현되어 있고 각 6개 트랙의 `webAudioUrl`이 R2에 연결되어 있다. 북클릿은 지영희류 7페이지, 한범수류 11페이지다. 지영희류의 정확한 발매일·공식 플랫폼 링크와 두 앨범의 북클릿 PDF 다운로드 URL은 미등록 상태다. 코드 연결과 외부 재생 성공은 별도로 검증한다.
 - 모바일 메뉴는 열린 뒤 첫 링크에 포커스하고, ESC·경로 변경 시 닫으며, 열려 있는 동안 배경 스크롤을 잠급니다. ESC 또는 메뉴 버튼으로 닫으면 메뉴 버튼에 포커스를 복원합니다.
 - 내비게이션은 HOME → WORKS → MEDIA → ABOUT → CONTACT 순서입니다.
 - WORKS는 `performances.ts`와 `albums.ts`를 각각 소비합니다. 앨범은 WORKS에서 관리하고 `albums.ts`를 Source of Truth로 유지하며, 공연 상세의 `/performance/:id` 공개 URL은 영구 유지합니다. 실제 자료가 준비된 앨범 상세는 공통 `/album/:id` 구조를 사용합니다. 목록의 `detailsPath`는 상세 연결을 공개할 앨범에만 설정합니다.
@@ -72,10 +75,10 @@
 
 ## Archive Viewer 원칙
 
-- Archive Viewer는 포스터·리플렛 PNG를 브라우저에서 크게 미리보기하는 기능입니다.
+- Archive Viewer는 포스터·리플렛 WebP를 브라우저에서 크게 미리보기하는 기능입니다.
 - Viewer는 헤더 아래가 아니라 화면 전체를 덮는 전체화면 레이어로 표시되어야 합니다.
 - ESC, 키보드 포커스, 닫기 버튼, 모바일 스크롤을 확인합니다.
-- 포스터·리플렛 미리보기는 PNG를 사용하고, 다운로드는 별도 PDF를 사용합니다.
+- 현재 공연·앨범의 웹/Viewer 이미지는 WebP를 사용하고, 등록된 다운로드는 별도 PDF를 사용합니다. 과거 PNG 실측표는 현재 경로 안내가 아닙니다.
 - 리플렛 Viewer 표시 순서는 OUTER → INNER입니다.
 
 ## 실제 공연 사례
@@ -84,5 +87,6 @@
 | --- | --- | --- | --- | --- | --- |
 | 2026-08-02 | 해금, 시대를 잇다 | `haegeum-2026-08-02` | `/performance/haegeum-2026-08-02` | 해금 창작곡 변천을 기록하는 리사이틀형 테마 | `public/assets/performances/haegeum-2026-08-02/` |
 | 2026-08-16 | 산조길, 둘 | `sanjo-gil-2026-08-16` | `/performance/sanjo-gil-2026-08-16` | 산조길 프로젝트의 마티에르형 공연 상세 테마 | `public/assets/performances/sanjo-gil-2026-08-16/` |
+| 2026-09-22 | 풀고, 엮다 | `haegeum-jeongak-2026-09-22` | `/performance/haegeum-jeongak-2026-09-22` | 정악 전용 HOME·상세 테마 | `public/assets/performances/haegeum-jeongak-2026-09-22/` |
 
 자세한 공연 등록 절차는 [PERFORMANCE-WORKFLOW.md](./PERFORMANCE-WORKFLOW.md), 파일 규격은 [ASSET-SPECIFICATIONS.md](./ASSET-SPECIFICATIONS.md)를 따릅니다.

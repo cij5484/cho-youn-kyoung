@@ -1,5 +1,7 @@
 # Site Plan
 
+> **Historical initial plan, not the current backlog or navigation specification.** The site now includes WORKS, MEDIA, multiple performances, and two interactive album details. Preserve this plan as context; use [WEBSITE-OPERATIONS.md](../WEBSITE-OPERATIONS.md) and [HOME-HERO-WORKFLOW.md](../HOME-HERO-WORKFLOW.md) for current routes and Hero selection.
+
 ## Project goal
 Build the official website and expandable performance archive for haegeum artist **CHO YOUN KYOUNG**.
 

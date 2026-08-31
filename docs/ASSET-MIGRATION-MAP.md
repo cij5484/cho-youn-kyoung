@@ -1,5 +1,7 @@
 # 자산 이동 실행표 (Asset Migration Map)
 
+> **과거 실행 기록 — 재실행 지시서 아님.** 아래 경로·완료·승인 표시는 2026-07-25 작업 당시의 기록이다. 이후 WebP 전환으로 경로와 자산 구성이 달라졌으며 과거 승인으로 현재 파일을 이동·삭제하지 않는다. 현재 기준은 [ASSET-SPECIFICATIONS.md](./ASSET-SPECIFICATIONS.md), 후속 전환은 [ASSET-OPTIMIZATION-PLAN.md](./ASSET-OPTIMIZATION-PLAN.md)를 확인한다.
+
 - **조사 날짜:** 2026-07-25
 - **기준 main commit SHA:** `908f821906bfe96d8d7061ee4f1809781cfed57c` (PR #48 병합 커밋)
 - 이 문서는 사용 중 자산 36개의 실제 이동과 승인된 미사용 자산 3개의 삭제 결과를 기록한다.

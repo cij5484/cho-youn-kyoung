@@ -1,5 +1,7 @@
 # Design Guidelines
 
+> **Historical design direction.** These initial principles are retained as context, not as instructions to remove current album 3D scenes or unify all performance themes. Current work-specific visuals and interaction rules live in [WEBSITE-OPERATIONS.md](../WEBSITE-OPERATIONS.md), [HOME-HERO-WORKFLOW.md](../HOME-HERO-WORKFLOW.md), and [ALBUM-WORKFLOW.md](../ALBUM-WORKFLOW.md).
+
 ## Core concept
 Korean in sensibility, but not decorative or traditionalist. The site must feel contemporary, refined, simple, and highly legible.
 

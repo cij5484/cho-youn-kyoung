@@ -1,6 +1,7 @@
 # 앨범 등록 워크플로
 
 - 마지막 확인 날짜: 2026-08-31
+- 코드 대조 기준: `41d082b`. 구현 설명은 소스 확인 기준이며 외부 음원 재생·브라우저 검수의 새 완료 기록이 아니다.
 
 ## 한범수류 persistent detail 현황
 
@@ -14,19 +15,19 @@
 
 ## HOME 3D Hero 기반
 
-- 앨범 전용 `AlbumHero`와 Three.js + React Three Fiber 기반 `AlbumPackage3D`가 구현되어 있다. 공연 Hero 컴포넌트와 CSS는 재사용하지 않는다.
+- 앨범 전용 `AlbumHero`가 정보·링크와 stage 활성화를 담당한다. 현재 두 앨범의 배경·Canvas는 `App.tsx`의 앨범별 persistent stage가 소유하며, 내부에서 전용 detail 3D engine을 사용한다. 공용 `AlbumPackage3D`는 두 persistent ID 외 앨범을 위한 경로로 남아 있다. 공연 Hero 컴포넌트와 CSS는 재사용하지 않는다.
 - 디지팩의 여섯 면 texture를 독립적으로 연결할 수 있고, texture가 없는 얇은 edge에는 artwork 없는 절제된 plastic material을 표시한다. 수동 조작에서 vertical tilt(X)는 ±28°로 제한하고 yaw(Y)는 제한 없이 여러 바퀴 회전할 수 있으며, drag 종료 뒤 감쇠되는 inertia를 적용한다. canvas 밖에서도 안전하게 해제되는 mouse/touch drag, frame damping, reduced-motion 대응과 제한 DPR을 기본으로 한다.
 - 지영희류 앨범의 확정 데이터와 런타임 texture `front.webp`, `back.webp`, `spine.webp`를 연결했다. CD는 `cd-label.webp`, HOME 배경은 `home-hero-desktop.webp`와 `home-hero-mobile.webp`를 사용한다. 무광 종이 cover와 spine은 반투명 plastic tray보다 조금 크게 돌출되고, 반대쪽과 위·아래에서는 안쪽 트레이가 드러난다. 실제 조명에 반응하는 부드러운 저농도 shadow receiver와 넓어진 3D 안전 영역을 사용한다.
 - HOME은 `albumHero.background`의 실제 desktop/mobile 전용 이미지를 `<picture>`로 선택해 사용한다. RECENT WORKS 앨범 cover는 강제 비율이나 crop 없이 실제 이미지 비율로 표시하며 공연 포스터 카드의 비율과 상태 동작은 바꾸지 않는다.
-- 표지 크기의 투명 interaction plane으로 어느 면에서도 drag를 시작할 수 있다. 진입 시 Y축 단방향 자동 회전은 약 22초에 한 바퀴이며 첫 mouse/touch 조작 즉시 중단되고 `prefers-reduced-motion`에서는 시작하지 않는다.
+- 표지 크기의 투명 interaction plane으로 어느 면에서도 drag를 시작할 수 있다. 닫힌 persistent package는 느린 Y축 자동 회전을 하며 첫 mouse/touch 조작 즉시 중단되고 `prefers-reduced-motion`에서는 시작하지 않는다. 과거 공용 Scene의 22초 주기를 현재 두 Scene의 공통 고정값으로 사용하지 않는다.
 - HOME 지영희류 Hero의 패키지는 desktop 약 10%, mobile 약 20% 축소하고 mobile에서 3D 위·정보 아래 순서가 한 배경 위에 끝까지 보이도록 배치한다. texture는 최대 8배 anisotropy, mipmap, 최대 2 DPR을 사용하며 오른쪽 위 key light와 반대 방향의 부드러운 실제 3D 그림자를 맞춘다. muted oxblood 계열은 작은 라벨·발매 상태·구분선·상세 링크에만 제한한다.
 - 3D canvas는 패키지 박스가 아니라 Hero 전체를 덮는 visual stage에 둔다. shadow receiver의 끝이나 canvas 사각 경계가 드러나지 않아야 하며 정보·GNB·RECENT WORKS는 더 높은 interaction layer를 유지한다. drag target은 canvas 전체가 아닌 패키지 주변의 투명 plane으로 한정한다.
 - 진입은 배경 즉시 표시, 패키지 선행 reveal, 정보 block 지연 reveal 순서다. `prefers-reduced-motion`에서는 숨은 초기 상태가 남지 않도록 opacity·filter·transform을 즉시 최종 상태로 둔다.
-- 현재 런타임 texture인 `spine.webp`의 171:3000 비율(0.057)을 세네카 geometry의 기준으로 삼는다. texture를 비균등 scale하지 않고 tray와 종이 cover 두께를 함께 조정해 얇은 디지팩 비율을 유지한다.
+- 지영희류 geometry는 원본의 171:3000 비율(0.057)을 세네카 기준으로 사용한다. 이 값은 현재 WebP 파일의 실제 픽셀 크기를 뜻하지 않는다. 한범수류는 별도 `packageGeometry`를 사용하며 texture 비율과 tray·cover 두께를 함께 확인한다.
 - `released` 앨범은 확정 `releaseDate`가 있어야 HOME에 노출한다. 날짜가 미정인 `coming-soon` 앨범은 확인된 `year`, 실제 `coverImage`, `detailsPath`, `albumHero`가 모두 있을 때 노출할 수 있다.
 
 
-## WORKS 목록과 향후 상세 경로
+## WORKS 목록과 현재 상세 경로
 
 - 앨범 Source of Truth는 계속 `src/data/albums.ts`이며 공연 데이터와 합치지 않습니다.
 - `/works`의 `02 ALBUMS`는 `albums.ts`를 직접 소비합니다. `detailsPath`가 있으면 `VIEW →`, 실제 `streamingLinks`만 있으면 `LISTEN ↗`를 제공하고 어느 쪽도 없으면 가짜 action을 만들지 않습니다.
@@ -101,11 +102,12 @@ public/assets/albums/{album-id}/
 | `description` | 필수 | 목록 등에 사용하는 짧은 앨범 소개 |
 | `detailedDescription` | 선택 | 상세 화면의 긴 소개 본문 |
 | `coverImage` | 선택 | 웹용 커버 이미지의 public 상대경로 |
-| `cdLabelImage` | 선택 | 향후 Virtual CD Player가 사용할 실제 CD 라벨 이미지 경로 |
+| `cdLabelImage` | 선택 | 현재 3D CD Player가 사용하는 실제 CD 라벨 이미지 경로 |
 | `albumHero` | 선택 | HOME Album Hero를 위한 전용 테마, desktop/mobile 배경과 실제 면별 texture 설정 |
+| `detailExperience` | 선택 | 앨범 상세의 테마 식별자와 booklet/tray 내부 이미지. 현재 컴포넌트 선택은 앨범 ID 분기 |
 | `detailsPath` | 선택 | 상세 화면이 실제로 생겼을 때 사용하는 경로 |
-| `featured` | 선택 | 대표 앨범 노출 여부 |
-| `releaseDate` | 선택 | 확인된 전체 발매일. 향후 `YYYY-MM-DD` 형식을 사용 |
+| `featured` | 선택 | 데이터에 남아 있는 대표 표식. 현재 HOME 기본 선정 함수에서는 사용하지 않음 |
+| `releaseDate` | 선택 | 확인된 전체 발매일. `YYYY-MM-DD` 형식을 사용 |
 | `tracks` | 선택 | 트랙 번호·제목과 트랙별 선택 정보를 담는 `AlbumTrack[]` |
 | `participants` | 선택 | 앨범 참여자와 역할을 담는 `AlbumParticipant[]` |
 | `credits` | 선택 | 앨범 전체 제작 크레딧을 담는 `AlbumCredit[]` |
@@ -122,6 +124,7 @@ public/assets/albums/{album-id}/
 | `AlbumTrack` | 트랙 번호와 제목, 선택적 부제·재생 시간·트랙 크레딧·`webAudioUrl` |
 | `AlbumReleaseStatus` | 최소 발매 상태인 `coming-soon`, `released` |
 | `AlbumHeroSettings` | 공연 Hero 타입과 분리된 앨범 전용 Hero 설정 |
+| `AlbumDetailExperience` | 상세 테마 식별자와 `interior.bookletPanel` / `interior.trayPanel` 경로 |
 | `AlbumParticipant` | 참여자 이름·역할과 선택적 ID·이미지·설명 |
 | `AlbumCredit` | 역할별 이름 목록과 선택적 섹션으로 구성한 앨범 전체 크레딧 |
 | `AlbumBookletImage` | 부클릿 Viewer 이미지 경로·대체 텍스트와 선택적 라벨 |
@@ -130,7 +133,7 @@ public/assets/albums/{album-id}/
 | `AlbumMediaItem` | `video`, `image`, `article` 관련 자료와 선택적 URL·썸네일·설명 |
 | `AlbumDownload` | 다운로드 라벨·URL과 선택적 파일 형식 |
 
-트랙 크레딧(`AlbumTrackCredit`)과 앨범 전체 크레딧(`AlbumCredit`)은 범위가 다르므로 구분해 입력합니다. 확인되지 않은 정보는 데이터에 추가하지 않고, 빈 배열도 억지로 넣지 않습니다. 값이 없는 선택 필드는 생략하며 향후 UI에서는 데이터가 있을 때만 해당 섹션을 표시합니다. 상세 UI와 라우트는 실제 자료가 준비된 앨범에만 추가합니다.
+트랙 크레딧(`AlbumTrackCredit`)과 앨범 전체 크레딧(`AlbumCredit`)은 범위가 다르므로 구분해 입력합니다. 확인되지 않은 정보는 데이터에 추가하지 않고 빈 배열도 억지로 넣지 않습니다. 값이 없는 선택 필드는 생략하고 소비하는 UI의 조건부 표시를 확인합니다. 타입에 필드가 있다는 것만으로 해당 UI가 구현되었다고 판단하지 않습니다. 새 전용 상세는 자료와 구현이 함께 준비된 앨범에만 연결합니다.
 
 HOME RECENT WORKS에는 확정 `releaseDate`가 있거나 위의 `coming-soon` 예외 조건을 충족하고, 실제 `coverImage`, `detailsPath`, 전용 Hero Scene이 모두 준비된 앨범만 연결합니다. 앨범 원본은 계속 `albums.ts`에서 관리하고 HOME adapter에는 원본 내용을 복사하지 않습니다. 자세한 연결 절차는 [HOME-HERO-WORKFLOW.md](./HOME-HERO-WORKFLOW.md)를 따릅니다.
 
@@ -138,11 +141,11 @@ HOME RECENT WORKS에는 확정 `releaseDate`가 있거나 위의 `coming-soon` �
 
 영문명(`englishTitle`), 발매 상태(`releaseStatus`), 앨범 전용 Hero 설정(`albumHero`), CD 라벨(`cdLabelImage`), 트랙별 외부 재생 URL(`webAudioUrl`), 상세 소개(`detailedDescription`)를 선택 필드로 정의했습니다. 공식 플랫폼 `streamingLinks`와 자체 웹 재생 URL은 역할을 분리합니다. 기존 앨범에는 확인되지 않은 값을 채우지 않습니다.
 
-`booklet.previewImages` 배열 순서가 페이지 순서이며 각 항목이 이미지 경로와 대체 텍스트를 보유합니다. 지영희류는 확정된 P1~P7만 등록합니다.
+`booklet.previewImages` 배열 순서가 페이지 순서이며 각 항목이 이미지 경로와 대체 텍스트를 보유합니다. 현재 지영희류는 P1~P7, 한범수류는 P1~P11입니다. 두 앨범의 `booklet.downloadUrl`은 미등록이므로 폴더 예시의 `downloads/booklet.pdf`가 실제 제공된다고 해석하지 않습니다.
 
 ## HOME Album Hero 운영 방향
 
-> **구현 완료:** 지영희류 앨범은 공연과 동일한 `RECENT WORKS` 선택 인터페이스에서 독립 Hero Scene과 `/album/:id` 상세 경로로 연결됩니다.
+> **현재 구현:** 지영희류·한범수류 두 앨범은 공연과 동일한 `RECENT WORKS` 선택 인터페이스에서 각각의 persistent Hero Scene과 `/album/:id` 상세 경로로 연결됩니다.
 
 - `workType`은 `ALBUM`을 사용하고 앨범 전용 Hero Scene을 활성화합니다.
 - 실제 앨범 커버를 핵심 시각 요소로 사용하며, 앨범 고유 디자인을 새로운 공통 디자인으로 덮어쓰지 않습니다.
@@ -152,16 +155,25 @@ HOME RECENT WORKS에는 확정 `releaseDate`가 있거나 위의 `coming-soon` �
 
 ## Album Detail 구현 상태 (2026-08-31)
 
-지영희류와 한범수류 모두 앨범별 custom interactive detail과 persistent 3D stage가 활성화되어 있다. 두 구현의 상태는 `CLOSED / ALBUM_OPEN / BOOKLET_FOCUS / PLAYER_FOCUS` 네 가지이며, booklet과 player focus는 동시에 열리지 않는다. 앨범별 전용 detail 컴포넌트는 공통 라우트에서 `detailExperience.theme`에 따라 선택된다.
+지영희류와 한범수류 모두 앨범별 custom interactive detail과 persistent 3D stage가 활성화되어 있다. 두 구현의 상태는 `CLOSED / ALBUM_OPEN / BOOKLET_FOCUS / PLAYER_FOCUS` 네 가지이며, booklet과 player focus는 동시에 열리지 않는다. `AlbumDetailPage`는 두 앨범의 **ID**로 전용 detail 컴포넌트를 선택한다. `detailExperience.theme`만 추가해도 새 전용 화면이 자동 연결되는 구조는 아니다.
 
 - 닫힌 디지팩은 느린 자동 회전과 click/drag 구분을 지원하고, 열 때 articulated hinge를 기준으로 front panel이 움직인다. 펼친 구성은 **왼쪽 booklet / 오른쪽 CD tray**다.
 - interior artwork 위에 단순한 반투명 tray, 얕은 recess와 hub를 별도 3D 물성으로 올렸다. CD는 두께가 있는 plastic ring, outer rim, 실제 center hole, 별도 label surface로 구성한다.
 - Digital Booklet은 각 앨범의 `booklet.previewImages` 등록 순서를 source of truth로 사용한다. 지영희류는 P1~P7, 한범수류는 P1~P11을 제공하며 버튼, 방향키와 mobile swipe로 탐색한다.
-- Player는 track 선택, play/pause, 시간, seek와 오류 상태를 갖춘다. 두 앨범의 등록 트랙은 실제 Cloudflare R2 `webAudioUrl`에 연결되어 있다. `PLAYER_FOCUS`에서는 정지 상태에도 CD가 천천히 회전하고 실제 음원이 재생되면 회전 속도가 빨라지며, `prefers-reduced-motion`에서는 회전하지 않는다.
+- Player는 track 선택, play/pause, 시간, seek, volume과 오류 상태를 갖춘다. 두 앨범의 등록 트랙은 실제 Cloudflare R2 `webAudioUrl`에 연결되어 있다. `PLAYER_FOCUS`에서는 정지 상태에도 CD가 천천히 회전하고 실제 음원이 재생되면 회전 속도가 빨라지며, `prefers-reduced-motion`에서는 회전하지 않는다. 현재 `PLAYER_FOCUS`에서는 package rig를 숨기고 CD를 별도 표시하며 `BACK TO ALBUM`으로 복귀한다.
 - `prefers-reduced-motion`에서는 자동 회전, 큰 이동과 page transition을 제거하되 모든 기능을 유지한다. Canvas를 생성할 수 없으면 cover, tracks, credits와 해당 앨범에 등록된 booklet 페이지 grid를 제공하는 2D fallback을 사용한다.
-- 앨범별 custom detail과 3D scene은 lazy-load하며 서로의 scene bundle을 요청하지 않는다. 상세용 articulated engine은 앨범별 컴포넌트로 유지하되 닫힌 package 치수 계산은 HOME과 공유한다.
+- 앨범별 custom detail과 3D scene은 lazy-load한다. 단, desktop `AlbumAdjacentNavigation`은 idle 시 `preloadAlbumDetail`로 다음 앨범의 detail/scene 모듈, desktop 배경, 앞·뒤·세네카, CD 라벨, P1과 내부 패널 이미지를 미리 준비한다. NEXT ALBUM 클릭 시에는 대상 persistent stage 준비를 기다린다. 따라서 서로의 bundle을 전혀 요청하지 않는다고 설명하지 않는다.
 
-### 지영희류 상세 UX 보정 (2026-08-18)
+### 미등록 정보와 재생 검수 경계
+
+- 지영희류는 `coming-soon`이며 정확한 발매일·공식 플랫폼 `streamingLinks`가 없다. R2 트랙 URL 등록과 공식 발매·유통 링크 공개를 구분한다.
+- 한범수류는 `released`, `releaseDate: '2020-11-19'`이며 YouTube 재생목록 링크가 있다.
+- `useAlbumAudio`에는 `webAudioUrl`이 없는 트랙의 무음 미리보기 타이머가 남아 있다. 재생 버튼이나 CD 회전만으로 실제 음원 재생 성공을 판정하지 않는다. 현재 등록된 12개 트랙에는 모두 URL이 있다.
+- 두 앨범의 북클릿 PDF URL은 미등록이다. 다운로드 UI는 실제 데이터와 제공 파일을 확인한 뒤 안내한다.
+
+### 과거 기록: 지영희류 상세 UX 보정 (2026-08-18)
+
+> 아래는 당시 작업에서 사용한 원본 치수와 UX 조정 기록이다. 현재 WebP 픽셀 규격이나 모든 viewport의 표시 크기를 보증하지 않는다. 현재 HOME·상세는 persistent stage를 공유하므로 session storage만으로 장면을 인계하는 구조로 해석하지 않는다.
 
 - HOME과 상세의 닫힌 외형은 `packageGeometry.ts`의 panel, cover overhang, cover depth, spine ratio 계산을 함께 사용한다. HOME에서 마지막으로 보인 회전값은 session storage로 상세 CLOSED의 초기값에 전달하며, 저장값이 없으면 기존 초기 회전을 사용한다.
 - 저장소의 실제 web export 크기(front 3000×2686, back 3000×2657, spine 171×3000)는 상세 articulated geometry의 비율 계산에 사용한다. HOME은 기존 정사각 silhouette과 크기를 유지하도록 선택적 `packageGeometry`를 추가하지 않는다. 별도 원본 PDF는 이 checkout에 없으므로 PDF 재검수나 재-export 완료를 주장하지 않는다.
@@ -172,6 +184,8 @@ HOME RECENT WORKS에는 확정 `releaseDate`가 있거나 위의 `coming-soon` �
 - tray와 mounted CD는 CLOSED/ALBUM_OPEN에서 동일한 local Z를 유지하며 back inner surface와 front inner surface 사이에 수납한다. PLAYER 진입에서만 CD를 lift하고 booklet/tray fade·slide·scale settle 뒤 HTML player를 표시한다. connector 시작점은 CD world position을 camera projection한 screen coordinate를 사용한다.
 
 ### Album Detail 3D 공통 제작 원칙
+
+수치·페이지 펼침 예시는 지영희류 기준을 포함한다. 한범수류에는 전용 geometry와 11페이지 구성이 있으므로 그대로 복사하지 말고 해당 engine과 `albums.ts`를 함께 확인한다.
 
 - detail Canvas는 header 아래 viewport 전체를 덮는 **고정 full-stage**다. mode마다 Canvas bounds를 바꾸지 않고 `packageRig`, `BookletRig`, `CdRig`, `trayRig`의 world transform만 보간한다.
 - CLOSED package의 회전 pivot은 front/back cover의 기하학적 정중앙이며 배경 anchor와 같은 screen-space 기준을 유지한다. package rotation pivot과 front-cover hinge pivot은 서로 다른 개념이므로, hinge 좌표계를 package 중앙 회전에 그대로 사용하지 않는다.
@@ -193,11 +207,11 @@ HOME RECENT WORKS에는 확정 `releaseDate`가 있거나 위의 `coming-soon` �
 - PLAYER_FOCUS desktop에서는 3D album/CD 영역과 오른쪽 tracks panel의 viewport 영역을 분리하고 충분한 시각적 gap을 둔다. tracks UI가 CD나 tray 위를 덮도록 배치하지 않는다.
 - PLAYER_FOCUS의 주 transition은 package의 큰 이동/축소가 아니라 hub에 붙어 있던 CD의 작고 명확한 lift다. `PLAYER_FOCUS`에 진입하면 느린 idle rotation을 시작하고 `audio.playing === true`일 때 더 빠르게 회전한다. `PLAYER_FOCUS`가 아니면 target velocity는 0이며, `prefers-reduced-motion`에서는 회전하지 않는다.
 - HOME의 `CLOSED` package는 front/back/spine을 중심으로 먼저 로드한다. detail 준비 단계에서 양쪽 interior booklet/tray panel, CD label과 booklet P1을 로드한다. 이후 booklet 페이지는 `BOOKLET_FOCUS`에서 reader가 mount될 때 필요에 따라 로드하며 renderer capability 기반 anisotropy를 core와 detail texture 모두에 적용한다.
-- PDF와 audio 파일은 자동 preload하지 않는다. audio element는 사용자가 player에서 트랙을 선택하거나 재생할 때 생성하고 metadata만 요청하며, PDF는 다운로드 동작으로만 요청한다. 이 우선순위는 [ASSET-OPTIMIZATION-PLAN.md](./ASSET-OPTIMIZATION-PLAN.md)의 초기 로딩 정책을 따른다.
+- PDF와 audio 파일은 초기 화면에서 자동 preload하지 않는다. 현재 `useAlbumAudio`는 재생 버튼의 `toggle`에서 audio element를 생성하며 `preload='metadata'`를 설정한다. 트랙 선택만으로는 새 audio element를 생성하지 않고, 실제 재생을 시작하면 음원 데이터도 전송된다. PDF는 URL이 등록된 다운로드 동작으로만 요청한다. 이 우선순위는 [ASSET-OPTIMIZATION-PLAN.md](./ASSET-OPTIMIZATION-PLAN.md)의 로딩 정책을 따른다.
 
 ## 검수
 
-- 목록: 앨범 정렬과 대표 앨범 노출을 확인하고, 실제 커버가 있으면 커버가 표시되는지 확인합니다. 커버가 없으면 임시 박스 없이 앨범 정보가 텍스트 단일 열로 표시되는지 확인합니다.
+- 목록: WORKS의 최신 연도순 텍스트 행과 VIEW/LISTEN/비활성 분기, RECENT WORKS의 실제 cover 비율을 확인합니다. ABOUT은 `profile.discography[0]` 한 항목을 소개하므로 전체 앨범 목록과 구분합니다.
 - 상세: `/album/:id`의 조건부 섹션, 없는 ID의 공통 404, HOME·WORKS 복귀 링크를 확인
 - Player: 실제 `webAudioUrl` track 선택·재생·pause·seek, `PLAYER_FOCUS`와 `BACK TO ALBUM`, CD 감속, reduced-motion과 audio error fallback 확인
 - Viewer: 지영희류 P1~P7과 한범수류 P1~P11의 앨범별 등록 순서, desktop/mobile navigation, keyboard와 마지막 페이지 경계 확인
@@ -207,7 +221,7 @@ HOME RECENT WORKS에는 확정 `releaseDate`가 있거나 위의 `coming-soon` �
 ## 2020 한범수류 HOME Hero와 상세 연결 (2026-08-31)
 
 - `han-beom-su-haegeum-sanjo-2020`은 2020-11-19 발매 앨범으로 HOME 3D Hero, RECENT WORKS와 전용 persistent `/album/:id` 상세에 연결되어 있다.
-- 런타임 외부 면은 `public/assets/albums/han-beom-su-haegeum-sanjo-2020/web/`의 `front.webp`(3320×2946), `back.webp`(3317×2946), `spine.webp`(182×2946)를 사용하고 CD는 `cd-label.webp`를 사용한다.
+- 런타임 외부 면은 `public/assets/albums/han-beom-su-haegeum-sanjo-2020/web/`의 `front.webp`, `back.webp`, `spine.webp`를 사용하고 CD는 `cd-label.webp`를 사용한다. 데이터의 3320×2946 / 3317×2946 / 182×2946은 원본 geometry 기준 치수로, 현재 WebP 파일 픽셀 크기와 구분한다.
 - HOME 배경은 같은 폴더의 `home-hero-desktop.webp`와 `home-hero-mobile.webp`를 사용한다. HOME의 닫힌 package에서는 CD label을 로드하지 않고 상세 준비 시 interior와 함께 로드한다.
 - Viewer는 `viewer/booklet-01.webp`부터 `booklet-11.webp`까지 사용한다. P1은 interior booklet/tray panel에도 사용하며, 나머지 페이지는 `BOOKLET_FOCUS`에서 필요할 때 로드한다.
 - 전용 상세는 `CLOSED / ALBUM_OPEN / BOOKLET_FOCUS / PLAYER_FOCUS`를 제공한다. CD 선택으로 `PLAYER_FOCUS`에 진입하고 booklet/player의 `BACK TO ALBUM`으로 열린 앨범에 복귀한다.

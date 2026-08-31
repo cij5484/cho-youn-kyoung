@@ -1,5 +1,7 @@
 # 자산 전수 목록 (Asset Inventory)
 
+> **과거 조사 기록 — 현재 전수 목록 아님.** 아래 개수·경로·해시·참조 상태는 2026-08-10 스냅샷이다. 이후 앨범·공연 추가와 WebP 전환이 있었으므로 현재 존재 여부나 삭제 승인 근거로 사용하지 않는다. 최신 운영 안내는 [ASSET-SPECIFICATIONS.md](./ASSET-SPECIFICATIONS.md), 전환 이력은 [ASSET-OPTIMIZATION-PLAN.md](./ASSET-OPTIMIZATION-PLAN.md)를 확인한다. 본문과 당시 기준 SHA는 이력 보존을 위해 유지한다.
+
 - **최종 갱신 날짜:** 2026-08-10
 - **기준 main commit SHA:** `83f14e2f8111ddc6cb4ec44bd424564e168a7e6e` (`Add profile gallery images`)
 - **조사한 총 자산 수:** **90개** (`git ls-files` 기준)

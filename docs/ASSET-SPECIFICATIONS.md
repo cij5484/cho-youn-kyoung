@@ -1,27 +1,34 @@
 # 에셋 규격과 파일 운영 기준
 
-- 마지막 확인 날짜: 2026-08-10
-- 기준 commit SHA: `83f14e2f8111ddc6cb4ec44bd424564e168a7e6e`
+- 운영 안내 대조 날짜: 2026-08-31 (`41d082b`)
+- 과거 실측표 기준: 2026-08-10, commit `83f14e2f8111ddc6cb4ec44bd424564e168a7e6e`
+
+## 현재 파일 형식과 과거 실측표의 구분
+
+- 현재 공연·앨범 `web/` 및 `viewer/`의 런타임 이미지는 WebP다. 다운로드 PDF, 인물 JPEG, 갤러리 JPEG/WebP, favicon SVG는 용도별로 유지한다.
+- 현재 `public/assets/` 파일은 130개(WebP 108, JPEG 15, PDF 6, SVG 1)이며 PNG는 없다. 이 개수는 파일 목록 확인이지 전수 디코딩·시각 검수·참조 안전성 판정이 아니다.
+- 아래 D/E/F의 픽셀·용량 표는 **과거 실측 스냅샷**이다. PNG 경로와 이전 용량을 현재 업로드 규격이나 삭제 대상 목록으로 사용하지 않는다. 이미 교체된 파일의 픽셀 크기·용량은 과거 수치에서 추정하지 않는다.
+- WebP 전환 이력과 로딩 정책은 [ASSET-OPTIMIZATION-PLAN.md](./ASSET-OPTIMIZATION-PLAN.md), 실제 경로는 `src/data/`·`src/styles/`와 `public/assets/`를 함께 확인한다.
 
 ## 상태 구분
 
 | 상태 | 의미 |
 | --- | --- |
 | 확정 규격 | 사용자 원본 또는 현재 프로젝트 기준으로 확정된 제작 규격 |
-| 현재 저장소에서 확인된 실제 파일 규격 | 2026-07-24에 저장소 파일을 도구로 조사한 결과 |
+| 과거 저장소 실측 규격 | 아래 조사 기록에 표시된 시점의 결과. 현재 WebP에 그대로 적용하지 않음 |
 | 권장 규격 | 다음 작업 때 따를 운영 권장안 |
 | 미확정 규격 | 아직 실제 파일 또는 사용자 확인이 없어 단정하지 않는 항목 |
 
-조사 도구: `file`, Python PNG/JPEG 헤더 파서, `pypdf`. `identify`, `pdfinfo`, `exiftool`은 환경에 설치되어 있지 않았습니다.
+과거 조사 도구: `file`, Python PNG/JPEG 헤더 파서, `pypdf`. 당시 `identify`, `pdfinfo`, `exiftool`은 환경에 설치되어 있지 않았습니다. 이번 문서 정리에서는 이미지 디코딩이나 PDF 인쇄 규격을 재검증하지 않았습니다.
 
 ## A. 인쇄용과 웹용의 분리 원칙
 
 - 인쇄용 원본과 Viewer용 이미지를 혼용하지 않습니다.
 - 인쇄용 PDF는 다운로드용입니다.
-- PNG는 브라우저 Viewer 미리보기용입니다.
+- 현재 WebP는 브라우저 Viewer 미리보기용입니다. 원본 PNG와 인쇄·편집 마스터는 별도 보관합니다.
 - 웹 배경은 별도 제작합니다.
 - 인쇄용 파일을 CSS 배경으로 사용하지 않습니다.
-- 웹용 PNG를 인쇄 원본으로 사용하지 않습니다.
+- 웹용 WebP나 축소 PNG를 인쇄 원본으로 사용하지 않습니다.
 
 ## B. B5 3단 리플렛 확정 규격
 
@@ -48,7 +55,7 @@
 
 ### 웹 Viewer용 리플렛
 
-- 바깥면 PNG 1장, 안쪽면 PNG 1장을 사용합니다.
+- 바깥면 WebP 1장, 안쪽면 WebP 1장을 사용합니다.
 - Viewer 표시 순서는 OUTER → INNER입니다.
 - RGB/sRGB 여부는 현재 도구로 확정하지 않았습니다.
 - PDF 다운로드 파일은 별도입니다.
@@ -60,10 +67,10 @@
 | 완성 크기 | 확정: 420 × 594mm |
 | 도련값 | 미확정: 현재 프로젝트에서 사용하는 도련값은 실제 인쇄 파일과 기존 자료 확인 뒤 기록 |
 | 해상도 | 확정: 300dpi |
-| 분리 원칙 | 인쇄용 PDF와 Viewer용 PNG 분리 |
+| 분리 원칙 | 인쇄용 PDF와 Viewer용 WebP 분리 |
 | PDF 색공간 | 미확정: 도구로 확인 가능한 경우만 작성 |
 
-## D. 웹 Viewer·다운로드 자료 실제 규격
+## D. 과거 실측: 웹 Viewer·다운로드 자료
 
 | 경로 | 형식 | 픽셀/페이지 크기 | 비율/페이지 수 | 용량 | 용도 |
 | --- | --- | --- | --- | --- | --- |
@@ -78,7 +85,7 @@
 | `public/assets/performances/sanjo-gil-2026-08-16/viewer/leaflet-inner.png` | PNG | 2048×957px | 2.140:1 | 3.32 MB | 리플렛 INNER Viewer |
 | `public/assets/performances/sanjo-gil-2026-08-16/downloads/leaflet.pdf` | PDF | 1576.14×742.86pt, 556.0×262.1mm | 2p | 13.76 MB | 리플렛 다운로드 |
 
-## E. 웹 배경 이미지 실제 규격
+## E. 과거 실측: 웹 배경 이미지
 
 | 종류 | 경로 | 형식 | 픽셀 크기 | 비율 | 용량 |
 | --- | --- | --- | --- | --- | --- |
@@ -94,7 +101,7 @@
 | Guest Artists | `public/assets/performances/sanjo-gil-2026-08-16/web/guest-artists-desktop.png` | PNG | 2560×1100px | 2.327:1 | 3.66 MB |
 | Archive Bottom | `public/assets/performances/sanjo-gil-2026-08-16/web/archive-bottom-desktop.png` | PNG | 2560×900px | 2.844:1 | 3.34 MB |
 
-권장 원칙: desktop과 mobile을 구분하고, `background-size: cover` 사용 시 중요한 요소를 중앙 안전영역에 둡니다. 글자가 올라가는 영역은 시각적 여백을 확보합니다. 모바일은 세로 비율을 사용합니다. 현재 모바일 이미지 3장은 941×1672px로 약 9:16 비율임을 확인했습니다. 단, 이것을 고정 픽셀 규격으로 단정하지 않습니다.
+권장 원칙: desktop과 mobile을 구분하고, `background-size: cover` 사용 시 중요한 요소를 중앙 안전영역에 둡니다. 글자가 올라가는 영역은 시각적 여백을 확보합니다. 모바일은 세로 비율을 사용합니다. 위 과거 조사에서는 모바일 이미지 3장이 941×1672px였으나 이를 모든 현재 이미지의 고정 규격으로 적용하지 않습니다.
 
 ### HOME Hero 초광폭 표시 원칙
 
@@ -103,7 +110,7 @@
 - 원본 이미지를 viewport에 맞춰 비율이 달라지도록 stretch하지 않으며, 중요한 composition을 잘라내지 않기 위해 기존 자산과 CSS background extension을 함께 사용할 수 있다.
 - 현재는 별도 ultrawide binary가 없으므로 기존 desktop 자산과 CSS로 대응한다. 향후 전용 ultrawide 자산을 제공받으면 실제 경로와 확인된 규격을 이 문서에 추가한다.
 
-## F. 출연자 사진 실제 규격과 권장 원칙
+## F. 과거 실측: 출연자 사진 / 현재 운영 원칙
 
 | 경로 | 형식 | 픽셀 크기 | 비율 | 용량 |
 | --- | --- | --- | --- | --- |
@@ -144,7 +151,7 @@
 
 ## I. RECENT WORKS 카드
 
-- 현재 공연 카드는 각 공연의 `viewer/poster.png`, 앨범 카드는 실제 `web/cover.png`를 재사용하며 별도 공용 자산 폴더를 만들지 않습니다.
+- 현재 공연 카드는 POSTER `previewImages[0]`의 `viewer/poster.webp`, 앨범 카드는 `coverImage`에 지정된 `web/front.webp`를 재사용하며 별도 공용 자산 폴더를 만들지 않습니다. 존재하지 않는 `web/cover.png`를 필수 파일로 만들지 않습니다.
 - 목록 성능을 위해 경량 파일이 필요해질 때 권장 경로는 공연·앨범 각각의 `web/recent-work-thumbnail.{ext}`입니다. 고정 픽셀·형식은 실제 제공 자산을 검수한 뒤 확정합니다.
 
 ## J. PRESS 자산
