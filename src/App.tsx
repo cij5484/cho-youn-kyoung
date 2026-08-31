@@ -10,14 +10,12 @@ import { PageTransition } from "./components/PageTransition";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { MediaPage } from "./pages/MediaPage";
 import { AlbumDetailPage } from "./pages/AlbumDetailPage";
-import { JiYoungHeePersistentStage } from "./components/album/JiYoungHeePersistentStage";
-import { HanBeomSuPersistentStage } from "./components/album/HanBeomSuPersistentStage";
+import { AlbumStages } from "./components/album/AlbumStages";
 
 export default function App() {
   return (
     <HashRouter>
-      <JiYoungHeePersistentStage>
-      <HanBeomSuPersistentStage>
+      <AlbumStages>
       <Header />
       <ScrollToTop />
       <main>
@@ -35,8 +33,7 @@ export default function App() {
         </Routes>
         </PageTransition>
       </main>
-      </HanBeomSuPersistentStage>
-      </JiYoungHeePersistentStage>
+      </AlbumStages>
     </HashRouter>
   );
 }

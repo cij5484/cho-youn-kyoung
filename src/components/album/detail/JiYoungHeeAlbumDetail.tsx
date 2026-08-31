@@ -5,20 +5,13 @@ import { assetUrl } from '../../../utils/assetUrl';
 import type { BookletBounds, ExperienceMode } from './AlbumDetailExperience3D';
 import { useAlbumAudio } from './useAlbumAudio';
 import { AlbumAdjacentNavigation } from './AlbumAdjacentNavigation';
-import { useJiYoungHeeStage } from '../JiYoungHeePersistentStage';
+import { AlbumOpenOverlay } from './AlbumOpenOverlay';
+import { useAlbumStage } from '../AlbumStages';
 
 const statusLabel = { 'coming-soon': 'COMING SOON', released: 'RELEASED' } as const;
 
 function formatTime(seconds: number) {
   return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
-}
-
-function totalTrackTime(tracks: NonNullable<Album['tracks']>) {
-  const seconds = tracks.reduce((total, track) => {
-    const [minutes, remainder] = (track.duration ?? '0:00').split(':').map(Number);
-    return total + minutes * 60 + remainder;
-  }, 0);
-  return formatTime(seconds);
 }
 
 function canUseWebGL() {
@@ -160,18 +153,16 @@ function PlayerPanel({
 export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
   const location = useLocation();
   const autoOpenAlbum = Boolean((location.state as { autoOpenAlbum?: boolean } | null)?.autoOpenAlbum);
-  const { setDetailProps, setDetailStageVisible } = useJiYoungHeeStage();
+  const { setDetailProps, setDetailStageVisible } = useAlbumStage(album.id);
   const [mode, setMode] = useState<ExperienceMode>(() => autoOpenAlbum ? 'ALBUM_OPEN' : 'CLOSED');
   const [spread, setSpread] = useState(0);
   const [mobilePage, setMobilePage] = useState(0);
   const [visibleSpread, setVisibleSpread] = useState(0);
   const [visibleMobilePage, setVisibleMobilePage] = useState(0);
   const [sceneTransitioning, setSceneTransitioning] = useState(autoOpenAlbum);
-  const [openingFromClosed, setOpeningFromClosed] = useState(autoOpenAlbum);
   const [pageTurning, setPageTurning] = useState(false);
   const [mobile, setMobile] = useState(false);
   const [reduced, setReduced] = useState(false);
-  const [backgroundSize, setBackgroundSize] = useState({ width: 0, height: 0 });
   const [bookletBounds, setBookletBounds] = useState<BookletBounds>();
   const [stageVisible, setStageVisible] = useState(true);
   const [webgl] = useState(canUseWebGL);
@@ -182,7 +173,6 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
   const player = useAlbumAudio(tracks);
   const handleTransitionChange = useCallback((transitioning: boolean) => {
     setSceneTransitioning(transitioning);
-    if (!transitioning) setOpeningFromClosed(false);
   }, []);
   const handleBookletBounds = useCallback((bounds: BookletBounds) => {
     const stageRect = stage.current?.getBoundingClientRect();
@@ -225,16 +215,6 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
     };
   }, [setDetailStageVisible]);
 
-  useEffect(() => {
-    const element = stage.current;
-    if (!element) return undefined;
-    const update = () => setBackgroundSize({ width: element.clientWidth, height: element.clientHeight });
-    queueMicrotask(update);
-    const observer = new ResizeObserver(update);
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
   const previous = useCallback(() => {
     if (pageTurning || sceneTransitioning) return;
     if ((mobile && mobilePage === 0) || (!mobile && spread === 0)) return;
@@ -253,7 +233,6 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
 
   const openAlbum = useCallback(() => {
     if (sceneTransitioning || mode !== 'CLOSED') return;
-    setOpeningFromClosed(true);
     setSceneTransitioning(true);
     setMode('ALBUM_OPEN');
   }, [mode, sceneTransitioning]);
@@ -286,14 +265,14 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
   useEffect(() => () => setDetailProps(null), [setDetailProps]);
   useEffect(() => {
     setDetailProps({
-      album, backgroundSize, openingFromClosed, mobile, mode, page: mobile ? mobilePage : spread,
+      album, mobile, mode, page: mobile ? mobilePage : spread,
       playing: player.playing, reduced, homeActivationKey: 0, onTransitionChange: handleTransitionChange,
       onPageTurnComplete: handlePageTurnComplete, onBooklet: openBooklet,
       onBookletBounds: handleBookletBounds,
       onPrevious: previous, onNext: next, onOpen: openAlbum, onPlayer: enterPlayer,
     });
-  }, [album, backgroundSize, enterPlayer, handleBookletBounds, handlePageTurnComplete, handleTransitionChange, mobile, mobilePage, mode,
-    next, openAlbum, openBooklet, openingFromClosed, player.playing, previous, reduced,
+  }, [album, enterPlayer, handleBookletBounds, handlePageTurnComplete, handleTransitionChange, mobile, mobilePage, mode,
+    next, openAlbum, openBooklet, player.playing, previous, reduced,
     setDetailProps, spread]);
 
   useEffect(() => {
@@ -359,45 +338,15 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
           </div>
         )}
         {mode === 'ALBUM_OPEN' && !sceneTransitioning && (
-          <div className={`ji-detail__open-ui${stageVisible ? '' : ' is-editorial-hidden'}`}>
-            <section className="ji-detail__open-info" aria-labelledby="open-album-info">
-              <p id="open-album-info" className="ji-detail__open-label">ALBUM · {album.year}</p>
-              <h1>조윤경 해금산조</h1>
-              <h2>지영희류</h2>
-              <p className="ji-detail__open-meta">
-                {tracks.length} TRACKS · {totalTrackTime(tracks)}
-                {album.releaseStatus && <strong>{statusLabel[album.releaseStatus]}</strong>}
-              </p>
-            </section>
-            {album.credits?.length && (
-              <section className="ji-detail__open-credits" aria-labelledby="open-album-credits">
-                <h2 id="open-album-credits">CREDITS</h2>
-                <dl>
-                  {album.credits.map((credit) => (
-                    <div key={credit.role}>
-                      <dt>{credit.role}</dt>
-                      <dd>{credit.names.join(' · ')}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </section>
-            )}
-            <button className="ji-detail__callout ji-detail__callout--booklet" type="button" onClick={openBooklet}>
-              <span>BOOKLET</span>
-              <svg viewBox="0 0 210 32" aria-hidden="true">
-                <path d="M1 16 H178 L195 3" pathLength="1" />
-              </svg>
-            </button>
-            <button className="ji-detail__callout ji-detail__callout--tracks" type="button" onClick={enterPlayer}>
-              <svg viewBox="0 0 210 32" aria-hidden="true">
-                <path d="M15 3 L32 16 H209" pathLength="1" />
-              </svg>
-              <span>TRACKS</span>
-            </button>
-            <button className="ji-detail__close-album" type="button" onClick={() => { setSceneTransitioning(true); setMode('CLOSED'); }}>
-              CLOSE ALBUM
-            </button>
-          </div>
+          <AlbumOpenOverlay
+            album={album}
+            title="조윤경 해금산조"
+            subtitle="지영희류"
+            visible={stageVisible}
+            onBooklet={openBooklet}
+            onTracks={enterPlayer}
+            onClose={() => { setSceneTransitioning(true); setMode('CLOSED'); }}
+          />
         )}
         {mode === 'BOOKLET_FOCUS' && !sceneTransitioning && (
           <>

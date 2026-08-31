@@ -1,7 +1,7 @@
 # 공연 등록 워크플로
 
-- 마지막 확인 날짜: 2026-08-12
-- 기준 commit SHA: `8a574e10b82f`
+- 코드 대조 날짜: 2026-08-31
+- 기준 commit SHA: `41d082b`
 
 ## A. 사용자에게 먼저 받아야 할 자료
 
@@ -52,12 +52,12 @@ public/assets/performances/{performance-id}/
 권장 파일명 표준입니다.
 
 ```txt
-web/home-hero-desktop.png
-web/detail-hero-desktop.png
-web/detail-hero-mobile.png
-viewer/poster.png
-viewer/leaflet-outer.png
-viewer/leaflet-inner.png
+web/home-hero-desktop.webp
+web/detail-hero-desktop.webp
+web/detail-hero-mobile.webp
+viewer/poster.webp
+viewer/leaflet-outer.webp
+viewer/leaflet-inner.webp
 downloads/poster.pdf
 downloads/leaflet.pdf
 ```
@@ -95,10 +95,10 @@ downloads/leaflet.pdf
 | `artistSignature` | 서명 | `조윤경` |
 | `programEras` | 프로그램 섹션과 작품 해설 | `[{ roman: 'Ⅰ', title: '육자배기 · 흥타령', works: [...] }]` |
 | `collaborators` | 출연자·사회자 카드 | `[{ id: 'lee-young-seop', name: '이영섭', ... }]` |
-| `archiveMaterials` | Viewer PNG와 다운로드 PDF | `POSTER`, `LEAFLET` |
+| `archiveMaterials` | Viewer WebP와 다운로드 PDF | `POSTER`, `LEAFLET` |
 | `homeHero` | 홈 히어로 테마 | `{ theme: 'sanjo-matiere' }` |
 
-HOME과 RECENT WORKS 노출에는 `homeHero`, `heroImage`, POSTER `archiveMaterials`가 모두 필요합니다. 카드 이미지는 기존 `viewer/poster.png`를 재사용하며 공연 데이터를 별도 HOME 파일에 복사하지 않습니다. 등록 및 기본 대표 Work 선정은 [HOME-HERO-WORKFLOW.md](./HOME-HERO-WORKFLOW.md)를 따릅니다.
+HOME adapter는 `homeHero`와 POSTER `archiveMaterials.previewImages[0]`이 있는 공연을 선택합니다. 실제 Hero 표시용 `heroImage`와 필요한 모바일 이미지도 함께 준비합니다. 카드는 현재 `viewer/poster.webp`를 재사용하며 공연 데이터를 별도 HOME 파일에 복사하지 않습니다. 지원 테마는 `haegeum-recital`, `sanjo-matiere`, `haegeum-jeongak`입니다. 새 테마는 데이터뿐 아니라 `HomeHeroRotator`와 상세 페이지 분기도 확인합니다. 등록 및 지정 ID 우선 기본 선정은 [HOME-HERO-WORKFLOW.md](./HOME-HERO-WORKFLOW.md)를 따릅니다.
 
 ## G. 출연자·사회자
 
@@ -121,7 +121,7 @@ HOME과 RECENT WORKS 노출에는 `homeHero`, `heroImage`, POSTER `archiveMateri
 
 논의 → 지시서 → Codex 작업 → PR 검토 → Actions 확인 → 직접 화면 확인 → 머지 → 배포 확인
 
-## J. 두 공연에서 발생한 시행착오
+## J. 과거 두 공연 작업에서 얻은 검수 주의사항
 
 - 바이너리 파일 복사 작업으로 오류가 발생했습니다.
 - PR 설명만 믿지 않고 실제 변경 파일과 patch를 확인해야 합니다.

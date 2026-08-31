@@ -1,10 +1,18 @@
 # HOME Hero와 RECENT WORKS 운영 워크플로
 
-- 마지막 확인 날짜: 2026-08-15
+- 코드 대조 날짜: 2026-08-31 (`41d082b`)
 
 ## 역할과 대표 Work 선정
 
-HOME Hero는 현재 가장 가까운 주요 활동을 안정적으로 소개하고, `RECENT WORKS`는 이미 공개된 주요 활동의 고유 Hero Scene을 사용자가 다시 탐색하게 한다. 자동 순환은 사용하지 않는다. 서울 날짜 기준으로 아직 지나지 않은 Work 가운데 가장 가까운 날짜를 기본 Hero로 선택하고, 모두 지났다면 가장 최신 Work를 선택한다.
+HOME Hero는 대표 Work를 안정적으로 소개하고, `RECENT WORKS`는 공개된 공연·앨범의 고유 Hero Scene을 사용자가 선택하게 한다. 자동 순환은 사용하지 않는다.
+
+`homeHeroSlides.ts`의 `getDefaultHomeHeroIndex`는 다음 순서로 선택한다.
+
+1. `DEFAULT_HOME_HERO_ID`가 노출 목록에 있으면 날짜와 관계없이 우선한다. 현재 값은 `haegeum-jeongak-2026-09-22`다.
+2. 지정 ID가 없으면 서울 날짜 기준 아직 지나지 않은 Work 중 가장 가까운 날짜를 선택한다.
+3. 모두 지났다면 날짜가 있는 가장 최신 Work, 날짜가 전혀 없으면 첫 항목을 선택한다.
+
+`featured` 값은 이 HOME 선정 함수에서 사용하지 않는다. 지정 공연은 날짜가 지나도 자동 해제되지 않으므로 대표 Work 교체 때 지정 ID와 fallback을 함께 확인한다.
 
 ## 데이터 연결
 
@@ -27,30 +35,23 @@ HOME Hero는 현재 가장 가까운 주요 활동을 안정적으로 소개하�
 
 ## 앨범 Hero 운영 원칙
 
-> **실제 노출 활성화:** 지영희류 앨범이 PERFORMANCE와 동일한 `RECENT WORKS` 선택 인터페이스, `AlbumHero`, React Three Fiber 기반 `AlbumPackage3D` Scene에 연결되어 있다.
-
-- `workType`은 `ALBUM`으로 표시하고 공연 Hero를 재사용하지 않는 앨범 전용 Hero Scene을 사용한다.
-- 실제 커버를 Hero의 핵심 시각 요소로 삼고 앨범 고유 디자인을 보존한다.
-- 앨범명, 발매 상태 또는 연도, 간단한 트랙 정보와 실제 상세페이지로 가는 `VIEW ALBUM` 정도만 표시한다.
-- 검증된 공식 스트리밍 링크가 생기면 필요에 따라 `LISTEN`을 추가할 수 있지만 임의 링크는 만들지 않는다.
-- 상세 트랙 목록, Credits, 디지털 북클릿은 Hero에 넣지 않고 `/album/:id` 상세페이지에서 제공한다.
-- 앨범 Scene 추가로 기존 공연 Hero의 선정, 디자인, 애니메이션 또는 선택 동작을 변경하지 않는다.
-- `album-package` theme은 공연 Hero와 분리된 실제 desktop/mobile 전용 배경 이미지, HTML 정보 영역과 단일 3D canvas를 사용한다. `<picture>`의 media source로 현재 viewport에 필요한 배경만 요청하며 지영희류 Hero 제목은 공식 앨범명에서 분리한 `조윤경 해금산조` / `지영희류`를 사용한다.
-- 디지팩은 수동 조작 시 X축 ±28°와 Y축 ±168° 범위의 pointer·touch drag와 frame damping을 지원한다. 진입 시 Y축으로 약 22초에 한 바퀴 도는 조용한 자동 회전을 시작하고 첫 pointer 조작 즉시 영구 중단한다. `prefers-reduced-motion`에서는 자동 회전하지 않는다.
-- 보이는 면의 방향과 관계없이 표지 전체 크기의 투명 interaction plane을 유지하며, canvas 밖에서 발생한 `pointerup`·`pointercancel`과 pointer capture 상실도 drag를 종료한다.
-- 앞·뒤·좌·우·위·아래 texture slot은 독립적으로 받을 수 있다. 실제 texture가 없으면 무광 neutral material만 사용하며 임시 artwork를 만들지 않는다.
-- 지영희류 패키지는 실제 front/back과 왼쪽 spine texture를 사용한 무광 종이 커버가 내부 트레이보다 조금 돌출되는 구조다. 반대쪽 얇은 면과 위·아래에는 한 단계 안쪽의 절제된 반투명 플라스틱 트레이가 보인다. 부드러운 저농도 shadow receiver와 실제 조명이 회전에 반응하며, 넓어진 camera/canvas 안전 영역은 전체 회전에서 모서리를 보존한다. 앨범 Hero는 활성화될 때만 lazy-load하여 초기 공연 Hero에서 3D bundle과 대형 texture를 요청하지 않는다.
-- 지영희류 Hero는 하나의 desktop/mobile 배경을 전체 영역에 연속 배치하고 3D canvas도 full-stage로 Hero 전체를 덮어 그림자의 canvas 경계가 드러나지 않게 한다. 3D 패키지는 desktop 약 10%, mobile 약 20% 작게 표시하고, mobile에서는 패키지 다음에 정보가 잘리지 않고 이어진다. 오른쪽 위 key light와 왼쪽 아래로 흐르는 실제 3D 그림자, 최대 8배 anisotropy·mipmap과 최대 2 DPR로 인쇄 디테일을 보존한다.
-- 정면 패키지의 중앙은 desktop/mobile 배경 원본에서 확인한 세로선에 맞춘다. `object-fit: cover`의 scale과 좌우 crop offset을 현재 viewport에서 계산해 screen-space anchor를 구하므로 화면 비율이 달라져도 선이 이어진다.
-- 패키지는 먼저 1.7초 동안 절제되게 나타나고 정보 block은 약 0.62초 뒤 따라온다. reduced-motion에서는 둘 다 즉시 최종 상태로 표시한다. 앨범의 muted oxblood accent는 정보의 작은 라벨·상태·구분선·`VIEW ALBUM` 및 HOME GNB active/hover/focus에만 사용하며 8/16 navy와 분리한다.
-- `VIEW ALBUM`은 공연 Hero와 같이 hover/focus-visible에서 underline이 왼쪽부터 나타나고 화살표가 4px 이동한다. RECENT WORKS의 앨범 표기는 `albums.ts` 공식 한글 제목을 adapter에서 `조윤경 해금산조` / `지영희류`로 분리하며 공연 카드는 기존 제목 fallback을 유지한다.
-- WORKS 앨범 row는 album ID class로 고유 accent를 선택한다. 지영희류는 어두운 surface에서 같은 oxblood hue의 밝은 tonal variant를 쓰며 기존 공연별 gold/navy 규칙은 건드리지 않는다.
-- 날짜 없는 `coming-soon` 앨범은 RECENT WORKS 연도 정렬에는 참여하지만 HOME 날짜 기반 기본 Hero 후보에서는 제외한다. 공연의 서울 날짜 기준 기본 선정은 그대로 유지한다.
-- Three.js와 `@react-three/fiber`만 사용하고 DPR을 제한한다. postprocessing, HDR environment와 별도 animation library는 추가하지 않는다.
+- 지영희류·한범수류 모두 `RECENT WORKS`의 `ALBUM` 카드, `AlbumHero`, 실제 `/album/:id` 상세에 연결되어 있다.
+- 두 앨범은 `App.tsx`의 `JiYoungHeePersistentStage` / `HanBeomSuPersistentStage`가 배경과 3D Canvas를 담당한다. `AlbumHero` 내부의 공용 `AlbumPackage3D`는 이 두 ID에 사용하지 않는 일반 앨범용 경로다.
+- `VIEW ALBUM`은 `autoOpenAlbum: true` 라우트 상태로 상세 진입 시 앨범을 열도록 요청한다. 직접 상세 URL 접근과 HOME에서 들어가는 흐름을 각각 검수한다.
+- 실제 커버와 앨범 고유 디자인을 유지하고, Hero에는 앨범명·발매 상태/연도·트랙 수·상세 링크를 표시한다. 상세 트랙·크레딧·북클릿·플레이어는 상세 화면에 둔다.
+- 지영희류는 밝은 배경과 oxblood accent, 한범수류는 dark teal 배경과 warm ivory/teal accent를 사용한다. 공연별 테마에 앨범 CSS가 영향을 주지 않도록 한다.
+- 배경은 `albumHero.background`의 desktop/mobile WebP를 `<picture>`로 선택한다. `backgroundAnchor`는 원본 크기와 x 비율을 저장하며 화면의 cover crop을 고려해 3D 위치를 계산한다.
+- 현재 지영희류 배경 anchor는 desktop/mobile 모두 x=0.5, 한범수류는 desktop x=0.43, mobile x=0.5다. desktop 원본 기준은 2560×1440, mobile은 1440×2560이며 데이터와 함께 갱신한다.
+- 닫힌 패키지는 느린 자동 회전, click/drag 구분, 수동 yaw 연속 회전과 감쇠 관성을 지원한다. pointer 조작 후 자동 회전을 멈추며 `prefers-reduced-motion`에서 자동 회전하지 않는다. 열린 상태의 제한 drag와 닫힌 상태의 회전을 혼동하지 않는다.
+- 3D 조명·그림자·인쇄 texture의 가독성과 패키지 비율은 실제 화면으로 검수한다. 과거 공용 Scene의 ±168° 제한, 22초 회전, 상대 축소율을 현재 persistent Scene의 고정 규격으로 사용하지 않는다.
+- HOME에서 활성화된 앨범 Scene을 lazy-load한다. 상세의 NEXT ALBUM은 desktop에서 다음 앨범 모듈·일부 이미지를 미리 준비하므로 “항상 현재 앨범만 요청한다”는 보장은 하지 않는다.
+- RECENT WORKS의 앨범 cover는 crop 없이 실제 이미지 비율을 사용하고, 제목은 공식 앨범명에서 제목/유파를 나눈다. 공연 카드의 비율·선택 동작은 유지한다.
+- 날짜 없는 `coming-soon` 앨범은 RECENT WORKS 연도 정렬에 참여하지만 날짜 기반 기본 Hero 후보에서는 제외한다. 지정 ID 우선 규칙은 별도다.
+- Three.js와 React Three Fiber의 DPR 제한, reduced-motion, 텍스처 지연 로딩을 유지한다. 실제 모바일 GPU·터치 성능은 별도 검수한다.
 
 ## 자산 위치
 
-- 공연 Hero와 카드: `public/assets/performances/{performance-id}/web/`, `viewer/poster.png`
+- 공연 Hero와 카드: `public/assets/performances/{performance-id}/web/`, `viewer/poster.webp`
 - 앨범 Hero와 커버: `public/assets/albums/{album-id}/web/`
 - 별도 `recent-works` 자산 저장소를 만들지 않는다. Viewer 포스터가 너무 무거워 별도 썸네일이 필요해질 때에는 각 도메인의 `web/recent-work-thumbnail.{ext}`를 권장 이름으로 사용하고 실제 바이너리는 사용자가 제공한다.
 
@@ -87,7 +88,9 @@ RECENT WORKS는 작품을 선택하는 계층일 뿐 각 작품의 디자인을 
 - `sanjo-matiere`의 공연 정보와 오른쪽 text composition은 기존 Mobile 위치를 유지한다. 두 theme에 공통으로 적용되는 Mobile 변경은 Creative Credit의 오른쪽 하단 배치뿐이다.
 - 공연 정보, Creative Credit, RECENT WORKS의 stacking과 hit area를 분리하여 RECENT WORKS trigger, panel, horizontal swipe, card tap 및 scroll snap을 방해하지 않는다.
 
-## 2020 한범수류 활성화 (2026-08-15)
+## 과거 기록: 2020 한범수류 최초 활성화 (2026-08-15)
+
+> 아래는 최초 활성화 당시의 크기·anchor·공용 Scene·미완료 항목 기록이다. 현재 구현 지시서가 아니며, 최신 배경과 persistent 상세는 위 운영 원칙 및 [ALBUM-WORKFLOW.md](./ALBUM-WORKFLOW.md)를 따른다. 현재 두 앨범의 상세는 구현되어 있고 ABOUT은 `profile.discography[0]` 한 항목을 소개한다.
 
 - 한범수류 앨범은 실제 front/back/spine과 desktop 3840×2160, mobile 1440×2560 배경을 사용해 HOME Album Hero 및 RECENT WORKS에 활성화했다. CD label 경로도 앨범 데이터에 보관하지만 HOME Scene은 이를 로드하지 않는다.
 - 앨범별 `backgroundAnchor`의 원본 크기와 x 비율을 이용해 `object-fit: cover` scale 및 crop offset 이후의 screen-space 위치를 계산한다. 지영희류의 기존 값은 desktop `1369 / 3840`, mobile `720 / 1440`; 한범수류는 desktop `0.43`, mobile `0.50`이다.

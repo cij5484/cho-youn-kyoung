@@ -2,10 +2,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import type { Album } from '../../../data/albums';
 import { assetUrl } from '../../../utils/assetUrl';
-import type { BookletBounds, ExperienceMode } from './HanBeomSuAlbumDetailExperience3D';
+import type { BookletBounds, ExperienceMode } from './AlbumDetailExperience3D';
 import { useAlbumAudio } from './useAlbumAudio';
 import { AlbumAdjacentNavigation } from './AlbumAdjacentNavigation';
-import { useHanBeomSuStage } from '../HanBeomSuPersistentStage';
+import { AlbumOpenOverlay } from './AlbumOpenOverlay';
+import { useAlbumStage } from '../AlbumStages';
 
 const statusLabel = { 'coming-soon': 'COMING SOON', released: 'RELEASED' } as const;
 
@@ -156,18 +157,16 @@ function PlayerPanel({
 export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
   const location = useLocation();
   const autoOpenAlbum = Boolean((location.state as { autoOpenAlbum?: boolean } | null)?.autoOpenAlbum);
-  const { setDetailProps, setDetailStageVisible } = useHanBeomSuStage();
+  const { setDetailProps, setDetailStageVisible } = useAlbumStage(album.id);
   const [mode, setMode] = useState<ExperienceMode>(() => autoOpenAlbum ? 'ALBUM_OPEN' : 'CLOSED');
   const [spread, setSpread] = useState(0);
   const [mobilePage, setMobilePage] = useState(0);
   const [visibleSpread, setVisibleSpread] = useState(0);
   const [visibleMobilePage, setVisibleMobilePage] = useState(0);
   const [sceneTransitioning, setSceneTransitioning] = useState(autoOpenAlbum);
-  const [openingFromClosed, setOpeningFromClosed] = useState(autoOpenAlbum);
   const [pageTurning, setPageTurning] = useState(false);
   const [mobile, setMobile] = useState(false);
   const [reduced, setReduced] = useState(false);
-  const [backgroundSize, setBackgroundSize] = useState({ width: 0, height: 0 });
   const [bookletBounds, setBookletBounds] = useState<BookletBounds>();
   const [stageVisible, setStageVisible] = useState(true);
   const [webgl] = useState(canUseWebGL);
@@ -180,7 +179,6 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
   const player = useAlbumAudio(tracks);
   const handleTransitionChange = useCallback((transitioning: boolean) => {
     setSceneTransitioning(transitioning);
-    if (!transitioning) setOpeningFromClosed(false);
   }, []);
   const handleBookletBounds = useCallback((bounds: BookletBounds) => {
     const stageRect = stage.current?.getBoundingClientRect();
@@ -223,16 +221,6 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
     };
   }, [setDetailStageVisible]);
 
-  useEffect(() => {
-    const element = stage.current;
-    if (!element) return undefined;
-    const update = () => setBackgroundSize({ width: element.clientWidth, height: element.clientHeight });
-    queueMicrotask(update);
-    const observer = new ResizeObserver(update);
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
   const previous = useCallback(() => {
     if (pageTurning || sceneTransitioning) return;
     if ((mobile && mobilePage === 0) || (!mobile && spread === 0)) return;
@@ -251,7 +239,6 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
 
   const openAlbum = useCallback(() => {
     if (sceneTransitioning || mode !== 'CLOSED') return;
-    setOpeningFromClosed(true);
     setSceneTransitioning(true);
     setMode('ALBUM_OPEN');
   }, [mode, sceneTransitioning]);
@@ -284,14 +271,14 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
   useEffect(() => () => setDetailProps(null), [setDetailProps]);
   useEffect(() => {
     setDetailProps({
-      album, backgroundSize, openingFromClosed, mobile, mode, page: mobile ? mobilePage : spread,
+      album, mobile, mode, page: mobile ? mobilePage : spread,
       playing: player.playing, reduced, homeActivationKey: 0, onTransitionChange: handleTransitionChange,
       onPageTurnComplete: handlePageTurnComplete, onBooklet: openBooklet,
       onBookletBounds: handleBookletBounds,
       onPrevious: previous, onNext: next, onOpen: openAlbum, onPlayer: enterPlayer,
     });
-  }, [album, backgroundSize, enterPlayer, handleBookletBounds, handlePageTurnComplete, handleTransitionChange, mobile, mobilePage, mode,
-    next, openAlbum, openBooklet, openingFromClosed, player.playing, previous, reduced,
+  }, [album, enterPlayer, handleBookletBounds, handlePageTurnComplete, handleTransitionChange, mobile, mobilePage, mode,
+    next, openAlbum, openBooklet, player.playing, previous, reduced,
     setDetailProps, spread]);
 
   useEffect(() => {
@@ -357,48 +344,15 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
           </div>
         )}
         {mode === 'ALBUM_OPEN' && !sceneTransitioning && (
-          <div className={`han-detail__open-ui${stageVisible ? '' : ' is-editorial-hidden'}`}>
-            <section className="han-detail__open-info" aria-labelledby="open-album-info">
-              <p id="open-album-info" className="han-detail__open-label">ALBUM · {album.year}</p>
-              <h1>조윤경 해금산조</h1>
-              <h2>한범수류</h2>
-              <p className="han-detail__open-meta">
-                {tracks.length} TRACKS
-                {album.releaseStatus && <strong>{statusLabel[album.releaseStatus]}</strong>}
-                {album.releaseDate && <strong>{album.releaseDate.replaceAll('-', '.')}</strong>}
-              </p>
-            </section>
-            {album.credits?.length && (
-              <section className="han-detail__open-credits" aria-labelledby="open-album-credits">
-                <h2 id="open-album-credits">CREDITS</h2>
-                <dl>
-                  {album.credits.map((credit) => (
-                    <div key={credit.role}>
-                      <dt>{credit.role}</dt>
-                      <dd>{credit.names.join(' · ')}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </section>
-            )}
-            <button className="han-detail__callout han-detail__callout--booklet" type="button" onClick={openBooklet}>
-              <span>BOOKLET</span>
-              <svg viewBox="0 0 210 32" aria-hidden="true">
-                <path d="M1 16 H178 L195 3" pathLength="1" />
-                <circle cx="199" cy="3" r="2.5" />
-              </svg>
-            </button>
-            <button className="han-detail__callout han-detail__callout--tracks" type="button" onClick={enterPlayer}>
-              <svg viewBox="0 0 210 32" aria-hidden="true">
-                <circle cx="11" cy="3" r="2.5" />
-                <path d="M15 3 L32 16 H209" pathLength="1" />
-              </svg>
-              <span>TRACKS</span>
-            </button>
-            <button className="han-detail__close-album" type="button" onClick={() => { setSceneTransitioning(true); setMode('CLOSED'); }}>
-              CLOSE ALBUM
-            </button>
-          </div>
+          <AlbumOpenOverlay
+            album={album}
+            title="조윤경 해금산조"
+            subtitle="한범수류"
+            visible={stageVisible}
+            onBooklet={openBooklet}
+            onTracks={enterPlayer}
+            onClose={() => { setSceneTransitioning(true); setMode('CLOSED'); }}
+          />
         )}
         {mode === 'BOOKLET_FOCUS' && !sceneTransitioning && (
           <>

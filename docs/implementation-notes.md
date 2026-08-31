@@ -1,5 +1,7 @@
 # Implementation Notes
 
+> **Historical implementation record, not the current architecture guide.** The initial scope, empty album array, and PNG paths below describe an earlier implementation. For current routes, album 3D/audio/booklet features, and asset formats, use [WEBSITE-OPERATIONS.md](./WEBSITE-OPERATIONS.md) and the [documentation index](./README.md). Original notes are retained for context, not as new verification results.
+
 ## Scope
 This first implementation establishes a static React, Vite, and TypeScript site for GitHub Pages and recreates the approved HOME hero as HTML/CSS instead of using the full mockup as a page background.
 

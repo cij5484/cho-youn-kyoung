@@ -16,7 +16,7 @@ export function preloadAlbumDetail(album: Album) {
   if (cached) return cached;
 
   const module = album.id === 'han-beom-su-haegeum-sanjo-2020'
-    ? Promise.all([import('./HanBeomSuAlbumDetail'), import('./HanBeomSuAlbumDetailExperience3D')])
+    ? Promise.all([import('./HanBeomSuAlbumDetail'), import('./AlbumDetailExperience3D')])
     : Promise.all([import('./JiYoungHeeAlbumDetail'), import('./AlbumDetailExperience3D')]);
   const images = [
     album.albumHero?.background.desktop,

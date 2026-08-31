@@ -1,5 +1,7 @@
 # 2026-08-16 루트 중복 자산 정밀 비교
 
+> **과거 비교·처리 기록 — 현재 삭제 후보 목록 아님.** 아래 환경 오류·파일 해시·검수·승인·삭제 결과는 2026-07-25 조사 당시의 기록이다. 당시 PNG 사용본은 이후 WebP로 교체되었으므로 현재 존재 여부를 별도로 확인한다. 현재 운영 안내는 [ASSET-SPECIFICATIONS.md](./ASSET-SPECIFICATIONS.md), 후속 정리는 [ASSET-OPTIMIZATION-PLAN.md](./ASSET-OPTIMIZATION-PLAN.md)를 따른다.
+
 ## 1. 조사 범위와 재현 조건
 
 - **조사 기준 main SHA:** `a0d38ef13d6f06055afdc2613ecf262708e8b2d0` (PR #49 병합 커밋)

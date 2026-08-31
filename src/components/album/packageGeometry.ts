@@ -8,20 +8,6 @@ export const PACKAGE_PANEL = 2.42;
 export const COVER_OVERHANG = 0.035;
 export const COVER_DEPTH = 0.018;
 export const JI_SPINE_RATIO = 171 / 3000;
-const ROTATION_KEY = 'ji-young-hee-package-rotation';
-
-export function storePackageRotation(rotation: { x: number; y: number }) {
-  sessionStorage.setItem(ROTATION_KEY, JSON.stringify(rotation));
-}
-
-export function readPackageRotation(fallback: { x: number; y: number }) {
-  try {
-    const stored = JSON.parse(sessionStorage.getItem(ROTATION_KEY) ?? '') as { x?: number; y?: number };
-    return typeof stored.x === 'number' && typeof stored.y === 'number' ? { x: stored.x, y: stored.y } : fallback;
-  } catch {
-    return fallback;
-  }
-}
 
 export function getPackageDimensions(geometry?: AlbumHeroPackageGeometry) {
   const coverHeight = PACKAGE_PANEL;

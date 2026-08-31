@@ -1,7 +1,7 @@
 # MEDIA 페이지 운영 절차
 
-- 마지막 확인 날짜: 2026-08-13
-- 작업 기준 main SHA: `13ff9af`
+- 코드 대조 날짜: 2026-08-31
+- 작업 기준 main SHA: `41d082b`
 
 ## 1. 목적과 경로
 
@@ -46,7 +46,7 @@ MEDIA Hero의 editorial index와 본문은 `media.ts`의 단일 `mediaSections` 
 }
 ```
 
-## 4. YouTube 규칙
+## 5. YouTube 규칙
 
 - `youtu.be/{id}` 또는 `youtube.com/watch?v={id}`를 기준으로 영상 ID를 확인한 뒤 URL은 불필요한 공유 파라미터 없이 저장합니다.
 - `?si=`, 추적 파라미터, 시간 지정 등 공유용 파라미터를 제거합니다. `youtubeId`에는 URL이 아닌 11자리 영상 ID만 저장합니다.
@@ -55,23 +55,25 @@ MEDIA Hero의 editorial index와 본문은 `media.ts`의 단일 `mediaSections` 
 - VR·360° 영상도 동일한 embed를 사용하며 제목·설명·버튼 라벨로 성격을 알립니다.
 - 배포 전 각 영상을 직접 열어 삭제·비공개·연령 제한 상태와 썸네일 fallback을 확인합니다. 사용할 수 없으면 검증된 대체 URL로 데이터만 갱신하거나 노출을 중단합니다.
 
-## 5. MEDIA 섹션 구조
+## 6. MEDIA 섹션 구조
 
 MEDIA는 `01 FEATURED PERFORMANCE`, `02 PRESS & ARTICLES`, `03 SELECTED PERFORMANCES`, `04 SPECIAL ARCHIVE`로 구성합니다. 앨범 등록과 재생 링크 운영은 [ALBUM-WORKFLOW.md](./ALBUM-WORKFLOW.md)를 따르며 WORKS에서 노출합니다.
 
-## 6. 일반 MEDIA용 로컬 영상·오디오
+## 7. 일반 MEDIA용 로컬 영상·오디오
 
-이 규칙은 앨범 웹 플레이어가 아니라 MEDIA의 독립적인 영상·음원 기록에만 적용합니다. 실제 파일을 받은 뒤 `public/assets/media/{media-id}/` 아래에 MP4 또는 MP3/WAV를 저장하고, `media.ts`의 `kind`를 `local-video` 또는 `local-audio`로 지정해 연결합니다. 파일이 없는 동안 경로 또는 빈 폴더를 미리 만들지 않습니다. 파일 형식, 크기, 저작권, 브라우저 재생과 fallback을 배포 전에 확인합니다.
+**향후 확장안:** `MediaKind` 타입에는 `local-video` / `local-audio` / `external`이 있지만 현재 `MediaPage`의 카드는 `YouTubePreview`를 사용하며 kind별 로컬 재생 UI는 구현되어 있지 않습니다. 따라서 데이터의 kind만 바꿔도 MP4/MP3가 재생된다고 안내하지 않습니다. 현재 등록된 영상 4개는 모두 `youtube-video`입니다.
+
+독립 로컬 자료를 도입할 때에는 실제 파일을 받은 뒤 `public/assets/media/{media-id}/` 경로와 별도 재생 UI를 함께 설계·구현·검수합니다. 이 확장은 앨범 R2 플레이어와 별개이며 이번 문서 정리에서 구현하지 않습니다. 파일이 없는 동안 경로나 빈 폴더를 미리 만들지 않습니다.
 
 ### 앨범 상세용 외부 웹 음원과의 구분
 
 - 앨범은 MEDIA에 DISCOGRAPHY로 다시 만들지 않으며 `albums.ts`를 Source of Truth로 WORKS에서 관리합니다.
-- 향후 `/album/:id` 플레이어에서 사용하는 고음질·웹 감상용 트랙은 GitHub의 `public/assets/media/`에 저장하지 않는 방향을 기본으로 합니다.
-- 해당 트랙은 Cloudflare R2 등 외부 object storage/CDN의 웹 재생 URL 연결을 검토합니다. 저장소와 데이터 필드 설계는 아직 **미확정**입니다.
+- 현재 `/album/:id` 플레이어는 `albums.ts`의 `AlbumTrack.webAudioUrl`을 사용합니다. 두 앨범의 각 6개 트랙은 외부 Cloudflare R2 MP3 URL에 연결되어 있고 GitHub의 `public/assets/media/`에 저장하지 않습니다.
+- `useAlbumAudio`가 실제 오디오 요소와 재생 상태를 관리합니다. 공식 플랫폼 링크는 별도 `streamingLinks`이며, 데이터에 URL이 있다는 사실과 해당 음원의 실제 접근·재생 가능 여부는 구분해 검수합니다.
 - 공식 플랫폼 외부 링크와 자체 웹 플레이어의 트랙 URL을 구분하고 확인되지 않은 URL은 만들지 않습니다.
 - 앨범 Hero, 상세, 재생과 북클릿의 전체 원칙은 [ALBUM-WORKFLOW.md](./ALBUM-WORKFLOW.md)를 따릅니다.
 
-## 7. 콘텐츠 검증 원칙
+## 8. 콘텐츠 검증 원칙
 
 - 제목, 연도, 기관명, 수상 정보는 공식 원본에서 확인된 값만 입력합니다.
 - `featured`는 대표 공연, `selected`는 보조·선별 공연, `special`은 수상·과거 경력 등 특별 기록에만 사용합니다.
