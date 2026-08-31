@@ -5,6 +5,7 @@ import { assetUrl } from '../../../utils/assetUrl';
 import type { BookletBounds, ExperienceMode } from './HanBeomSuAlbumDetailExperience3D';
 import { useAlbumAudio } from './useAlbumAudio';
 import { AlbumAdjacentNavigation } from './AlbumAdjacentNavigation';
+import { AlbumOpenOverlay } from './AlbumOpenOverlay';
 import { useHanBeomSuStage } from '../HanBeomSuPersistentStage';
 
 const statusLabel = { 'coming-soon': 'COMING SOON', released: 'RELEASED' } as const;
@@ -357,48 +358,15 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
           </div>
         )}
         {mode === 'ALBUM_OPEN' && !sceneTransitioning && (
-          <div className={`han-detail__open-ui${stageVisible ? '' : ' is-editorial-hidden'}`}>
-            <section className="han-detail__open-info" aria-labelledby="open-album-info">
-              <p id="open-album-info" className="han-detail__open-label">ALBUM · {album.year}</p>
-              <h1>조윤경 해금산조</h1>
-              <h2>한범수류</h2>
-              <p className="han-detail__open-meta">
-                {tracks.length} TRACKS
-                {album.releaseStatus && <strong>{statusLabel[album.releaseStatus]}</strong>}
-                {album.releaseDate && <strong>{album.releaseDate.replaceAll('-', '.')}</strong>}
-              </p>
-            </section>
-            {album.credits?.length && (
-              <section className="han-detail__open-credits" aria-labelledby="open-album-credits">
-                <h2 id="open-album-credits">CREDITS</h2>
-                <dl>
-                  {album.credits.map((credit) => (
-                    <div key={credit.role}>
-                      <dt>{credit.role}</dt>
-                      <dd>{credit.names.join(' · ')}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </section>
-            )}
-            <button className="han-detail__callout han-detail__callout--booklet" type="button" onClick={openBooklet}>
-              <span>BOOKLET</span>
-              <svg viewBox="0 0 210 32" aria-hidden="true">
-                <path d="M1 16 H178 L195 3" pathLength="1" />
-                <circle cx="199" cy="3" r="2.5" />
-              </svg>
-            </button>
-            <button className="han-detail__callout han-detail__callout--tracks" type="button" onClick={enterPlayer}>
-              <svg viewBox="0 0 210 32" aria-hidden="true">
-                <circle cx="11" cy="3" r="2.5" />
-                <path d="M15 3 L32 16 H209" pathLength="1" />
-              </svg>
-              <span>TRACKS</span>
-            </button>
-            <button className="han-detail__close-album" type="button" onClick={() => { setSceneTransitioning(true); setMode('CLOSED'); }}>
-              CLOSE ALBUM
-            </button>
-          </div>
+          <AlbumOpenOverlay
+            album={album}
+            title="조윤경 해금산조"
+            subtitle="한범수류"
+            visible={stageVisible}
+            onBooklet={openBooklet}
+            onTracks={enterPlayer}
+            onClose={() => { setSceneTransitioning(true); setMode('CLOSED'); }}
+          />
         )}
         {mode === 'BOOKLET_FOCUS' && !sceneTransitioning && (
           <>

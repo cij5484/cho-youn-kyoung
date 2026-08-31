@@ -5,20 +5,13 @@ import { assetUrl } from '../../../utils/assetUrl';
 import type { BookletBounds, ExperienceMode } from './AlbumDetailExperience3D';
 import { useAlbumAudio } from './useAlbumAudio';
 import { AlbumAdjacentNavigation } from './AlbumAdjacentNavigation';
+import { AlbumOpenOverlay } from './AlbumOpenOverlay';
 import { useJiYoungHeeStage } from '../JiYoungHeePersistentStage';
 
 const statusLabel = { 'coming-soon': 'COMING SOON', released: 'RELEASED' } as const;
 
 function formatTime(seconds: number) {
   return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
-}
-
-function totalTrackTime(tracks: NonNullable<Album['tracks']>) {
-  const seconds = tracks.reduce((total, track) => {
-    const [minutes, remainder] = (track.duration ?? '0:00').split(':').map(Number);
-    return total + minutes * 60 + remainder;
-  }, 0);
-  return formatTime(seconds);
 }
 
 function canUseWebGL() {
@@ -359,45 +352,15 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
           </div>
         )}
         {mode === 'ALBUM_OPEN' && !sceneTransitioning && (
-          <div className={`ji-detail__open-ui${stageVisible ? '' : ' is-editorial-hidden'}`}>
-            <section className="ji-detail__open-info" aria-labelledby="open-album-info">
-              <p id="open-album-info" className="ji-detail__open-label">ALBUM · {album.year}</p>
-              <h1>조윤경 해금산조</h1>
-              <h2>지영희류</h2>
-              <p className="ji-detail__open-meta">
-                {tracks.length} TRACKS · {totalTrackTime(tracks)}
-                {album.releaseStatus && <strong>{statusLabel[album.releaseStatus]}</strong>}
-              </p>
-            </section>
-            {album.credits?.length && (
-              <section className="ji-detail__open-credits" aria-labelledby="open-album-credits">
-                <h2 id="open-album-credits">CREDITS</h2>
-                <dl>
-                  {album.credits.map((credit) => (
-                    <div key={credit.role}>
-                      <dt>{credit.role}</dt>
-                      <dd>{credit.names.join(' · ')}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </section>
-            )}
-            <button className="ji-detail__callout ji-detail__callout--booklet" type="button" onClick={openBooklet}>
-              <span>BOOKLET</span>
-              <svg viewBox="0 0 210 32" aria-hidden="true">
-                <path d="M1 16 H178 L195 3" pathLength="1" />
-              </svg>
-            </button>
-            <button className="ji-detail__callout ji-detail__callout--tracks" type="button" onClick={enterPlayer}>
-              <svg viewBox="0 0 210 32" aria-hidden="true">
-                <path d="M15 3 L32 16 H209" pathLength="1" />
-              </svg>
-              <span>TRACKS</span>
-            </button>
-            <button className="ji-detail__close-album" type="button" onClick={() => { setSceneTransitioning(true); setMode('CLOSED'); }}>
-              CLOSE ALBUM
-            </button>
-          </div>
+          <AlbumOpenOverlay
+            album={album}
+            title="조윤경 해금산조"
+            subtitle="지영희류"
+            visible={stageVisible}
+            onBooklet={openBooklet}
+            onTracks={enterPlayer}
+            onClose={() => { setSceneTransitioning(true); setMode('CLOSED'); }}
+          />
         )}
         {mode === 'BOOKLET_FOCUS' && !sceneTransitioning && (
           <>

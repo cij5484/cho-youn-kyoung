@@ -67,7 +67,7 @@
 .ji-persistent-stage__background{position:absolute;inset:0}.ji-persistent-stage__background img{width:100%;height:100%;object-fit:cover}
 .ji-persistent-stage__canvas{position:absolute;inset:var(--header) 0 0;opacity:1;transition:opacity .8s cubic-bezier(.22,.61,.36,1)}
 .ji-persistent-stage__canvas.is-editorial-hidden{opacity:0;pointer-events:none}
-.ji-detail { --ji-ink:#252525; --ji-accent:#70453f; position:relative;z-index:1;background:transparent;color:var(--ji-ink);pointer-events:none; }
+.ji-detail { --ji-ink:#252525; --ji-accent:#70453f; --album-ui-accent:var(--ji-accent); --album-ui-action:var(--ji-accent); --album-ui-muted:rgba(37,37,37,.66); position:relative;z-index:1;background:transparent;color:var(--ji-ink);pointer-events:none; }
 .ji-detail button { color:inherit; font:inherit; }
 .ji-detail button:focus-visible,.ji-detail a:focus-visible { outline:2px solid var(--ji-accent); outline-offset:5px; }
 .ji-detail__stage { position:relative; min-height:100svh; overflow:hidden; isolation:isolate; }
@@ -76,39 +76,15 @@
 .ji-detail__background { position:absolute; inset:0; z-index:-2; }
 .ji-detail__background img { width:100%; height:100%; object-fit:cover; }
 .ji-detail__canvas { position:absolute; inset:var(--header) 0 0; touch-action:pan-y; }
-.ji-detail__intro { position:absolute; z-index:2; top:50%; right:max(4vw,36px); width:min(45vw,640px); transform:translateY(-45%); }
+.ji-detail__intro { position:absolute; z-index:2; top:50%; left:70%; right:clamp(24px,4vw,64px); transform:translateY(-45%); }
 .ji-detail__intro p:first-of-type,.ji-detail__label { color:var(--ji-accent); font-size:.7rem; font-weight:700; letter-spacing:.22em; }
-.ji-detail__intro h1 { margin:20px 0 4px; font-family:var(--serif); font-size:clamp(2.35rem,3.45vw,4.25rem); font-weight:500; line-height:1.12; white-space:nowrap; }
+.ji-detail__intro h1 { margin:20px 0 4px; font-family:var(--serif); font-size:clamp(1.6rem,2.55vw,3.1rem); font-weight:500; line-height:1.12; overflow-wrap:anywhere; }
 .ji-detail__intro h2 { margin:0 0 25px; color:var(--ji-accent); font-family:var(--serif); font-size:clamp(1.2rem,2vw,1.7rem); font-weight:500; }
 .ji-detail__english { white-space:pre-line; font-family:var(--serif); line-height:1.65; }
 .ji-detail__intro strong { display:block; margin-top:24px; color:var(--ji-accent); font-size:.72rem; letter-spacing:.2em; }
 .ji-detail__intro button,.ji-detail__booklet-controls button,.ji-detail__player button,.ji-detail__editorial button { border:0; border-bottom:1px solid currentColor; background:none; padding:10px 0; font-size:.72rem; font-weight:700; letter-spacing:.16em; cursor:pointer; }
 .ji-detail__intro>button { margin-top:34px; color:var(--ji-accent); }
 .ji-detail__back { display:inline-block; margin-bottom:clamp(35px,6vh,70px); color:var(--ji-accent); font-size:.7rem; font-weight:700; letter-spacing:.15em; }
-.ji-detail__open-ui{position:absolute;z-index:3;inset:0;pointer-events:none;opacity:1;transition:opacity .8s cubic-bezier(.22,.61,.36,1)}
-.ji-detail__open-ui.is-editorial-hidden{opacity:0;pointer-events:none}
-.ji-detail__open-info,.ji-detail__open-credits{position:absolute;top:calc(var(--header) + clamp(28px,4.5vh,58px));animation:ji-open-copy-in .5s ease-out both}
-.ji-detail__open-info{left:max(4vw,36px)}
-.ji-detail__open-label,.ji-detail__open-credits h2{margin:0;color:var(--ji-accent);font-size:.66rem;font-weight:700;letter-spacing:.21em}
-.ji-detail__open-info h1{margin:14px 0 2px;font-family:var(--serif);font-size:clamp(1.25rem,1.65vw,1.7rem);font-weight:500;line-height:1.2}
-.ji-detail__open-info h2{margin:0;color:var(--ji-accent);font-family:var(--serif);font-size:clamp(.94rem,1.15vw,1.15rem);font-weight:500}
-.ji-detail__open-meta{margin:15px 0 0;font-size:.64rem;font-weight:600;letter-spacing:.15em}
-.ji-detail__open-meta strong{display:block;margin-top:5px;color:var(--ji-accent);font-size:.62rem;letter-spacing:.18em}
-.ji-detail__open-credits{right:max(4vw,36px);width:min(25vw,320px);animation-delay:60ms}
-.ji-detail__open-credits dl{margin:13px 0 0}
-.ji-detail__open-credits dl div{margin-top:9px}
-.ji-detail__open-credits dt{color:rgba(37,37,37,.66);font-size:.59rem;line-height:1.35;letter-spacing:.08em}
-.ji-detail__open-credits dd{margin:2px 0 0;font-family:var(--serif);font-size:.7rem;line-height:1.35}
-.ji-detail__callout{position:absolute;top:64%;display:flex;align-items:center;gap:12px;border:0;background:transparent;padding:8px 0;color:var(--ji-callout,var(--ji-accent))!important;font-size:.66rem;font-weight:700;letter-spacing:.2em;cursor:pointer;pointer-events:auto}
-.ji-detail__callout--booklet{left:max(calc(50% - 780px),36px)}
-.ji-detail__callout--tracks{right:max(calc(50% - 780px),36px)}
-.ji-detail__callout svg{display:block;width:clamp(125px,15vw,210px);height:32px;overflow:visible;fill:none;stroke:currentColor;stroke-width:1;opacity:.7}
-.ji-detail__callout path{stroke-dasharray:1;stroke-dashoffset:1;animation:ji-callout-line .55s .08s cubic-bezier(.22,.61,.36,1) forwards}
-.ji-detail__callout span{opacity:0;animation:ji-callout-text .3s .3s ease-out forwards}
-.ji-detail__callout--booklet span{transform:translateX(-7px)}
-.ji-detail__callout--tracks span{transform:translateX(7px)}
-.ji-detail__close-album{position:absolute;bottom:6vh;left:50%;border:0;border-bottom:1px solid currentColor;background:transparent;padding:10px 0;color:var(--ji-accent)!important;font-size:.68rem;font-weight:700;letter-spacing:.17em;transform:translateX(-50%);cursor:pointer;pointer-events:auto;animation:ji-ui-in .32s .18s ease both}
-@media(min-width:701px){.ji-detail__close-album{bottom:clamp(82px,9vh,110px);font-family:var(--sans);font-size:.66rem;letter-spacing:.2em}}
 .ji-detail__booklet-ui { position:absolute; z-index:5; pointer-events:none!important; touch-action:pan-y; }
 .ji-detail__booklet-controls { position:absolute;top:-40px;right:12%;left:12%;display:flex;justify-content:space-between; }
 .ji-detail__booklet-controls button,.ji-detail__booklet-footer{pointer-events:auto}
@@ -147,14 +123,10 @@
 
 @media(max-width:700px){
  .ji-detail__stage{height:100svh;min-height:100svh;max-height:100svh;overflow:hidden;overscroll-behavior:none}.ji-detail__canvas{inset:var(--header) 0 0}.ji-detail__intro{top:auto;right:24px;bottom:25px;left:24px;width:auto;transform:none}.ji-detail__back{margin-bottom:12px}.ji-detail__intro h1{margin-top:10px;font-size:clamp(1.9rem,9vw,2.25rem);white-space:normal}.ji-detail__intro h2{margin-bottom:10px}.ji-detail__english{font-size:.76rem;line-height:1.45}.ji-detail__intro strong{margin-top:9px}.ji-detail__intro>button{margin-top:12px}
- .ji-detail__open-info,.ji-detail__open-credits{top:calc(var(--header) + 18px)}.ji-detail__open-info{left:20px}.ji-detail__open-credits{right:20px;width:43vw}.ji-detail__open-info h1{margin-top:9px;font-size:1.05rem}.ji-detail__open-info h2{font-size:.82rem}.ji-detail__open-meta{margin-top:9px;font-size:.55rem}.ji-detail__open-credits dl{margin-top:8px}.ji-detail__open-credits dl div{margin-top:5px}.ji-detail__open-credits dt{font-size:.5rem}.ji-detail__open-credits dd{font-size:.6rem}.ji-detail__callout{top:auto;bottom:calc(env(safe-area-inset-bottom) + 68px);min-width:44px;min-height:44px;padding:0;font-size:.62rem}.ji-detail__callout--booklet{left:20px}.ji-detail__callout--tracks{right:20px}.ji-detail__callout svg{display:none}.ji-detail__close-album{bottom:calc(env(safe-area-inset-bottom) + 18px);min-height:44px}
  .ji-detail__booklet-ui{inset:calc(var(--header) + 10px) 18px max(12px,env(safe-area-inset-bottom))}.ji-detail__booklet-controls{position:static;padding:0 4%}.ji-detail__booklet-controls button{min-width:44px;min-height:44px}.ji-detail__booklet-footer{top:auto;bottom:0}.ji-detail__booklet-footer button{min-height:44px}
  .ji-detail__player{top:auto;right:22px;bottom:18px;left:22px;width:auto;transform:none}.ji-detail__player ol{margin:8px 0 10px}.ji-detail__player li button{padding:6px 0}.ji-detail__selected{margin:8px 0}.ji-detail__editorial section{grid-template-columns:1fr;gap:22px}.ji-detail__editorial dl div{grid-template-columns:1fr;gap:5px}
 }
 .ji-detail__intro,.ji-detail__booklet-ui,.ji-detail__player{animation:ji-ui-in .32s ease both}
 @keyframes ji-ui-in{from{opacity:0}to{opacity:1}}
-@keyframes ji-open-copy-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-@keyframes ji-callout-line{to{stroke-dashoffset:0}}
-@keyframes ji-callout-text{to{opacity:1;transform:none}}
 @keyframes ji-track-item{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.ji-detail *{scroll-behavior:auto!important;transition:none!important;animation-duration:.01ms!important;animation-delay:0ms!important}.ji-detail__callout path{stroke-dashoffset:0}.ji-detail__callout span{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.ji-detail *{scroll-behavior:auto!important;transition:none!important;animation-duration:.01ms!important;animation-delay:0ms!important}}

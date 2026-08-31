@@ -2,44 +2,21 @@
 .han-persistent-stage.is-visible{visibility:visible;opacity:1;pointer-events:auto}
 .han-persistent-stage__background{position:absolute;inset:0}.han-persistent-stage__background img{width:100%;height:100%;object-fit:cover}
 .han-persistent-stage__canvas{position:absolute;inset:0;pointer-events:auto;touch-action:pan-y}
-.han-detail { --han-ink:#f2eee5; --han-accent:#9db9b1; --han-callout:#d6ad6c; --han-muted:rgba(242,238,229,.72); position:relative;z-index:1;background:transparent;color:var(--han-ink);pointer-events:none; }
+.han-detail { --han-ink:#f2eee5; --han-accent:#9db9b1; --han-muted:rgba(242,238,229,.72); --album-ui-accent:var(--han-accent); --album-ui-action:#d6ad6c; --album-ui-muted:rgba(242,238,229,.66); position:relative;z-index:1;background:transparent;color:var(--han-ink);pointer-events:none; }
 .han-detail button { color:inherit; font:inherit; }
 .han-detail button:focus-visible,.han-detail a:focus-visible { outline:2px solid var(--han-accent); outline-offset:5px; }
 .han-detail__stage { position:relative; min-height:100svh; overflow:hidden; isolation:isolate; }
 .han-detail__intro a,.han-detail__intro button,.han-detail__booklet-ui,.han-detail__booklet-hit-areas,.han-detail__player,.han-detail__editorial{pointer-events:auto}
 .han-detail__swipe-surface{position:absolute;z-index:2;inset:var(--header) 0 90px;pointer-events:auto;touch-action:pan-y}
-.han-detail__intro { position:absolute; z-index:2; top:50%; right:max(4vw,36px); width:min(38vw,560px); transform:translateY(-45%); }
+.han-detail__intro { position:absolute; z-index:2; top:50%; left:70%; right:clamp(24px,4vw,64px); transform:translateY(-45%); }
 .han-detail__intro p:first-of-type,.han-detail__label { color:var(--han-accent); font-size:.7rem; font-weight:700; letter-spacing:.22em; }
-.han-detail__intro h1 { margin:20px 0 4px; font-family:var(--serif); font-size:clamp(2.35rem,3.45vw,4.25rem); font-weight:500; line-height:1.12; white-space:nowrap; }
+.han-detail__intro h1 { margin:20px 0 4px; font-family:var(--serif); font-size:clamp(1.6rem,2.55vw,3.1rem); font-weight:500; line-height:1.12; overflow-wrap:anywhere; }
 .han-detail__intro h2 { margin:0 0 25px; color:var(--han-accent); font-family:var(--serif); font-size:clamp(1.2rem,2vw,1.7rem); font-weight:500; }
 .han-detail__english { white-space:pre-line; font-family:var(--serif); line-height:1.65; }
 .han-detail__intro strong { display:block; margin-top:24px; color:var(--han-accent); font-size:.72rem; letter-spacing:.2em; }
 .han-detail__intro button,.han-detail__booklet-controls button,.han-detail__player button,.han-detail__editorial button { border:0; border-bottom:1px solid currentColor; background:none; padding:10px 0; font-size:.72rem; font-weight:700; letter-spacing:.16em; cursor:pointer; }
 .han-detail__intro>button { margin-top:34px; color:var(--han-accent); }
 .han-detail__back { display:inline-block; margin-bottom:clamp(35px,6vh,70px); color:var(--han-accent); font-size:.7rem; font-weight:700; letter-spacing:.15em; }
-.han-detail__open-ui{position:absolute;z-index:3;inset:0;pointer-events:none}
-.han-detail__open-info,.han-detail__open-credits{position:absolute;top:calc(var(--header) + clamp(28px,4.5vh,58px));animation:han-open-copy-in .5s ease-out both}
-.han-detail__open-info{left:max(4vw,36px)}
-.han-detail__open-label,.han-detail__open-credits h2{margin:0;color:var(--han-accent);font-size:.66rem;font-weight:700;letter-spacing:.21em}
-.han-detail__open-info h1{margin:14px 0 2px;font-family:var(--serif);font-size:clamp(1.25rem,1.65vw,1.7rem);font-weight:500;line-height:1.2}
-.han-detail__open-info h2{margin:0;color:var(--han-accent);font-family:var(--serif);font-size:clamp(.94rem,1.15vw,1.15rem);font-weight:500}
-.han-detail__open-meta{margin:15px 0 0;font-size:.64rem;font-weight:600;letter-spacing:.15em}
-.han-detail__open-meta strong{display:block;margin-top:5px;color:var(--han-accent);font-size:.62rem;letter-spacing:.18em}
-.han-detail__open-credits{right:max(4vw,36px);width:min(25vw,320px);animation-delay:60ms}
-.han-detail__open-credits dl{margin:13px 0 0}
-.han-detail__open-credits dl div{margin-top:9px}
-.han-detail__open-credits dt{color:rgba(242,238,229,.66);font-size:.59rem;line-height:1.35;letter-spacing:.08em}
-.han-detail__open-credits dd{margin:2px 0 0;font-family:var(--serif);font-size:.7rem;line-height:1.35}
-.han-detail__callout{position:absolute;top:64%;display:flex;align-items:center;gap:12px;border:0;background:transparent;padding:8px 0;color:var(--han-callout,var(--han-accent))!important;font-size:.66rem;font-weight:700;letter-spacing:.2em;cursor:pointer;pointer-events:auto}
-.han-detail__callout--booklet{left:max(calc(50% - 780px),36px)}
-.han-detail__callout--tracks{right:max(calc(50% - 780px),36px)}
-.han-detail__callout svg{display:block;width:clamp(125px,15vw,210px);height:32px;overflow:visible;fill:none;stroke:currentColor;stroke-width:1;opacity:.7}
-.han-detail__callout path{stroke-dasharray:1;stroke-dashoffset:1;animation:han-callout-line .55s .08s cubic-bezier(.22,.61,.36,1) forwards}
-.han-detail__callout span{opacity:0;animation:han-callout-text .3s .3s ease-out forwards}
-.han-detail__callout--booklet span{transform:translateX(-7px)}
-.han-detail__callout--tracks span{transform:translateX(7px)}
-.han-detail__close-album{position:absolute;bottom:6vh;left:50%;border:0;border-bottom:1px solid currentColor;background:transparent;padding:10px 0;color:var(--han-accent)!important;font-size:.68rem;font-weight:700;letter-spacing:.17em;transform:translateX(-50%);cursor:pointer;pointer-events:auto;animation:han-ui-in .32s .18s ease both}
-@media(min-width:701px){.han-detail__close-album{bottom:clamp(82px,9vh,110px);font-family:var(--sans);font-size:.66rem;letter-spacing:.2em}}
 .han-detail__booklet-ui { position:absolute; z-index:5; pointer-events:none!important; touch-action:pan-y; }
 .han-detail__booklet-controls { position:absolute;top:-40px;right:12%;left:12%;display:flex;justify-content:space-between; }
 .han-detail__booklet-controls button,.han-detail__booklet-footer{pointer-events:auto}
@@ -75,14 +52,10 @@
 
 @media(max-width:700px){
  .han-detail__stage{height:100svh;min-height:100svh;max-height:100svh;overflow:hidden;overscroll-behavior:none}.han-detail__intro{top:auto;right:24px;bottom:25px;left:24px;width:auto;transform:none}.han-detail__back{margin-bottom:12px}.han-detail__intro h1{margin-top:10px;font-size:clamp(1.9rem,9vw,2.25rem);white-space:normal}.han-detail__intro h2{margin-bottom:10px}.han-detail__english{font-size:.76rem;line-height:1.45}.han-detail__intro strong{margin-top:9px}.han-detail__intro>button{margin-top:12px}
- .han-detail__open-info,.han-detail__open-credits{top:calc(var(--header) + 18px)}.han-detail__open-info{left:20px}.han-detail__open-credits{right:20px;width:43vw}.han-detail__open-info h1{margin-top:9px;font-size:1.05rem}.han-detail__open-info h2{font-size:.82rem}.han-detail__open-meta{margin-top:9px;font-size:.55rem}.han-detail__open-credits dl{margin-top:8px}.han-detail__open-credits dl div{margin-top:5px}.han-detail__open-credits dt{font-size:.5rem}.han-detail__open-credits dd{font-size:.6rem}.han-detail__callout{top:auto;bottom:calc(env(safe-area-inset-bottom) + 68px);min-width:44px;min-height:44px;padding:0;font-size:.62rem}.han-detail__callout--booklet{left:20px}.han-detail__callout--tracks{right:20px}.han-detail__callout svg{display:none}.han-detail__close-album{bottom:calc(env(safe-area-inset-bottom) + 18px);min-height:44px}
  .han-detail__booklet-ui{inset:calc(var(--header) + 10px) 18px max(12px,env(safe-area-inset-bottom))}.han-detail__booklet-controls{position:static;padding:0 4%}.han-detail__booklet-controls button{min-width:44px;min-height:44px}.han-detail__booklet-footer{top:auto;bottom:0}.han-detail__booklet-footer button{min-height:44px}
  .han-detail__booklet-images.is-mobile{position:absolute;z-index:4;display:block;max-width:88vw;max-height:72svh;pointer-events:none}.han-detail__booklet-images.is-mobile img{display:block;width:100%;height:100%;object-fit:fill;image-rendering:auto}.han-detail__player{top:auto;right:22px;bottom:calc(env(safe-area-inset-bottom) + 12px);left:22px;width:auto;max-height:calc(100svh - var(--header) - 24px);overflow:auto;transform:none}.han-detail__player ol{margin:8px 0 10px}.han-detail__player li button{padding:6px 0}.han-detail__selected{margin:8px 0}.han-detail__transport{gap:7px}.han-detail__editorial section{grid-template-columns:1fr;gap:22px}.han-detail__editorial dl div{grid-template-columns:1fr;gap:5px}
 }
 .han-detail__intro,.han-detail__booklet-ui,.han-detail__player{animation:han-ui-in .32s ease both}
 @keyframes han-ui-in{from{opacity:0}to{opacity:1}}
-@keyframes han-open-copy-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-@keyframes han-callout-line{to{stroke-dashoffset:0}}
-@keyframes han-callout-text{to{opacity:1;transform:none}}
 @keyframes han-track-item{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.han-detail *{scroll-behavior:auto!important;transition:none!important;animation-duration:.01ms!important;animation-delay:0ms!important}.han-detail__callout path{stroke-dashoffset:0}.han-detail__callout span{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.han-detail *{scroll-behavior:auto!important;transition:none!important;animation-duration:.01ms!important;animation-delay:0ms!important}}
