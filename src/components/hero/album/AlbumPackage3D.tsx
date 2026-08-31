@@ -7,7 +7,7 @@ import type {
   AlbumHeroPackageGeometry,
   AlbumHeroTextures,
 } from '../../../data/albums';
-import { COVER_DEPTH, getPackageDimensions, storePackageRotation } from '../../album/packageGeometry';
+import { COVER_DEPTH, getPackageDimensions } from '../../album/packageGeometry';
 
 // spine.png is 171 × 3000: its 0.057 width/height ratio defines the printed spine.
 const SPINE_SURFACE_OFFSET = 0.0015;
@@ -114,7 +114,6 @@ function Package({ textures, geometry, scale, position }: PackageProps) {
   const target = useRef({ ...DEFAULT_ROTATION });
   const autoRotation = useRef(DEFAULT_ROTATION.y);
   const autoRotating = useRef(true);
-  const persistFrame = useRef(0);
   const reducedMotion = useReducedMotion();
   const materials = usePackageMaterials(textures);
 
@@ -152,10 +151,6 @@ function Package({ textures, geometry, scale, position }: PackageProps) {
       const easing = 1 - Math.exp(-10 * delta);
       group.current.rotation.x = THREE.MathUtils.lerp(group.current.rotation.x, target.current.x, easing);
       group.current.rotation.y = THREE.MathUtils.lerp(group.current.rotation.y, target.current.y, easing);
-    }
-    persistFrame.current += 1;
-    if (persistFrame.current % 12 === 0) {
-      storePackageRotation({ x: group.current.rotation.x, y: group.current.rotation.y });
     }
   });
 

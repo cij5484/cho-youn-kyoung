@@ -1,7 +1,3 @@
-.han-persistent-stage{position:fixed;z-index:0;inset:0;visibility:hidden;opacity:0;pointer-events:none;background:#172724}
-.han-persistent-stage.is-visible{visibility:visible;opacity:1;pointer-events:auto}
-.han-persistent-stage__background{position:absolute;inset:0}.han-persistent-stage__background img{width:100%;height:100%;object-fit:cover}
-.han-persistent-stage__canvas{position:absolute;inset:0;pointer-events:auto;touch-action:pan-y}
 .han-detail { --han-ink:#f2eee5; --han-accent:#9db9b1; --han-muted:rgba(242,238,229,.72); --album-ui-accent:var(--han-accent); --album-ui-action:#d6ad6c; --album-ui-muted:rgba(242,238,229,.66); position:relative;z-index:1;background:transparent;color:var(--han-ink);pointer-events:none; }
 .han-detail button { color:inherit; font:inherit; }
 .han-detail button:focus-visible,.han-detail a:focus-visible { outline:2px solid var(--han-accent); outline-offset:5px; }

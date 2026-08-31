@@ -3,11 +3,12 @@ import { createContext, lazy, Suspense, useCallback, useContext, useEffect, useM
 import type { ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { albums } from '../../data/albums';
+import type { Album } from '../../data/albums';
 import { assetUrl } from '../../utils/assetUrl';
+import '../../styles/album-stage.css';
 import type { ExperienceProps } from './detail/AlbumDetailExperience3D';
 
 const Experience3D = lazy(() => import('./detail/AlbumDetailExperience3D'));
-const ALBUM_ID = 'ji-young-hee-ryu-haegeum-sanjo-2026';
 
 type StageContextValue = {
   setDetailProps(props: ExperienceProps | null): void;
@@ -16,17 +17,27 @@ type StageContextValue = {
   prepareDetail(): Promise<void>;
 };
 
-const StageContext = createContext<StageContextValue | null>(null);
+const StageContext = createContext<Record<string, StageContextValue>>({});
 
-export function useJiYoungHeeStage() {
-  const value = useContext(StageContext);
-  if (!value) throw new Error('useJiYoungHeeStage must be used inside JiYoungHeePersistentStage');
+export function useAlbumStage(albumId: string) {
+  const value = useOptionalAlbumStage(albumId);
+  if (!value) throw new Error('Album stage is not registered: ' + albumId);
   return value;
 }
 
-export function JiYoungHeePersistentStage({ children }: { children: ReactNode }) {
+export function useOptionalAlbumStage(albumId: string) {
+  return useContext(StageContext)[albumId];
+}
+
+export function AlbumStages({ children }: { children: ReactNode }) {
+  return albums.filter((album) => album.detailExperience).reduceRight<ReactNode>(
+    (content, album) => <AlbumStage key={album.id} album={album}>{content}</AlbumStage>, children);
+}
+
+function AlbumStage({ album, children }: { album: Album; children: ReactNode }) {
+  const parentStages = useContext(StageContext);
+  const ALBUM_ID = album.id;
   const location = useLocation();
-  const album = albums.find((item) => item.id === ALBUM_ID)!;
   const detailRoute = location.pathname === `/album/${ALBUM_ID}`;
   const [homeActive, setHomeActive] = useState(false);
   const [detailProps, setDetailProps] = useState<ExperienceProps | null>(null);
@@ -35,8 +46,6 @@ export function JiYoungHeePersistentStage({ children }: { children: ReactNode })
   const [mobile, setMobile] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [homeActivationKey, setHomeActivationKey] = useState(0);
-  const [backgroundSize, setBackgroundSize] = useState({ width: 0, height: 0 });
-  const stage = useRef<HTMLDivElement>(null);
   const previousPath = useRef(location.pathname);
   const homeActiveRef = useRef(false);
   const prewarmReady = useRef(false);
@@ -61,7 +70,7 @@ export function JiYoungHeePersistentStage({ children }: { children: ReactNode })
       setHomeActivationKey((key) => key + 1);
     }
     previousPath.current = location.pathname;
-  }, [location.pathname]);
+  }, [ALBUM_ID, location.pathname]);
 
   useEffect(() => {
     const query = matchMedia('(max-width: 700px)');
@@ -79,19 +88,8 @@ export function JiYoungHeePersistentStage({ children }: { children: ReactNode })
     };
   }, []);
 
-  useEffect(() => {
-    if (!stage.current) return undefined;
-    const update = () => setBackgroundSize({ width: stage.current!.clientWidth, height: stage.current!.clientHeight });
-    update();
-    const observer = new ResizeObserver(update);
-    observer.observe(stage.current);
-    return () => observer.disconnect();
-  }, []);
-
   const fallbackProps = useMemo<ExperienceProps>(() => ({
     album,
-    backgroundSize,
-    openingFromClosed: false,
     mode: 'CLOSED',
     page: 0,
     mobile,
@@ -105,12 +103,21 @@ export function JiYoungHeePersistentStage({ children }: { children: ReactNode })
     onPrevious: () => undefined,
     onNext: () => undefined,
     onPrewarmReady: prewarming ? handlePrewarmReady : undefined,
-  }), [album, backgroundSize, handlePrewarmReady, homeActivationKey, mobile, prewarming, reduced]);
+  }), [album, handlePrewarmReady, homeActivationKey, mobile, prewarming, reduced]);
   const prepareDetail = useCallback(() => {
     if (mobile || prewarmReady.current) return Promise.resolve();
     if (prewarmPromise.current) return prewarmPromise.current;
     setPrewarming(true);
-    prewarmPromise.current = new Promise<void>((resolve) => { resolvePrewarm.current = resolve; });
+    prewarmPromise.current = new Promise<void>((resolve) => {
+      // Slow/failed warmup must never trap navigation behind a disabled link.
+      const timeout = window.setTimeout(() => {
+        resolvePrewarm.current = null;
+        prewarmPromise.current = null;
+        setPrewarming(false);
+        resolve();
+      }, 8000);
+      resolvePrewarm.current = () => { window.clearTimeout(timeout); resolve(); };
+    });
     return prewarmPromise.current;
   }, [mobile]);
   useEffect(() => {
@@ -119,25 +126,27 @@ export function JiYoungHeePersistentStage({ children }: { children: ReactNode })
       queueMicrotask(() => setPrewarming(false));
       prewarmReady.current = false;
       prewarmPromise.current = null;
+      resolvePrewarm.current?.();
       resolvePrewarm.current = null;
     }
   }, [detailRoute, location.pathname]);
+  useEffect(() => () => { resolvePrewarm.current?.(); }, []);
   // Keep the last desktop detail paint until HOME's persistent hero effect
   // takes ownership; mobile retains its existing route visibility behavior.
   const desktopDetailHandoff = !mobile && location.pathname === '/' && detailProps !== null;
   const visible = detailRoute || (location.pathname === '/' && (homeActive || desktopDetailHandoff));
   const renderStage = visible || prewarming;
-  const context = useMemo(() => ({ setDetailProps, setDetailStageVisible, setHomeActive: updateHomeActive, prepareDetail }), [prepareDetail, updateHomeActive]);
+  const context = useMemo(() => ({ ...parentStages, [album.id]: { setDetailProps, setDetailStageVisible, setHomeActive: updateHomeActive, prepareDetail } }), [album.id, parentStages, prepareDetail, updateHomeActive]);
 
   return (
     <StageContext.Provider value={context}>
-      <div ref={stage} className={`ji-persistent-stage${visible ? ' is-visible' : ''}`} aria-hidden={!visible}>
+      <div className={`album-persistent-stage${visible ? ' is-visible' : ''}`} aria-hidden={!visible}>
         {renderStage ? <>
-          <picture className="ji-persistent-stage__background">
+          <picture className="album-persistent-stage__background">
             <source media="(max-width:700px)" srcSet={assetUrl(album.albumHero!.background.mobile)} />
             <img src={assetUrl(album.albumHero!.background.desktop)} alt="" />
           </picture>
-          <div className={`ji-persistent-stage__canvas${detailRoute && !detailStageVisible ? ' is-editorial-hidden' : ''}`}>
+          <div className={`album-persistent-stage__canvas${detailRoute && !detailStageVisible ? ' is-editorial-hidden' : ''}`}>
             <Suspense fallback={null}>
               <Experience3D {...(detailRoute && detailProps ? { ...detailProps, preloadInterior: true } : fallbackProps)} />
             </Suspense>

@@ -62,11 +62,6 @@
   .album-detail__credits div { grid-template-columns: 1fr; gap: 8px; }
 }
 
-.ji-persistent-stage{position:fixed;z-index:0;inset:0;visibility:hidden;opacity:0;pointer-events:none;background:#eee9df}
-.ji-persistent-stage.is-visible{visibility:visible;opacity:1;pointer-events:auto}
-.ji-persistent-stage__background{position:absolute;inset:0}.ji-persistent-stage__background img{width:100%;height:100%;object-fit:cover}
-.ji-persistent-stage__canvas{position:absolute;inset:var(--header) 0 0;opacity:1;transition:opacity .8s cubic-bezier(.22,.61,.36,1)}
-.ji-persistent-stage__canvas.is-editorial-hidden{opacity:0;pointer-events:none}
 .ji-detail { --ji-ink:#252525; --ji-accent:#70453f; --album-ui-accent:var(--ji-accent); --album-ui-action:var(--ji-accent); --album-ui-muted:rgba(37,37,37,.66); position:relative;z-index:1;background:transparent;color:var(--ji-ink);pointer-events:none; }
 .ji-detail button { color:inherit; font:inherit; }
 .ji-detail button:focus-visible,.ji-detail a:focus-visible { outline:2px solid var(--ji-accent); outline-offset:5px; }

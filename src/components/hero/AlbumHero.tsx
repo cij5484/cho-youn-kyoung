@@ -2,29 +2,21 @@ import { Link } from 'react-router-dom';
 import type { HomeHeroSlide } from '../../data/homeHeroSlides';
 import { AlbumPackage3D } from './album/AlbumPackage3D';
 import { useEffect } from 'react';
-import { useJiYoungHeeStage } from '../album/JiYoungHeePersistentStage';
-import { useHanBeomSuStage } from '../album/HanBeomSuPersistentStage';
+import { useOptionalAlbumStage } from '../album/AlbumStages';
 
 type AlbumHeroProps = {
   slide: HomeHeroSlide;
 };
 
 export function AlbumHero({ slide }: AlbumHeroProps) {
-  const { setHomeActive } = useJiYoungHeeStage();
-  const { setHomeActive: setHanHomeActive } = useHanBeomSuStage();
-  const jiPersistent = slide.id === 'ji-young-hee-ryu-haegeum-sanjo-2026';
-  const hanPersistent = slide.id === 'han-beom-su-haegeum-sanjo-2020';
-  const persistent = jiPersistent || hanPersistent;
+  const stage = useOptionalAlbumStage(slide.id);
+  const setHomeActive = stage?.setHomeActive;
+  const persistent = Boolean(stage);
   useEffect(() => {
-    if (!jiPersistent) return undefined;
+    if (!setHomeActive) return;
     setHomeActive(true);
     return () => setHomeActive(false);
-  }, [jiPersistent, setHomeActive]);
-  useEffect(() => {
-    if (!hanPersistent) return undefined;
-    setHanHomeActive(true);
-    return () => setHanHomeActive(false);
-  }, [hanPersistent, setHanHomeActive]);
+  }, [setHomeActive]);
   const titleLines = slide.title.split('\n');
   const [year, status] = slide.displayDate.split(' · ');
 

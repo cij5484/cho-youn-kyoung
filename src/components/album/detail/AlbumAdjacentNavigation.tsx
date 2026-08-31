@@ -2,16 +2,14 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { albums } from '../../../data/albums';
 import { preloadAlbumDetail } from './preloadAlbumDetail';
-import { useHanBeomSuStage } from '../HanBeomSuPersistentStage';
-import { useJiYoungHeeStage } from '../JiYoungHeePersistentStage';
+import { useAlbumStage } from '../AlbumStages';
 
 export function AlbumAdjacentNavigation({ currentId, tone }: { currentId: string; tone: 'han' | 'ji' }) {
   const available = albums.filter((album) => album.detailsPath);
   const currentIndex = available.findIndex((album) => album.id === currentId);
   const next = available[(currentIndex + 1) % available.length];
   const navigate = useNavigate();
-  const hanStage = useHanBeomSuStage();
-  const jiStage = useJiYoungHeeStage();
+  const nextStage = useAlbumStage(next?.id ?? currentId);
   const [desktop, setDesktop] = useState(() => matchMedia('(min-width: 701px)').matches);
   const [navigating, setNavigating] = useState(false);
   useEffect(() => {
@@ -37,7 +35,7 @@ export function AlbumAdjacentNavigation({ currentId, tone }: { currentId: string
         if (navigating) return;
         setNavigating(true);
         void preloadAlbumDetail(next)
-          .then(() => next.id === 'han-beom-su-haegeum-sanjo-2020' ? hanStage.prepareDetail() : jiStage.prepareDetail())
+          .then(() => nextStage.prepareDetail())
           .then(() => navigate(next.detailsPath!, { state: { autoOpenAlbum: true } }))
           .catch(() => setNavigating(false));
       }}>
