@@ -15,7 +15,7 @@
 ## HOME 3D Hero 기반
 
 - 앨범 전용 `AlbumHero`와 Three.js + React Three Fiber 기반 `AlbumPackage3D`가 구현되어 있다. 공연 Hero 컴포넌트와 CSS는 재사용하지 않는다.
-- 디지팩의 여섯 면 texture를 독립적으로 연결할 수 있고, texture가 없는 얇은 edge에는 artwork 없는 절제된 plastic material을 표시한다. 수동 X축 ±28°·Y축 ±168° 제한 회전, canvas 밖에서도 안전하게 해제되는 mouse/touch drag, frame damping, reduced-motion 대응과 제한 DPR을 기본으로 한다.
+- 디지팩의 여섯 면 texture를 독립적으로 연결할 수 있고, texture가 없는 얇은 edge에는 artwork 없는 절제된 plastic material을 표시한다. 수동 조작에서 vertical tilt(X)는 ±28°로 제한하고 yaw(Y)는 제한 없이 여러 바퀴 회전할 수 있으며, drag 종료 뒤 감쇠되는 inertia를 적용한다. canvas 밖에서도 안전하게 해제되는 mouse/touch drag, frame damping, reduced-motion 대응과 제한 DPR을 기본으로 한다.
 - 지영희류 앨범의 확정 데이터와 런타임 texture `front.webp`, `back.webp`, `spine.webp`를 연결했다. CD는 `cd-label.webp`, HOME 배경은 `home-hero-desktop.webp`와 `home-hero-mobile.webp`를 사용한다. 무광 종이 cover와 spine은 반투명 plastic tray보다 조금 크게 돌출되고, 반대쪽과 위·아래에서는 안쪽 트레이가 드러난다. 실제 조명에 반응하는 부드러운 저농도 shadow receiver와 넓어진 3D 안전 영역을 사용한다.
 - HOME은 `albumHero.background`의 실제 desktop/mobile 전용 이미지를 `<picture>`로 선택해 사용한다. RECENT WORKS 앨범 cover는 강제 비율이나 crop 없이 실제 이미지 비율로 표시하며 공연 포스터 카드의 비율과 상태 동작은 바꾸지 않는다.
 - 표지 크기의 투명 interaction plane으로 어느 면에서도 drag를 시작할 수 있다. 진입 시 Y축 단방향 자동 회전은 약 22초에 한 바퀴이며 첫 mouse/touch 조작 즉시 중단되고 `prefers-reduced-motion`에서는 시작하지 않는다.
@@ -156,9 +156,9 @@ HOME RECENT WORKS에는 확정 `releaseDate`가 있거나 위의 `coming-soon` �
 
 - 닫힌 디지팩은 느린 자동 회전과 click/drag 구분을 지원하고, 열 때 articulated hinge를 기준으로 front panel이 움직인다. 펼친 구성은 **왼쪽 booklet / 오른쪽 CD tray**다.
 - interior artwork 위에 단순한 반투명 tray, 얕은 recess와 hub를 별도 3D 물성으로 올렸다. CD는 두께가 있는 plastic ring, outer rim, 실제 center hole, 별도 label surface로 구성한다.
-- Digital Booklet은 실제 P1~P7만 사용한다. P1은 닫힌 표지이며 desktop spread는 `P2/P3 → P4/P5 → P6/P7`, mobile은 읽기 쉬운 single-page focus로 P2부터 P7까지 탐색한다. **P8은 의도적으로 존재하지 않는다.** 버튼, 방향키와 mobile swipe를 제공한다.
-- Player는 track 선택, play/pause, 시간, seek와 오류 상태를 갖춘다. 두 앨범의 등록 트랙은 실제 Cloudflare R2 `webAudioUrl`에 연결되어 있으며, 재생 중에만 CD가 재생 회전을 한다.
-- `prefers-reduced-motion`에서는 자동 회전, 큰 이동과 page transition을 제거하되 모든 기능을 유지한다. Canvas를 생성할 수 없으면 cover, tracks, credits와 P1~P7 grid를 제공하는 2D fallback을 사용한다.
+- Digital Booklet은 각 앨범의 `booklet.previewImages` 등록 순서를 source of truth로 사용한다. 지영희류는 P1~P7, 한범수류는 P1~P11을 제공하며 버튼, 방향키와 mobile swipe로 탐색한다.
+- Player는 track 선택, play/pause, 시간, seek와 오류 상태를 갖춘다. 두 앨범의 등록 트랙은 실제 Cloudflare R2 `webAudioUrl`에 연결되어 있다. `PLAYER_FOCUS`에서는 정지 상태에도 CD가 천천히 회전하고 실제 음원이 재생되면 회전 속도가 빨라지며, `prefers-reduced-motion`에서는 회전하지 않는다.
+- `prefers-reduced-motion`에서는 자동 회전, 큰 이동과 page transition을 제거하되 모든 기능을 유지한다. Canvas를 생성할 수 없으면 cover, tracks, credits와 해당 앨범에 등록된 booklet 페이지 grid를 제공하는 2D fallback을 사용한다.
 - 앨범별 custom detail과 3D scene은 lazy-load하며 서로의 scene bundle을 요청하지 않는다. 상세용 articulated engine은 앨범별 컴포넌트로 유지하되 닫힌 package 치수 계산은 HOME과 공유한다.
 
 ### 지영희류 상세 UX 보정 (2026-08-18)
@@ -191,7 +191,7 @@ HOME RECENT WORKS에는 확정 `releaseDate`가 있거나 위의 `coming-soon` �
 - CD 본체와 label은 거의 불투명하며 label opacity는 1이다. 약한 반투명 plastic은 outer rim과 center-hole rim에만 사용한다. 종이 interior 위에는 별도 frosted tray plate, shallow recess, guide, hub와 edge를 둔다.
 - interior paper, tray, booklet page는 shadow를 받고 booklet/CD는 그림자를 만든다. full-stage 뒤에는 canvas 경계보다 넓은 저농도 `shadowMaterial` receiver를 둔다.
 - PLAYER_FOCUS desktop에서는 3D album/CD 영역과 오른쪽 tracks panel의 viewport 영역을 분리하고 충분한 시각적 gap을 둔다. tracks UI가 CD나 tray 위를 덮도록 배치하지 않는다.
-- PLAYER_FOCUS의 주 transition은 package의 큰 이동/축소가 아니라 hub에 붙어 있던 CD의 작고 명확한 lift다. 실제 `webAudioUrl`과 `audio.playing === true`가 아니면 트랙 선택만으로 CD를 회전시키지 않는다.
+- PLAYER_FOCUS의 주 transition은 package의 큰 이동/축소가 아니라 hub에 붙어 있던 CD의 작고 명확한 lift다. `PLAYER_FOCUS`에 진입하면 느린 idle rotation을 시작하고 `audio.playing === true`일 때 더 빠르게 회전한다. `PLAYER_FOCUS`가 아니면 target velocity는 0이며, `prefers-reduced-motion`에서는 회전하지 않는다.
 - HOME의 `CLOSED` package는 front/back/spine을 중심으로 먼저 로드한다. detail 준비 단계에서 양쪽 interior booklet/tray panel, CD label과 booklet P1을 로드한다. 이후 booklet 페이지는 `BOOKLET_FOCUS`에서 reader가 mount될 때 필요에 따라 로드하며 renderer capability 기반 anisotropy를 core와 detail texture 모두에 적용한다.
 - PDF와 audio 파일은 자동 preload하지 않는다. audio element는 사용자가 player에서 트랙을 선택하거나 재생할 때 생성하고 metadata만 요청하며, PDF는 다운로드 동작으로만 요청한다. 이 우선순위는 [ASSET-OPTIMIZATION-PLAN.md](./ASSET-OPTIMIZATION-PLAN.md)의 초기 로딩 정책을 따른다.
 
@@ -200,7 +200,7 @@ HOME RECENT WORKS에는 확정 `releaseDate`가 있거나 위의 `coming-soon` �
 - 목록: 앨범 정렬과 대표 앨범 노출을 확인하고, 실제 커버가 있으면 커버가 표시되는지 확인합니다. 커버가 없으면 임시 박스 없이 앨범 정보가 텍스트 단일 열로 표시되는지 확인합니다.
 - 상세: `/album/:id`의 조건부 섹션, 없는 ID의 공통 404, HOME·WORKS 복귀 링크를 확인
 - Player: 실제 `webAudioUrl` track 선택·재생·pause·seek, `PLAYER_FOCUS`와 `BACK TO ALBUM`, CD 감속, reduced-motion과 audio error fallback 확인
-- Viewer: P1~P7 순서, Desktop 세 펼침면, Mobile P2~P7 touch/swipe, keyboard와 마지막 페이지 경계 확인
+- Viewer: 지영희류 P1~P7과 한범수류 P1~P11의 앨범별 등록 순서, desktop/mobile navigation, keyboard와 마지막 페이지 경계 확인
 - 다운로드: PDF URL, 파일명, 새 창/다운로드 동작 확인
 - 회귀: 공연 Viewer와 공연 이미지 경로가 영향받지 않는지 확인
 
