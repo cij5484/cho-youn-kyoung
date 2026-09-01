@@ -8,12 +8,16 @@ import '@fontsource/noto-sans-kr/500.css';
 import '@fontsource/noto-sans-kr/700.css';
 import './styles/variables.css';
 import './styles/global.css';
+import './styles/album-closed-info.css';
 import './styles/album-hero.css';
 import './styles/motion.css';
 import App from './App';
+import { InitialLoadScreen } from './components/InitialLoadScreen';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <InitialLoadScreen>
+      <App />
+    </InitialLoadScreen>
   </StrictMode>,
 );

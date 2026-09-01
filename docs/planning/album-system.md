@@ -1,7 +1,7 @@
 # 앨범 공통화·원본 자동 변환
 
 - 작성일: 2026-08-31
-- 상태: **3단계 — 두 앨범의 공통 3D 엔진·무대 적용. 원본 변환 도구와 전체 성능 최적화는 미구현.**
+- 상태: **3단계 완료, 5단계 일부 진행 — 닫힌 화면·앨범 간 전환·연속 재생과 한범수류 외장 텍스처를 개선했다. 원본 변환 도구와 전체 성능 계측은 미구현.**
 - 최초 분석 코드 기준: `41d082b0178a89088aff7cb1bb84cf3cfa8a9e7b`. 1단계 문서 체크포인트: `7bab6df`.
 - 범위: 기존 기능 보존, 공통 UI/3D 경계, 원본 입력 규격과 변환 검증.
 - 현재 운영 안내: [ALBUM-WORKFLOW.md](../ALBUM-WORKFLOW.md). 현재 타입의 구현 상태와 아래의 목표 구조를 혼동하지 않는다.
@@ -246,7 +246,7 @@
 ### 검증
 
 - `npm run lint`, `npm run build` 통과. 약 884KB 공유 3D chunk 경고는 남아 있다. bundle 파일 크기는 FPS나 최초 방문 전송량 측정값이 아니다.
-- `node --test scripts/test-album-motion.mjs`: 5개 통과. world transform 대응, 회전/scale을 포함한 완료 판정, 중간 방향 반전의 연속성, reduced-motion 한 단계 정착, 외장 opacity·depthWrite 보존을 검사한다. Node 24.15.0에서 실행했으며 브라우저 전체 기능 테스트와 구분한다.
+- `node --test scripts/test-album-motion.mjs`: 6개 통과. world transform 대응, 회전/scale을 포함한 완료 판정, 중간 방향 반전의 연속성, 안착 후 트레이의 급격한 이동을 지연 없이 추종하는지, reduced-motion 한 단계 정착, 외장 opacity·depthWrite 보존을 검사한다. Node 24.15.0에서 실행했으며 브라우저 전체 기능 테스트와 구분한다.
 - 내부 브라우저의 로컬 production preview, 1444×986: 두 앨범 OPEN·TRACKS·BACK·BOOKLET 진입, 지영희류 P2–P3→P4–P5→P6–P7 끝 경계·PREVIOUS·BACK·CLOSE, 06 선택·12:06 표시 확인.
 - 한범수류 P2–P3부터 P10–P11까지 NEXT 4회, 마지막 NEXT 비활성, PREVIOUS·BACK·CLOSE 확인. 최종 빌드에서 CD 확대 화면의 외곽/중앙 투명 영역과 복귀 중 라벨이 북클릿에 잘리지 않는 장면을 캡처했다.
 - HOME 새 진입 후 RECENT WORKS에서 지영희류를 선택하고 내부를 열지 않은 상태의 뒷표지 인쇄면을 확인했다. VIEW ALBUM→열린 상세와 NEXT ALBUM 양방향 이동도 확인했다.
@@ -259,3 +259,36 @@
 - 일반 페이지 전환, 초기 texture decode/upload, 캐시 정책과 비활성 frame 연산은 별도 계측·개선이 필요하다. 이 단계로 전체 stutter가 해소됐다고 주장하지 않는다.
 - 북클릿 내부의 frame별 임시 객체/재질 순회, 자산 로딩 실패의 사용자 안내 등은 아직 남아 있다. stage prewarm timeout은 모든 다운로드·모든 오류를 처리하는 전역 보장값이 아니다.
 - 시작 전부터 변경돼 있던 운영 Markdown 16개는 이번 소스 체크포인트에 섞지 않고 보존한다. 운영 문서의 이전 engine 이름·배경 anchor 기준 설명보다 이 절의 최신 코드 책임을 우선한다. 그 문서들의 기존 수정분과 충돌하지 않는 통합 정리는 별도 검토가 필요하다.
+
+## 10. 연결성·오디오·초기 텍스처 개선 (2026-09-01)
+
+### 애니메이션 연결
+
+- HOME과 상세의 CLOSED 화면은 `AlbumClosedInfo` 하나를 사용한다. 위치·크기·제목·설명·버튼 규칙을 공유하며, HOME→상세에서는 같은 앨범 Canvas를 유지하고 CLOSE 후 같은 닫힌 모습으로 복귀한다.
+- NEXT ALBUM 이동은 직전 무대를 700ms 동안 보존하고 두 무대의 opacity를 520ms 동안 교차시킨다. 전환 중에만 Canvas 두 개가 존재하며 완료 후 직전 Canvas를 제거한다.
+- 트레이에 안착한 CD는 패키지 transform을 프레임 보간 없이 그대로 따른다. 독립 보간은 CD를 꺼내거나 복귀시키는 구간에만 사용한다.
+- 로컬 production preview에서 HOME/상세 닫힌 정보 영역의 위치·크기·글자 크기가 일치하는지, 앨범 간 양방향 이동 직후 `[1, 1]`에서 완료 후 `[0, 1]`로 직전/현재 무대가 정리되는지 확인했다.
+
+### 재생 기능
+
+- 한 트랙이 끝나면 다음 트랙을 자동 선택해 재생한다. 마지막 트랙은 처음으로 순환하지 않고 정지한다. 수동 선택·일시정지·탐색·볼륨 경로는 유지한다.
+- 실제 브라우저에서 01 종료 후 02 선택과 재생 상태를 확인했다. 마지막 트랙의 무반복 경계는 `scripts/test-album-audio.mjs`로 확인했다. 수동 트랙 변경 직후 이전 duration이 남지 않도록 초기화했다.
+
+### 초기 전송·디코드 비용 감소
+
+한범수류의 닫힌 외장 앞·뒷면만 2048px WebP로 다시 인코딩했다. CD 라벨은 경계 품질을 보존하기 위해 변경하지 않았다.
+
+| 자산 | 이전 | 현재 |
+| --- | ---: | ---: |
+| 앞면 | 6,117,832 bytes, 3320×2946 | 793,578 bytes, 2048×1817 |
+| 뒷면 | 7,010,034 bytes, 3317×2946 | 1,215,870 bytes, 2048×1819 |
+| 합계 | 13,127,866 bytes | 2,009,448 bytes |
+
+합계 약 84.7%를 줄였고 로컬 production preview에서 닫힌 앞면의 인쇄·스캔 질감과 글자 표시를 확인했다. `npm run lint`, `npm run build`, motion test 6개, audio test 2개가 통과했다. 이는 초기 전송·이미지 디코드 부담 개선이며 FPS·LCP·long task 개선 수치로 확대하지 않는다. 약 884KB 3D chunk와 DPR·그림자 비용은 계측 후 다룰 후속 범위다.
+
+### 정지 화면 렌더 중단
+
+- 3D Canvas는 `frameloop="demand"`를 사용한다. 장면 전환·북클릿 페이지 넘김·직접 드래그/관성·닫힌 앨범 자동 회전·CD 재생 중에만 scheduler가 연속 frame을 요청한다.
+- 완전히 정지한 ALBUM_OPEN·BOOKLET_FOCUS·일시정지 PLAYER_FOCUS는 마지막 frame만 유지한다. 포인터로 CD 기울기를 바꾸는 경우에는 해당 입력 frame을 명시적으로 요청한다.
+- 실제 로컬 production 화면에서 CLOSED→ALBUM_OPEN, BOOKLET P2–P3→P4–P5→BACK, TRACKS→PLAY→BACK, CLOSE, NEXT ALBUM 진입을 확인했다. 모든 구간에서 Canvas는 한 앨범당 하나를 유지했고, 앨범 간 handoff가 끝난 뒤 직전 Canvas가 제거됐다.
+- `scripts/test-album-render-policy.mjs` 2개를 추가해 정지 상태는 demand, 전환·페이지·직접 motion·재생은 continuous로 분류되는지 검사한다. 이 변경도 실제 FPS 상승 수치로 표현하지 않는다.

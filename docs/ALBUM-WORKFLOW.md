@@ -80,6 +80,22 @@ public/assets/albums/{album-id}/
 - 공용 인물 사진은 `public/assets/people/{person-id}/portrait.jpg`를 우선 사용하고, 앨범 전용 이미지는 필요한 경우에만 앨범 폴더에 둡니다.
 - 파일명은 영문 소문자 kebab-case를 사용합니다. `final`, `최종`, `new`, `수정`, `(1)` 같은 버전명은 사용하지 않으며 버전 관리는 Git 기록으로 합니다.
 
+### 동일 규격 디지팩 자산 자동 생성
+
+평조회상과 같은 인쇄 템플릿은 `scripts/prepare-digipak-assets.py`로 웹 자산을 생성합니다. 재단선이 없는 원본 폴더와 같은 파일명의 재단선 참조 폴더를 함께 넘기면 앞·뒤·책등·내부·CD 라벨·부클릿 페이지를 분리하고 WebP로 최적화합니다.
+
+```powershell
+py scripts\prepare-digipak-assets.py `
+  --clean-dir "<재단선 없는 PNG 폴더>" `
+  --dieline-dir "<재단선 참조 PNG 폴더>" `
+  --output-dir "public\assets\albums\<album-id>"
+```
+
+- 원본 파일은 읽기만 하며 수정하거나 덮어쓰지 않습니다.
+- 출력 폴더가 이미 있으면 즉시 중단하여 기존 결과를 덮어쓰지 않습니다.
+- 속지 1번의 왼쪽 접착면은 페이지에서 제외하고 오른쪽 면부터 부클릿으로 만듭니다.
+- 다른 인쇄소·다른 규격의 칼선에는 좌표를 추측해 재사용하지 말고 먼저 템플릿 감지를 확장합니다.
+
 ## 원본 자료 검수
 
 1. 앨범명, 발매일, 트랙명, 작곡·편곡·연주자 이름을 원본 자료와 대조합니다.

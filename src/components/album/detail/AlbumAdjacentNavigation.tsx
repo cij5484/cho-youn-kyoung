@@ -4,7 +4,7 @@ import { albums } from '../../../data/albums';
 import { preloadAlbumDetail } from './preloadAlbumDetail';
 import { useAlbumStage } from '../AlbumStages';
 
-export function AlbumAdjacentNavigation({ currentId, tone }: { currentId: string; tone: 'han' | 'ji' }) {
+export function AlbumAdjacentNavigation({ currentId, tone }: { currentId: string; tone: 'han' | 'ji' | 'pyeongjo' | 'yeongsan' }) {
   const available = albums.filter((album) => album.detailsPath);
   const currentIndex = available.findIndex((album) => album.id === currentId);
   const next = available[(currentIndex + 1) % available.length];

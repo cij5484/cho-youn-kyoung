@@ -9,6 +9,9 @@ import '../../styles/album-stage.css';
 import type { ExperienceProps } from './detail/AlbumDetailExperience3D';
 
 const Experience3D = lazy(() => import('./detail/AlbumDetailExperience3D'));
+// Keep the outgoing WebGL scene past the CSS fade so a delayed frame cannot
+// expose an empty stage at the end of the route handoff.
+const STAGE_EXIT_MS = 700;
 
 type StageContextValue = {
   setDetailProps(props: ExperienceProps | null): void;
@@ -135,7 +138,17 @@ function AlbumStage({ album, children }: { album: Album; children: ReactNode }) 
   // takes ownership; mobile retains its existing route visibility behavior.
   const desktopDetailHandoff = !mobile && location.pathname === '/' && detailProps !== null;
   const visible = detailRoute || (location.pathname === '/' && (homeActive || desktopDetailHandoff));
-  const renderStage = visible || prewarming;
+  const stageActive = visible || prewarming;
+  const [stageRetained, setStageRetained] = useState(stageActive);
+  useEffect(() => {
+    if (stageActive) {
+      const frame = window.requestAnimationFrame(() => setStageRetained(true));
+      return () => window.cancelAnimationFrame(frame);
+    }
+    const timeout = window.setTimeout(() => setStageRetained(false), STAGE_EXIT_MS);
+    return () => window.clearTimeout(timeout);
+  }, [stageActive]);
+  const renderStage = stageActive || stageRetained;
   const context = useMemo(() => ({ ...parentStages, [album.id]: { setDetailProps, setDetailStageVisible, setHomeActive: updateHomeActive, prepareDetail } }), [album.id, parentStages, prepareDetail, updateHomeActive]);
 
   return (

@@ -29,7 +29,7 @@ test('disc matches translated, rotated and scaled tray without changing parent',
 
 test('return includes quaternion and scale error, not only position', () => {
   const { scene, tray, disc, motion } = fixture();
-  motion.step(disc, tray, scene, 0.06, false, -1.55, 0.08, 1.72, 1);
+  motion.step(disc, tray, scene, 0.06, true, -1.55, 0.08, 1.72, 1);
   disc.scale.setScalar(2);
   disc.rotation.y += 0.5;
   assert.ok(motion.step(disc, tray, scene, 0.06, false, -1.55, 0.08, 1.72, 0) > 1);
@@ -49,6 +49,20 @@ test('reversing mid-flight preserves continuous transforms and converges', () =>
     assert.equal(disc.parent, scene);
   }
   assert.ok(motion.step(disc, tray, scene, 0.06, false, -1.55, 0.08, 1.72, 0.1) < 1e-6);
+});
+
+test('a seated disc follows abrupt tray movement exactly without interpolation lag', () => {
+  const { scene, pack, tray, disc, motion } = fixture();
+  motion.step(disc, tray, scene, 0.06, false, -1.55, 0.08, 1.72, 1);
+  pack.position.set(-1.4, 0.8, -0.2);
+  pack.rotation.set(0.28, -1.15, 0.14);
+  pack.scale.setScalar(1.24);
+  const expected = tray.localToWorld(new Vector3(0, 0, 0.06));
+  const error = motion.step(disc, tray, scene, 0.06, false, -1.55, 0.08, 1.72, 0.03);
+  assert.equal(error, 0);
+  assert.ok(disc.position.distanceTo(expected) < 1e-6);
+  assert.ok(disc.quaternion.angleTo(tray.getWorldQuaternion(new Quaternion())) < 1e-6);
+  assert.ok(disc.scale.distanceTo(tray.getWorldScale(new Vector3())) < 1e-6);
 });
 
 test('reduced motion settles in one step for both directions', () => {

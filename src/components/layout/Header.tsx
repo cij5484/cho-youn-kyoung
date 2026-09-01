@@ -9,7 +9,13 @@ export function Header() {
   const firstMenuLinkRef = useRef<HTMLAnchorElement | null>(null);
   const location = useLocation();
   const isSanjoDetail = location.pathname === '/performance/sanjo-gil-2026-08-16';
-  const isJiAlbumDetail = location.pathname === '/album/ji-young-hee-ryu-haegeum-sanjo-2026';
+  const isPaperAlbumDetail = [
+    '/album/ji-young-hee-ryu-haegeum-sanjo-2026',
+    '/album/pyeongjo-hoesang-2026',
+    '/album/yeongsan-hoesang-2026',
+  ].includes(location.pathname);
+  const isPyeongjoAlbumDetail = location.pathname === '/album/pyeongjo-hoesang-2026';
+  const isYeongsanAlbumDetail = location.pathname === '/album/yeongsan-hoesang-2026';
 
   useEffect(() => {
     const closeMenu = window.setTimeout(() => setIsOpen(false), 0);
@@ -39,7 +45,7 @@ export function Header() {
   };
 
   return (
-    <header className={`site-header${isSanjoDetail ? ' site-header--sanjo-detail' : ''}${isJiAlbumDetail ? ' site-header--ji-album-detail' : ''}`}>
+    <header className={`site-header${isSanjoDetail ? ' site-header--sanjo-detail' : ''}${isPaperAlbumDetail ? ' site-header--paper-album-detail' : ''}${isPyeongjoAlbumDetail ? ' site-header--pyeongjo-album-detail' : ''}${isYeongsanAlbumDetail ? ' site-header--yeongsan-album-detail' : ''}`}>
       <NavLink className="brand" to="/" onClick={() => setIsOpen(false)}>{site.artistName}</NavLink>
       <nav className="desktop-nav" aria-label="Primary navigation">
         {navigationItems.map((item) => <NavLink key={item.path} to={item.path} className={({ isActive }) => (item.path === '/works' ? isWorksPath(location.pathname) : isActive) ? 'active' : undefined}>{item.label}</NavLink>)}

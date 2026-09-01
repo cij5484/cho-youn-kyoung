@@ -3,6 +3,9 @@ import type { HomeHeroSlide } from '../../data/homeHeroSlides';
 import { AlbumPackage3D } from './album/AlbumPackage3D';
 import { useEffect } from 'react';
 import { useOptionalAlbumStage } from '../album/AlbumStages';
+import { AlbumClosedInfo } from '../album/AlbumClosedInfo';
+import { albums } from '../../data/albums';
+import { preloadAlbumDetail } from '../album/detail/preloadAlbumDetail';
 
 type AlbumHeroProps = {
   slide: HomeHeroSlide;
@@ -17,11 +20,19 @@ export function AlbumHero({ slide }: AlbumHeroProps) {
     setHomeActive(true);
     return () => setHomeActive(false);
   }, [setHomeActive]);
-  const titleLines = slide.title.split('\n');
+  useEffect(() => {
+    if (!stage) return;
+    const album = albums.find((item) => item.id === slide.id);
+    if (!album) return;
+    // HOME only warms the route module and browser image cache. Compiling the
+    // full interior scene here can starve the already-visible closed package
+    // and leave the shared WebGL stage blank on heavier albums.
+    void preloadAlbumDetail(album).catch(() => undefined);
+  }, [slide.id, stage]);
   const [year, status] = slide.displayDate.split(' · ');
 
   return (
-    <section className={`album-hero album-hero--${slide.id}`} data-album-id={slide.id} aria-labelledby={`${slide.id}-hero-title`}>
+    <section className={`album-hero album-hero--${slide.id}${persistent ? ' is-persistent' : ''}`} data-album-id={slide.id} aria-labelledby={`${slide.id}-hero-title`}>
       {slide.albumBackground && !persistent ? (
         <picture className="album-hero__background" aria-hidden="true">
           <source media="(max-width: 700px)" srcSet={slide.albumBackground.mobile} />
@@ -31,25 +42,20 @@ export function AlbumHero({ slide }: AlbumHeroProps) {
       {!persistent && <div className="album-hero__stage" role="img" aria-label={`${slide.title} 디지팩 3D 미리보기`}>
         <AlbumPackage3D textures={slide.albumTextures} backgroundAnchor={slide.albumBackgroundAnchor} geometry={slide.albumPackageGeometry} />
       </div>}
-      <div className="album-hero__content">
-        <p className="album-hero__eyebrow">{slide.eyebrow || 'ALBUM'}</p>
-        <h1 id={`${slide.id}-hero-title`}>
-          {titleLines.map((line) => <span key={line}>{line}</span>)}
-        </h1>
-        {slide.subtitle ? <p className="album-hero__subtitle">{slide.subtitle}</p> : null}
-        <p className="album-hero__meta">
-          <span>{year}</span>
-          {status ? <span className="album-hero__status">{status}</span> : null}
-        </p>
-        {slide.trackCount ? <p className="album-hero__tracks">{slide.trackCount} TRACKS</p> : null}
-        <Link
-          className="album-hero__link"
-          to={slide.detailLink}
-          state={persistent ? { autoOpenAlbum: true } : undefined}
-        >
-          VIEW ALBUM <span aria-hidden="true">→</span>
-        </Link>
-      </div>
+      <AlbumClosedInfo
+        eyebrow={slide.eyebrow || 'ALBUM'}
+        headingId={`${slide.id}-hero-title`}
+        status={status}
+        subtitle={slide.subtitle}
+        title={slide.title}
+        trackCount={slide.trackCount}
+        year={year}
+        action={(
+          <Link to={slide.detailLink} state={persistent ? { autoOpenAlbum: true } : undefined}>
+            VIEW ALBUM <span aria-hidden="true">→</span>
+          </Link>
+        )}
+      />
     </section>
   );
 }

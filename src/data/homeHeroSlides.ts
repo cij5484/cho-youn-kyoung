@@ -72,7 +72,7 @@ const albumHeroSlides: HomeHeroSlide[] = albums.flatMap((album) => {
     title: cardTitle,
     subtitle: cardSubtitle,
     date: album.releaseDate,
-    displayDate: `${album.year}${album.releaseStatus === 'coming-soon' ? ' · COMING SOON' : ''}`,
+    displayDate: `${album.year} · ${album.releaseStatus === 'coming-soon' ? 'COMING SOON' : 'RELEASED'}`,
     time: '',
     venue: '',
     theme: album.albumHero.theme,

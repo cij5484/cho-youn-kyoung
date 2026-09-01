@@ -20,10 +20,10 @@ export function AlbumDetailPage() {
   const album = albums.find((item) => item.id === id);
 
   if (!album) return <NotFoundPage />;
-  if (album.id === 'ji-young-hee-ryu-haegeum-sanjo-2026') {
+  if (album.detailExperience && album.detailExperience.theme !== 'han-beom-su-paper') {
     return <Suspense fallback={null}><JiYoungHeeAlbumDetail album={album} /></Suspense>;
   }
-  if (album.id === 'han-beom-su-haegeum-sanjo-2020') {
+  if (album.detailExperience?.theme === 'han-beom-su-paper') {
     return <Suspense fallback={null}><HanBeomSuAlbumDetail album={album} /></Suspense>;
   }
 
