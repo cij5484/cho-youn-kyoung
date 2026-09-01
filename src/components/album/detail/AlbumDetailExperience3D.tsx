@@ -180,8 +180,8 @@ function useCoreTextures(album: Album, loadInterior: boolean): CoreTextures {
   };
 }
 
-function PaperMaterial({ texture }: { texture: THREE.Texture }) {
-  return <PrintedPaperMaterial texture={texture} />;
+function PaperMaterial({ texture, contrast, gamma }: { texture: THREE.Texture; contrast?: number; gamma?: number }) {
+  return <PrintedPaperMaterial texture={texture} contrast={contrast} gamma={gamma} />;
 }
 
 function CdDisc({ label, profile, mode, playing, reduced, tray, onPlayer, onSettled, onAnchor }: {
@@ -475,12 +475,15 @@ function BookletPages({ album, page, mobile, reduced, active, onReady, onPageTur
     onPageTurnComplete();
   };
   if (!ready) return null;
+  const scannedColorGrade = album.id === 'han-beom-su-haegeum-sanjo-2020'
+    ? { contrast: 1.08, gamma: 1.025 }
+    : { contrast: 1, gamma: 1 };
   const aspect = textureAspect(pages[currentIndices[0]]);
   const width = PAGE_HEIGHT * aspect;
   if (mobile) {
-    if (turn) return <MobileTurningPage key={turn.key} pages={pages} turn={turn} onDone={completeTurn} />;
+    if (turn) return <MobileTurningPage key={turn.key} pages={pages} turn={turn} onDone={completeTurn} {...scannedColorGrade} />;
     const base = pages[settled];
-    return <mesh castShadow receiveShadow><planeGeometry args={[PAGE_HEIGHT * textureAspect(base), PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={base} /></mesh>;
+    return <mesh castShadow receiveShadow><planeGeometry args={[PAGE_HEIGHT * textureAspect(base), PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={base} {...scannedColorGrade} /></mesh>;
   }
   const spreads = Array.from({ length: Math.ceil(pages.length / 2) }, (_, index) => [pages[index * 2], pages[index * 2 + 1] ?? pages[index * 2]]);
   const source = spreads[turn ? turn.source : settled];
@@ -493,18 +496,18 @@ function BookletPages({ album, page, mobile, reduced, active, onReady, onPageTur
   const leftStackZ = 0.006 + leftSpreadIndex * 0.004;
   return (
     <group>
-      <mesh position={[-width / 2, 0, leftStackZ]} castShadow receiveShadow><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={left} /></mesh>
-      <mesh position={[width / 2, 0, 0]} castShadow receiveShadow onClick={active ? (event) => { event.stopPropagation(); onNext(); } : undefined}><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={right} /></mesh>
+      <mesh position={[-width / 2, 0, leftStackZ]} castShadow receiveShadow><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={left} {...scannedColorGrade} /></mesh>
+      <mesh position={[width / 2, 0, 0]} castShadow receiveShadow onClick={active ? (event) => { event.stopPropagation(); onNext(); } : undefined}><planeGeometry args={[width, PAGE_HEIGHT, 16, 2]} /><PaperMaterial texture={right} {...scannedColorGrade} /></mesh>
       {active && <mesh position={[-width / 2, 0, leftStackZ + 0.001]} userData={{ keepOpacity: true }} onClick={(event) => { event.stopPropagation(); onPrevious(); }}>
         <planeGeometry args={[width, PAGE_HEIGHT]} /><meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>}
-      {turn && <TurningPage key={turn.key} pages={pages} width={width} turn={turn} onDone={completeTurn} />}
+      {turn && <TurningPage key={turn.key} pages={pages} width={width} turn={turn} onDone={completeTurn} {...scannedColorGrade} />}
     </group>
   );
 }
 
-function MobileTurningPage({ pages, turn, onDone }: {
-  pages: THREE.Texture[]; turn: PageTurn; onDone(): void;
+function MobileTurningPage({ pages, turn, onDone, contrast, gamma }: {
+  pages: THREE.Texture[]; turn: PageTurn; onDone(): void; contrast: number; gamma: number;
 }) {
   const leaf = useRef<THREE.Group>(null);
   const elapsed = useRef(0);
@@ -525,17 +528,17 @@ function MobileTurningPage({ pages, turn, onDone }: {
   });
   return (
     <group>
-      <mesh position={[0, 0, -0.006]} castShadow receiveShadow><planeGeometry args={[targetWidth, PAGE_HEIGHT, 16, 3]} /><PaperMaterial texture={target} /></mesh>
+      <mesh position={[0, 0, -0.006]} castShadow receiveShadow><planeGeometry args={[targetWidth, PAGE_HEIGHT, 16, 3]} /><PaperMaterial texture={target} contrast={contrast} gamma={gamma} /></mesh>
       <group ref={leaf} position={[-side * sourceWidth / 2, 0, 0.01]}>
-        <mesh position={[side * sourceWidth / 2, 0, 0]} castShadow frustumCulled={false}><planeGeometry args={[sourceWidth, PAGE_HEIGHT, 24, 4]} /><PaperMaterial texture={source} /></mesh>
+        <mesh position={[side * sourceWidth / 2, 0, 0]} castShadow frustumCulled={false}><planeGeometry args={[sourceWidth, PAGE_HEIGHT, 24, 4]} /><PaperMaterial texture={source} contrast={contrast} gamma={gamma} /></mesh>
       </group>
     </group>
   );
 }
 
-function TurningPage({ pages, width, turn, onDone, frontTexture, backTexture, duration = PAGE_TURN_DURATION }: {
+function TurningPage({ pages, width, turn, onDone, frontTexture, backTexture, duration = PAGE_TURN_DURATION, contrast = 1, gamma = 1 }: {
   pages: THREE.Texture[]; width: number; turn: { source: number; target: number; direction: -1 | 1 }; onDone(): void;
-  frontTexture?: THREE.Texture; backTexture?: THREE.Texture; duration?: number;
+  frontTexture?: THREE.Texture; backTexture?: THREE.Texture; duration?: number; contrast?: number; gamma?: number;
 }) {
   const frontSurface = useRef<THREE.Mesh>(null);
   const backSurface = useRef<THREE.Mesh>(null);
@@ -584,10 +587,10 @@ function TurningPage({ pages, width, turn, onDone, frontTexture, backTexture, du
   return (
     <group position={[0, 0, 0.025]}>
       <mesh ref={(node) => { frontSurface.current = node; if (node && !node.geometry.userData.original) node.geometry.userData.original = Float32Array.from(Array.from({ length: node.geometry.attributes.position.count }, (_, i) => (node.geometry.attributes.position as THREE.BufferAttribute).getX(i))); }} castShadow frustumCulled={false}>
-        <planeGeometry args={[width, PAGE_HEIGHT, PAGE_TURN_SEGMENTS, 8]} /><PrintedPaperMaterial texture={front} side={THREE.FrontSide} />
+        <planeGeometry args={[width, PAGE_HEIGHT, PAGE_TURN_SEGMENTS, 8]} /><PrintedPaperMaterial texture={front} side={THREE.FrontSide} contrast={contrast} gamma={gamma} />
       </mesh>
       <mesh ref={(node) => { backSurface.current = node; if (node && !node.geometry.userData.original) { node.geometry.userData.original = Float32Array.from(Array.from({ length: node.geometry.attributes.position.count }, (_, i) => (node.geometry.attributes.position as THREE.BufferAttribute).getX(i))); const uv = node.geometry.attributes.uv as THREE.BufferAttribute; for (let i = 0; i < uv.count; i += 1) uv.setX(i, 1 - uv.getX(i)); uv.needsUpdate = true; } }} position={[0, 0, -0.002]} castShadow frustumCulled={false}>
-        <planeGeometry args={[width, PAGE_HEIGHT, PAGE_TURN_SEGMENTS, 8]} /><PrintedPaperMaterial texture={back} side={THREE.BackSide} />
+        <planeGeometry args={[width, PAGE_HEIGHT, PAGE_TURN_SEGMENTS, 8]} /><PrintedPaperMaterial texture={back} side={THREE.BackSide} contrast={contrast} gamma={gamma} />
       </mesh>
     </group>
   );

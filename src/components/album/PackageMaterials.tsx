@@ -9,11 +9,31 @@ export function OuterPlasticMaterial() {
   return <meshPhysicalMaterial color="#ffffff" transparent opacity={0.24} roughness={0.24} metalness={0} clearcoat={0.12} clearcoatRoughness={0.78} transmission={0.16} thickness={0.018} depthWrite={false} />;
 }
 
-export function PrintedPaperMaterial({ texture, side = THREE.FrontSide }: {
+export function PrintedPaperMaterial({ texture, side = THREE.FrontSide, contrast = 1, gamma = 1 }: {
   texture: THREE.Texture;
   side?: THREE.Side;
+  contrast?: number;
+  gamma?: number;
 }) {
-  return <meshBasicMaterial map={texture} side={side} toneMapped={false} />;
+  const cacheKey = `printed-paper-${contrast.toFixed(3)}-${gamma.toFixed(3)}`;
+  return (
+    <meshBasicMaterial
+      map={texture}
+      side={side}
+      toneMapped={false}
+      customProgramCacheKey={() => cacheKey}
+      onBeforeCompile={(shader) => {
+        shader.fragmentShader = shader.fragmentShader.replace(
+          '#include <map_fragment>',
+          `#include <map_fragment>
+          diffuseColor.rgb = pow(
+            clamp((diffuseColor.rgb - 0.5) * ${contrast.toFixed(3)} + 0.5, 0.0, 1.0),
+            vec3(${gamma.toFixed(3)})
+          );`,
+        );
+      }}
+    />
+  );
 }
 
 function ClearPlasticMaterial({ opacity, thickness, roughness, clearcoat, specularIntensity, transmission }: {
