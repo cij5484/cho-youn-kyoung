@@ -658,7 +658,14 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
       const desiredPosition = new THREE.Vector3(0, mobile ? 0.35 : 0.08, 0.82);
       const focusViewport = viewport.getCurrentViewport(camera, desiredPosition);
       const mobileFocusScale = Math.min(focusViewport.width * 0.95 / p1Width, focusViewport.height * 0.91 / PAGE_HEIGHT) * 0.9;
-      const desktopFocusScale = Math.min(focusViewport.width * 0.93 / (p1Width * 2), focusViewport.height * 0.94 / PAGE_HEIGHT) * 0.9;
+      const isScannedBooklet = album.id === 'han-beom-su-haegeum-sanjo-2020';
+      const desktopWidthFit = isScannedBooklet ? 0.985 : 0.93;
+      const desktopHeightFit = isScannedBooklet ? 0.97 : 0.94;
+      const desktopMargin = isScannedBooklet ? 0.98 : 0.9;
+      const desktopFocusScale = Math.min(
+        focusViewport.width * desktopWidthFit / (p1Width * 2),
+        focusViewport.height * desktopHeightFit / PAGE_HEIGHT,
+      ) * desktopMargin;
       const desiredWorld = new THREE.Matrix4().compose(
         desiredPosition,
         new THREE.Quaternion().setFromEuler(new THREE.Euler(mobile ? -0.04 : -0.08, 0, 0)),
