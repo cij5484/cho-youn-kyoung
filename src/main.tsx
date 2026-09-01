@@ -12,9 +12,12 @@ import './styles/album-closed-info.css';
 import './styles/album-hero.css';
 import './styles/motion.css';
 import App from './App';
+import { InitialLoadScreen } from './components/InitialLoadScreen';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <InitialLoadScreen>
+      <App />
+    </InitialLoadScreen>
   </StrictMode>,
 );
