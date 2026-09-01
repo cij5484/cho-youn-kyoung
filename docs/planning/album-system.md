@@ -284,4 +284,11 @@
 | 뒷면 | 7,010,034 bytes, 3317×2946 | 1,215,870 bytes, 2048×1819 |
 | 합계 | 13,127,866 bytes | 2,009,448 bytes |
 
-합계 약 84.7%를 줄였고 로컬 production preview에서 닫힌 앞면의 인쇄·스캔 질감과 글자 표시를 확인했다. `npm run lint`, `npm run build`, motion test 6개, audio test 2개가 통과했다. 이는 초기 전송·이미지 디코드 부담 개선이며 FPS·LCP·long task 개선 수치로 확대하지 않는다. 약 884KB 3D chunk, 연속 frame 연산, DPR·그림자 비용은 계측 후 다룰 후속 범위다.
+합계 약 84.7%를 줄였고 로컬 production preview에서 닫힌 앞면의 인쇄·스캔 질감과 글자 표시를 확인했다. `npm run lint`, `npm run build`, motion test 6개, audio test 2개가 통과했다. 이는 초기 전송·이미지 디코드 부담 개선이며 FPS·LCP·long task 개선 수치로 확대하지 않는다. 약 884KB 3D chunk와 DPR·그림자 비용은 계측 후 다룰 후속 범위다.
+
+### 정지 화면 렌더 중단
+
+- 3D Canvas는 `frameloop="demand"`를 사용한다. 장면 전환·북클릿 페이지 넘김·직접 드래그/관성·닫힌 앨범 자동 회전·CD 재생 중에만 scheduler가 연속 frame을 요청한다.
+- 완전히 정지한 ALBUM_OPEN·BOOKLET_FOCUS·일시정지 PLAYER_FOCUS는 마지막 frame만 유지한다. 포인터로 CD 기울기를 바꾸는 경우에는 해당 입력 frame을 명시적으로 요청한다.
+- 실제 로컬 production 화면에서 CLOSED→ALBUM_OPEN, BOOKLET P2–P3→P4–P5→BACK, TRACKS→PLAY→BACK, CLOSE, NEXT ALBUM 진입을 확인했다. 모든 구간에서 Canvas는 한 앨범당 하나를 유지했고, 앨범 간 handoff가 끝난 뒤 직전 Canvas가 제거됐다.
+- `scripts/test-album-render-policy.mjs` 2개를 추가해 정지 상태는 demand, 전환·페이지·직접 motion·재생은 continuous로 분류되는지 검사한다. 이 변경도 실제 FPS 상승 수치로 표현하지 않는다.

@@ -10,6 +10,7 @@ import { getPackageProfile } from './packageProfile';
 import type { PackageProfile } from './packageProfile';
 import { DiscMotion } from './discMotion';
 import { PackageFade } from './packageFade';
+import { needsContinuousAlbumFrames } from './renderPolicy';
 import { CdPolycarbonateMaterial, IvoryEdgeMaterial, OuterPlasticMaterial, PrintedPaperMaterial, TrayClearPlasticMaterial } from '../PackageMaterials';
 
 export type ExperienceMode = 'CLOSED' | 'ALBUM_OPEN' | 'BOOKLET_FOCUS' | 'PLAYER_FOCUS';
@@ -62,6 +63,22 @@ function PrewarmReady({ onReady }: { onReady?: () => void }) {
       });
     return () => { cancelled = true; };
   }, [camera, gl, onReady, scene]);
+  return null;
+}
+
+function RenderScheduler({ active }: { active: boolean }) {
+  const invalidate = useThree((state) => state.invalidate);
+  useEffect(() => {
+    invalidate();
+    if (!active) return undefined;
+    let frame = 0;
+    const render = () => {
+      invalidate();
+      frame = requestAnimationFrame(render);
+    };
+    frame = requestAnimationFrame(render);
+    return () => cancelAnimationFrame(frame);
+  }, [active, invalidate]);
   return null;
 }
 
@@ -165,7 +182,7 @@ function CdDisc({ label, profile, mode, playing, reduced, tray, onPlayer, onSett
   const tilt = useRef<THREE.Group>(null);
   const spin = useRef<THREE.Group>(null);
   const labelMaterial = useRef<THREE.MeshPhysicalMaterial>(null);
-  const { camera, scene, size, viewport } = useThree();
+  const { camera, invalidate, scene, size, viewport } = useThree();
   const lastAnchor = useRef({ x: -1, y: -1 });
   const velocity = useRef(0);
   const tiltTarget = useRef({ x: 0, y: 0 });
@@ -241,6 +258,7 @@ function CdDisc({ label, profile, mode, playing, reduced, tray, onPlayer, onSett
       tiltTarget.current.x = THREE.MathUtils.clamp(tiltTarget.current.x + (event.clientY - active.y) * 0.0028, -THREE.MathUtils.degToRad(7), THREE.MathUtils.degToRad(7));
       active.x = event.clientX;
       active.y = event.clientY;
+      invalidate();
     }} onPointerUp={(event) => {
       if (tiltDrag.current?.id === event.pointerId) tiltDrag.current = null;
       (event.target as Element).releasePointerCapture(event.pointerId);
@@ -594,8 +612,10 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
   );
 }
 
-function Scene(props: ExperienceProps) {
-  const { album, mode, page, mobile, playing, reduced, homeActivationKey, onOpen, onBooklet, onPlayer, onPrevious, onNext, onCdAnchor, onBookletBounds, onTransitionChange } = props;
+type SceneProps = ExperienceProps & { onRenderActivityChange(active: boolean): void };
+
+function Scene(props: SceneProps) {
+  const { album, mode, page, mobile, playing, reduced, homeActivationKey, onOpen, onBooklet, onPlayer, onPrevious, onNext, onCdAnchor, onBookletBounds, onTransitionChange, onRenderActivityChange } = props;
   const openPitch = mobile ? -0.1 : 0;
   const wantsInterior = Boolean(props.preloadInterior || mode !== 'CLOSED');
   const [interiorRequested, setInteriorRequested] = useState(wantsInterior);
@@ -621,6 +641,7 @@ function Scene(props: ExperienceProps) {
   const openingPhaseRef = useRef<OpeningPhase>('IDLE');
   const previousMode = useRef(mode);
   const reported = useRef(false);
+  const interactionActive = useRef(false);
   const bookletSettled = useRef(mode === 'CLOSED');
   const traySettled = useRef(true);
   const discSettled = useRef(true);
@@ -633,13 +654,17 @@ function Scene(props: ExperienceProps) {
   }, [shellFade, textures.interior]);
 
   useEffect(() => {
-    if (homeActivationKey > 0) autoRotate.current = !reduced;
-  }, [homeActivationKey, reduced]);
+    if (homeActivationKey > 0) {
+      autoRotate.current = !reduced;
+      onRenderActivityChange(autoRotate.current);
+    }
+  }, [homeActivationKey, onRenderActivityChange, reduced]);
 
   useEffect(() => {
     const openingFromClosed = previousMode.current === 'CLOSED' && mode !== 'CLOSED';
     if (openingFromClosed) {
       autoRotate.current = false;
+      onRenderActivityChange(false);
       inertia.current = { x: 0, y: 0 };
       alignedYaw.current = Math.round(rotation.current.y / (Math.PI * 2)) * Math.PI * 2;
       aligned.current = false;
@@ -654,11 +679,13 @@ function Scene(props: ExperienceProps) {
     } else {
       aligned.current = true;
       openingPhaseRef.current = 'IDLE';
+      if (reduced) autoRotate.current = false;
+      onRenderActivityChange(autoRotate.current && !reduced);
     }
     reported.current = false;
     onTransitionChange?.(true);
     previousMode.current = mode;
-  }, [mobile, mode, onTransitionChange, openPitch]);
+  }, [mobile, mode, onRenderActivityChange, onTransitionChange, openPitch, reduced]);
 
   useFrame((_, delta) => {
     if (!packageRig.current || !hinge.current) return;
@@ -728,6 +755,11 @@ function Scene(props: ExperienceProps) {
       && traySettled.current
       && discSettled.current;
     if (complete && !reported.current) { reported.current = true; onTransitionChange?.(false); }
+    const inertiaError = Math.abs(inertia.current.x) + Math.abs(inertia.current.y);
+    if (interactionActive.current && !drag.current && inertiaError < 0.015) {
+      interactionActive.current = false;
+      onRenderActivityChange(false);
+    }
   }, -2); // Parent pose must update before the scene-space disc samples its mount.
 
   const finish = (id: number, click: boolean) => {
@@ -746,6 +778,8 @@ function Scene(props: ExperienceProps) {
   const down = (event: ThreeEvent<PointerEvent>) => {
     if (mode !== 'CLOSED' && mode !== 'ALBUM_OPEN') return;
     event.stopPropagation(); autoRotate.current = false;
+    interactionActive.current = true;
+    onRenderActivityChange(true);
     const canvas = event.nativeEvent.currentTarget as HTMLCanvasElement; canvas.setPointerCapture(event.pointerId);
     inertia.current = { x: 0, y: 0 };
     drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY, time: event.timeStamp, startX: event.clientX, startY: event.clientY, canvas };
@@ -812,12 +846,39 @@ function Scene(props: ExperienceProps) {
 }
 
 export default function AlbumDetailExperience3D(props: ExperienceProps) {
+  const { onPageTurnComplete, onTransitionChange } = props;
+  const [sceneTransitioning, setSceneTransitioning] = useState(true);
+  const [pageTurning, setPageTurning] = useState(false);
+  const [sceneMotion, setSceneMotion] = useState(props.mode === 'CLOSED' && !props.reduced);
+  const previousPage = useRef(props.page);
+  useEffect(() => {
+    if (previousPage.current !== props.page) {
+      previousPage.current = props.page;
+      setPageTurning(true);
+    }
+  }, [props.page]);
+  const handleTransitionChange = useCallback((transitioning: boolean) => {
+    setSceneTransitioning(transitioning);
+    onTransitionChange?.(transitioning);
+  }, [onTransitionChange]);
+  const handlePageTurnComplete = useCallback(() => {
+    setPageTurning(false);
+    onPageTurnComplete?.();
+  }, [onPageTurnComplete]);
+  const continuous = needsContinuousAlbumFrames({
+    mode: props.mode,
+    playing: props.playing,
+    sceneTransitioning,
+    pageTurning,
+    sceneMotion,
+  });
   return (
-    <Canvas aria-label={`열고 탐색할 수 있는 ${props.album.title} 3D 디지팩`} camera={{ position: [0, 0, 7], fov: 42 }} dpr={[1, 2]} shadows="soft" gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}>
+    <Canvas aria-label={`열고 탐색할 수 있는 ${props.album.title} 3D 디지팩`} camera={{ position: [0, 0, 7], fov: 42 }} dpr={[1, 2]} frameloop="demand" shadows="soft" gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}>
+      <RenderScheduler active={continuous} />
       <ambientLight intensity={1.05} />
       <directionalLight castShadow intensity={1.8} position={[4.5, 6, 7]} shadow-mapSize-width={1024} shadow-mapSize-height={1024} shadow-camera-left={-6} shadow-camera-right={6} shadow-camera-top={5} shadow-camera-bottom={-5} shadow-radius={7} shadow-bias={-0.0002} />
       <directionalLight intensity={0.25} position={[-3, 1, 4]} />
-      <Scene {...props} />
+      <Scene {...props} onTransitionChange={handleTransitionChange} onPageTurnComplete={handlePageTurnComplete} onRenderActivityChange={setSceneMotion} />
     </Canvas>
   );
 }
