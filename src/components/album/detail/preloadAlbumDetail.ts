@@ -18,7 +18,7 @@ export function preloadAlbumDetail(album: Album) {
   const module = album.id === 'han-beom-su-haegeum-sanjo-2020'
     ? Promise.all([import('./HanBeomSuAlbumDetail'), import('./AlbumDetailExperience3D')])
     : Promise.all([import('./JiYoungHeeAlbumDetail'), import('./AlbumDetailExperience3D')]);
-  const images = [
+  const images = Array.from(new Set([
     album.albumHero?.background.desktop,
     album.albumHero?.textures.front,
     album.albumHero?.textures.back,
@@ -28,7 +28,7 @@ export function preloadAlbumDetail(album: Album) {
     album.booklet?.previewImages[0]?.src,
     album.detailExperience?.interior.bookletPanel,
     album.detailExperience?.interior.trayPanel,
-  ];
+  ]));
   const promise = Promise.all([module, ...images.map(decodeImage)])
     .then(() => undefined)
     .catch((error: unknown) => {

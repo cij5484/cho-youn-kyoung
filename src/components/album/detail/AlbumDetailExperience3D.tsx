@@ -152,15 +152,21 @@ function useCoreTextures(album: Album, loadInterior: boolean): CoreTextures {
       detail.interior.bookletPanel, detail.interior.trayPanel, album.cdLabelImage!,
       album.booklet!.previewImages[0].src,
     ].map((url) => assetUrl(url)!);
-    void Promise.all(interiorUrls.map((url) => new THREE.TextureLoader().loadAsync(url)))
+    const uniqueUrls = Array.from(new Set(interiorUrls));
+    void Promise.all(uniqueUrls.map((url) => new THREE.TextureLoader().loadAsync(url)))
       .then((textures) => {
         loaded = textures;
         configureTextures(textures, gl.capabilities.getMaxAnisotropy());
         if (cancelled) textures.forEach((texture) => texture.dispose());
-        else setInterior({
-          interiorBooklet: textures[0], interiorTray: textures[1],
-          cdLabel: textures[2], p1: textures[3],
-        });
+        else {
+          const textureByUrl = new Map(uniqueUrls.map((url, index) => [url, textures[index]]));
+          setInterior({
+            interiorBooklet: textureByUrl.get(interiorUrls[0])!,
+            interiorTray: textureByUrl.get(interiorUrls[1])!,
+            cdLabel: textureByUrl.get(interiorUrls[2])!,
+            p1: textureByUrl.get(interiorUrls[3])!,
+          });
+        }
       })
       .catch(() => undefined);
     return () => {
@@ -334,29 +340,133 @@ function TrayRig({ texture, label, profile, mode, playing, reduced, onPlayer, on
 
 type PageTurn = { key: number; source: number; target: number; direction: -1 | 1 };
 
+function bookletCurrentIndices(page: number, mobile: boolean, pageCount: number) {
+  if (mobile) return page >= 0 && page < pageCount ? [page] : [];
+  const first = page * 2;
+  if (first < 0 || first >= pageCount) return [];
+  return first + 1 < pageCount ? [first, first + 1] : [first];
+}
+
+function bookletTextureIndices(page: number, mobile: boolean, pageCount: number) {
+  const indices = new Set<number>();
+  if (mobile) {
+    for (let index = page - 1; index <= page + 1; index += 1) {
+      if (index >= 0 && index < pageCount) indices.add(index);
+    }
+  } else {
+    const spreadCount = Math.ceil(pageCount / 2);
+    for (let spread = page - 1; spread <= page + 1; spread += 1) {
+      if (spread < 0 || spread >= spreadCount) continue;
+      indices.add(spread * 2);
+      if (spread * 2 + 1 < pageCount) indices.add(spread * 2 + 1);
+    }
+  }
+  return Array.from(indices).sort((a, b) => a - b);
+}
+
+function useBookletTextureWindow(album: Album, page: number, mobile: boolean) {
+  const { gl } = useThree();
+  const urls = useMemo(
+    () => album.booklet!.previewImages.slice(1).map(({ src }) => assetUrl(src)!),
+    [album],
+  );
+  const wanted = useMemo(() => bookletTextureIndices(page, mobile, urls.length), [mobile, page, urls.length]);
+  const current = useMemo(() => bookletCurrentIndices(page, mobile, urls.length), [mobile, page, urls.length]);
+  const [textures, setTextures] = useState(() => new Map<number, THREE.Texture>());
+  const texturesForCleanup = useRef(textures);
+  useEffect(() => { texturesForCleanup.current = textures; }, [textures]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const retained = texturesForCleanup.current;
+    const wantedSet = new Set(wanted);
+    retained.forEach((texture, index) => {
+      if (wantedSet.has(index)) return;
+      retained.delete(index);
+      texture.dispose();
+    });
+    setTextures(new Map(retained));
+    const loader = new THREE.TextureLoader();
+    const load = async (indices: number[], prewarm: boolean) => {
+      const missing = indices.filter((index) => !texturesForCleanup.current.has(index));
+      if (missing.length === 0) return;
+      const loaded = await Promise.all(missing.map(async (index) => ({ index, texture: await loader.loadAsync(urls[index]) })));
+      if (cancelled) {
+        loaded.forEach(({ texture }) => texture.dispose());
+        return;
+      }
+      configureBookletTextures(loaded.map(({ texture }) => texture), gl.capabilities.getMaxAnisotropy());
+      for (const { index, texture } of loaded) {
+        if (cancelled) {
+          texture.dispose();
+          continue;
+        }
+        if (prewarm) {
+          await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+          if (cancelled) {
+            texture.dispose();
+            continue;
+          }
+          gl.initTexture(texture);
+        }
+        const existing = texturesForCleanup.current.get(index);
+        if (existing) {
+          texture.dispose();
+          continue;
+        }
+        texturesForCleanup.current.set(index, texture);
+        setTextures(new Map(texturesForCleanup.current));
+      }
+    };
+    void (async () => {
+      try {
+        await load(current, false);
+        if (cancelled) return;
+        await load(wanted.filter((index) => !current.includes(index)), true);
+      } catch {
+        // A missing optional preview must not take down the whole album scene.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [current, gl, urls, wanted]);
+
+  useEffect(() => () => {
+    texturesForCleanup.current.forEach((texture) => texture.dispose());
+    texturesForCleanup.current.clear();
+  }, []);
+
+  return { textures, urls };
+}
+
 function BookletPages({ album, page, mobile, reduced, active, onReady, onPageTurnComplete, onPrevious, onNext }: {
   album: Album; page: number; mobile: boolean; reduced: boolean; active: boolean;
   onPrevious(): void; onNext(): void;
   onReady(): void; onPageTurnComplete(): void;
 }) {
-  const { gl } = useThree();
-  const urls = album.booklet!.previewImages.slice(1).map(({ src }) => assetUrl(src)!);
-  const pages = useLoader(THREE.TextureLoader, urls) as THREE.Texture[];
-  useMemo(() => configureBookletTextures(pages, gl.capabilities.getMaxAnisotropy()), [gl, pages]);
-  const aspect = textureAspect(pages[0]);
-  const width = PAGE_HEIGHT * aspect;
   const previous = useRef(page);
   const [settled, setSettled] = useState(page);
   const [turn, setTurn] = useState<PageTurn | null>(null);
-  useEffect(onReady, [onReady]);
+  const window = useBookletTextureWindow(album, settled, mobile);
+  const currentIndices = bookletCurrentIndices(page, mobile, window.urls.length);
+  const ready = currentIndices.every((index) => window.textures.has(index));
+  const pages = window.urls.map((_, index) => window.textures.get(index)) as THREE.Texture[];
+  useEffect(() => { if (ready) onReady(); }, [onReady, ready]);
   useEffect(() => {
-    if (!active) return;
+    if (!active || !ready) return;
     if (previous.current === page) return;
     const source = previous.current;
     previous.current = page;
-    if (reduced) { queueMicrotask(() => { setSettled(page); onPageTurnComplete(); }); return; }
+    if (reduced) {
+      queueMicrotask(() => {
+        setSettled(page);
+        onPageTurnComplete();
+      });
+      return;
+    }
     setTurn({ key: Date.now(), source, target: page, direction: page > source ? 1 : -1 });
-  }, [active, mobile, onPageTurnComplete, page, reduced]);
+  }, [active, onPageTurnComplete, page, ready, reduced]);
   const completeTurn = () => {
     if (!turn) return;
     previous.current = turn.target;
@@ -364,6 +474,9 @@ function BookletPages({ album, page, mobile, reduced, active, onReady, onPageTur
     setTurn(null);
     onPageTurnComplete();
   };
+  if (!ready) return null;
+  const aspect = textureAspect(pages[currentIndices[0]]);
+  const width = PAGE_HEIGHT * aspect;
   if (mobile) {
     if (turn) return <MobileTurningPage key={turn.key} pages={pages} turn={turn} onDone={completeTurn} />;
     const base = pages[settled];
