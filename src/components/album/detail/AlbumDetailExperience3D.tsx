@@ -331,10 +331,90 @@ function TrayRig({ texture, label, profile, mode, playing, reduced, onPlayer, on
         <mesh position={[0, 0, trayPlateZ]} receiveShadow userData={{ baseOpacity: 0.5 }}><boxGeometry args={[dimensions.backWidth * 0.95, dimensions.backHeight * 0.95, TRAY_THICKNESS]} /><TrayClearPlasticMaterial opacity={0.34} thickness={TRAY_THICKNESS} /></mesh>
         <mesh position={[0, 0, recessZ]} receiveShadow userData={{ baseOpacity: 0.68 }}><ringGeometry args={[CD_RADIUS, PANEL * 0.475, 96]} /><TrayClearPlasticMaterial opacity={0.36} thickness={0.008} /></mesh>
         <mesh position={[0, 0, recessZ + SURFACE_OFFSET]} userData={{ baseOpacity: 0.15 }}><ringGeometry args={[0.18, CD_RADIUS - 0.04, 96]} /><TrayClearPlasticMaterial opacity={0.15} thickness={0.006} /></mesh>
-        <mesh position={[0, 0, hubZ]} rotation={[Math.PI / 2, 0, 0]} castShadow userData={{ baseOpacity: 0.62 }}><cylinderGeometry args={[0.16, 0.145, 0.018, 32]} /><TrayClearPlasticMaterial opacity={0.3} thickness={0.012} /></mesh>
+        {profile.scanned
+          ? <ScannedTrayAccents dimensions={dimensions} recessZ={recessZ} hubZ={hubZ} />
+          : <mesh position={[0, 0, hubZ]} rotation={[Math.PI / 2, 0, 0]} castShadow userData={{ baseOpacity: 0.62 }}><cylinderGeometry args={[0.16, 0.145, 0.018, 32]} /><TrayClearPlasticMaterial opacity={0.3} thickness={0.012} /></mesh>}
       </group>
     </group>
     {createPortal(<CdDisc label={label} profile={profile} tray={cdTray} mode={mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={onDiscSettled} onAnchor={onCdAnchor} />, scene)}
+  </>;
+}
+
+function ScannedTrayAccents({ dimensions, recessZ, hubZ }: {
+  dimensions: PackageProfile['dimensions'];
+  recessZ: number;
+  hubZ: number;
+}) {
+  const supports = useRef<THREE.InstancedMesh>(null);
+  const hubTeeth = useRef<THREE.InstancedMesh>(null);
+  const supportRadius = Math.min(dimensions.backWidth, dimensions.backHeight) * 0.405;
+  const panelBorder = useMemo(() => {
+    const width = dimensions.backWidth * 0.95;
+    const height = dimensions.backHeight * 0.95;
+    const inset = 0.028;
+    const shape = new THREE.Shape();
+    shape.moveTo(-width / 2, -height / 2);
+    shape.lineTo(width / 2, -height / 2);
+    shape.lineTo(width / 2, height / 2);
+    shape.lineTo(-width / 2, height / 2);
+    shape.closePath();
+    const opening = new THREE.Path();
+    opening.moveTo(-width / 2 + inset, -height / 2 + inset);
+    opening.lineTo(-width / 2 + inset, height / 2 - inset);
+    opening.lineTo(width / 2 - inset, height / 2 - inset);
+    opening.lineTo(width / 2 - inset, -height / 2 + inset);
+    opening.closePath();
+    shape.holes.push(opening);
+    return shape;
+  }, [dimensions.backHeight, dimensions.backWidth]);
+
+  useEffect(() => {
+    const supportMesh = supports.current;
+    const teethMesh = hubTeeth.current;
+    const transform = new THREE.Object3D();
+    if (supportMesh) {
+      [Math.PI / 4, Math.PI * 3 / 4, Math.PI * 5 / 4, Math.PI * 7 / 4].forEach((angle, index) => {
+        transform.position.set(Math.cos(angle) * supportRadius, Math.sin(angle) * supportRadius, 0);
+        transform.rotation.set(Math.PI / 2, 0, 0);
+        transform.scale.set(1, 1, 1);
+        transform.updateMatrix();
+        supportMesh.setMatrixAt(index, transform.matrix);
+      });
+      supportMesh.instanceMatrix.needsUpdate = true;
+    }
+    if (teethMesh) {
+      Array.from({ length: 8 }, (_, index) => index * Math.PI / 4).forEach((angle, index) => {
+        transform.position.set(Math.cos(angle) * 0.105, Math.sin(angle) * 0.105, 0);
+        transform.rotation.set(0, 0, angle - Math.PI / 2);
+        transform.scale.set(1, 1, 1);
+        transform.updateMatrix();
+        teethMesh.setMatrixAt(index, transform.matrix);
+      });
+      teethMesh.instanceMatrix.needsUpdate = true;
+    }
+  }, [supportRadius]);
+
+  return <>
+    <mesh position={[0, 0, recessZ + 0.01]} userData={{ baseOpacity: 0.32 }}>
+      <shapeGeometry args={[panelBorder]} />
+      <TrayClearPlasticMaterial opacity={0.24} thickness={0.008} />
+    </mesh>
+    <mesh position={[0, 0, recessZ + 0.012]} castShadow userData={{ baseOpacity: 0.72 }}>
+      <torusGeometry args={[CD_RADIUS + 0.018, 0.022, 8, 96]} />
+      <TrayClearPlasticMaterial opacity={0.44} thickness={0.012} />
+    </mesh>
+    <instancedMesh ref={supports} args={[undefined, undefined, 4]} position={[0, 0, recessZ + 0.013]} castShadow userData={{ baseOpacity: 0.62 }}>
+      <cylinderGeometry args={[0.108, 0.126, 0.022, 24]} />
+      <TrayClearPlasticMaterial opacity={0.38} thickness={0.014} />
+    </instancedMesh>
+    <mesh position={[0, 0, hubZ]} rotation={[Math.PI / 2, 0, 0]} castShadow userData={{ baseOpacity: 0.68 }}>
+      <cylinderGeometry args={[0.165, 0.152, 0.026, 32]} />
+      <TrayClearPlasticMaterial opacity={0.4} thickness={0.016} />
+    </mesh>
+    <instancedMesh ref={hubTeeth} args={[undefined, undefined, 8]} position={[0, 0, hubZ + 0.018]} castShadow userData={{ baseOpacity: 0.76 }}>
+      <boxGeometry args={[0.04, 0.115, 0.022]} />
+      <TrayClearPlasticMaterial opacity={0.46} thickness={0.012} />
+    </instancedMesh>
   </>;
 }
 
