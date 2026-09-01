@@ -307,7 +307,7 @@ function TrayRig({ texture, label, profile, mode, playing, reduced, onPlayer, on
   const cdTray = useRef<THREE.Group>(null);
   const trayContext = useRef<THREE.Group>(null);
   const opacity = useRef(1);
-  const { dimensions, backInnerZ, trayPlateZ, recessZ, hubZ } = profile;
+  const { dimensions, backInnerZ, trayPlateZ, recessZ, hubZ, cdMountZ } = profile;
   useFrame((_, delta) => {
     const group = trayContext.current;
     if (!group) return;
@@ -332,7 +332,7 @@ function TrayRig({ texture, label, profile, mode, playing, reduced, onPlayer, on
         <mesh position={[0, 0, recessZ]} receiveShadow userData={{ baseOpacity: 0.68 }}><ringGeometry args={[CD_RADIUS, PANEL * 0.475, 96]} /><TrayClearPlasticMaterial opacity={0.36} thickness={0.008} /></mesh>
         <mesh position={[0, 0, recessZ + SURFACE_OFFSET]} userData={{ baseOpacity: 0.15 }}><ringGeometry args={[0.18, CD_RADIUS - 0.04, 96]} /><TrayClearPlasticMaterial opacity={0.15} thickness={0.006} /></mesh>
         {profile.scanned
-          ? <ScannedTrayAccents dimensions={dimensions} recessZ={recessZ} hubZ={hubZ} />
+          ? <ScannedTrayAccents dimensions={dimensions} cdMountZ={cdMountZ} />
           : <mesh position={[0, 0, hubZ]} rotation={[Math.PI / 2, 0, 0]} castShadow userData={{ baseOpacity: 0.62 }}><cylinderGeometry args={[0.16, 0.145, 0.018, 32]} /><TrayClearPlasticMaterial opacity={0.3} thickness={0.012} /></mesh>}
       </group>
     </group>
@@ -340,14 +340,13 @@ function TrayRig({ texture, label, profile, mode, playing, reduced, onPlayer, on
   </>;
 }
 
-function ScannedTrayAccents({ dimensions, recessZ, hubZ }: {
+function ScannedTrayAccents({ dimensions, cdMountZ }: {
   dimensions: PackageProfile['dimensions'];
-  recessZ: number;
-  hubZ: number;
+  cdMountZ: number;
 }) {
   const supports = useRef<THREE.InstancedMesh>(null);
   const hubTeeth = useRef<THREE.InstancedMesh>(null);
-  const supportRadius = Math.min(dimensions.backWidth, dimensions.backHeight) * 0.405;
+  const supportRadius = CD_RADIUS + 0.085;
   const panelBorder = useMemo(() => {
     const width = dimensions.backWidth * 0.95;
     const height = dimensions.backHeight * 0.95;
@@ -395,25 +394,25 @@ function ScannedTrayAccents({ dimensions, recessZ, hubZ }: {
   }, [supportRadius]);
 
   return <>
-    <mesh position={[0, 0, recessZ + 0.01]} userData={{ baseOpacity: 0.32 }}>
+    <mesh position={[0, 0, cdMountZ - 0.018]} userData={{ baseOpacity: 0.18 }}>
       <shapeGeometry args={[panelBorder]} />
-      <TrayClearPlasticMaterial opacity={0.24} thickness={0.008} />
+      <meshBasicMaterial color="#dcecea" transparent opacity={0.18} depthWrite={false} toneMapped={false} />
     </mesh>
-    <mesh position={[0, 0, recessZ + 0.012]} castShadow userData={{ baseOpacity: 0.72 }}>
-      <torusGeometry args={[CD_RADIUS + 0.018, 0.022, 8, 96]} />
-      <TrayClearPlasticMaterial opacity={0.44} thickness={0.012} />
+    <mesh position={[0, 0, cdMountZ - 0.014]} userData={{ baseOpacity: 0.24 }}>
+      <ringGeometry args={[CD_RADIUS + 0.056, CD_RADIUS + 0.078, 96]} />
+      <meshBasicMaterial color="#d5e8e5" transparent opacity={0.24} depthWrite={false} toneMapped={false} />
     </mesh>
-    <instancedMesh ref={supports} args={[undefined, undefined, 4]} position={[0, 0, recessZ + 0.013]} castShadow userData={{ baseOpacity: 0.62 }}>
-      <cylinderGeometry args={[0.108, 0.126, 0.022, 24]} />
-      <TrayClearPlasticMaterial opacity={0.38} thickness={0.014} />
+    <instancedMesh ref={supports} args={[undefined, undefined, 4]} position={[0, 0, cdMountZ - 0.012]} userData={{ baseOpacity: 0.22 }}>
+      <cylinderGeometry args={[0.072, 0.094, 0.022, 24]} />
+      <meshBasicMaterial color="#d4e5e2" transparent opacity={0.22} depthWrite={false} toneMapped={false} />
     </instancedMesh>
-    <mesh position={[0, 0, hubZ]} rotation={[Math.PI / 2, 0, 0]} castShadow userData={{ baseOpacity: 0.68 }}>
+    <mesh position={[0, 0, cdMountZ + 0.016]} rotation={[Math.PI / 2, 0, 0]} renderOrder={11} userData={{ baseOpacity: 0.4 }}>
       <cylinderGeometry args={[0.165, 0.152, 0.026, 32]} />
-      <TrayClearPlasticMaterial opacity={0.4} thickness={0.016} />
+      <meshBasicMaterial color="#d5e8e5" transparent opacity={0.4} depthWrite={false} toneMapped={false} />
     </mesh>
-    <instancedMesh ref={hubTeeth} args={[undefined, undefined, 8]} position={[0, 0, hubZ + 0.018]} castShadow userData={{ baseOpacity: 0.76 }}>
+    <instancedMesh ref={hubTeeth} args={[undefined, undefined, 8]} position={[0, 0, cdMountZ + 0.031]} renderOrder={12} userData={{ baseOpacity: 0.52 }}>
       <boxGeometry args={[0.04, 0.115, 0.022]} />
-      <TrayClearPlasticMaterial opacity={0.46} thickness={0.012} />
+      <meshBasicMaterial color="#e9f5f3" transparent opacity={0.52} depthWrite={false} toneMapped={false} />
     </instancedMesh>
   </>;
 }
