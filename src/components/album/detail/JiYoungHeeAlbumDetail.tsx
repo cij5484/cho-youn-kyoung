@@ -6,6 +6,7 @@ import type { BookletBounds, ExperienceMode } from './AlbumDetailExperience3D';
 import { useAlbumAudio } from './useAlbumAudio';
 import { AlbumAdjacentNavigation } from './AlbumAdjacentNavigation';
 import { AlbumOpenOverlay } from './AlbumOpenOverlay';
+import { preloadAlbumDetail } from './preloadAlbumDetail';
 import { useAlbumStage } from '../AlbumStages';
 import { AlbumClosedInfo } from '../AlbumClosedInfo';
 
@@ -33,6 +34,7 @@ function BookletNavigation({
   onPrevious,
   disabled,
   bounds,
+  pageCount,
 }: {
   mobile: boolean;
   mobilePage: number;
@@ -42,12 +44,15 @@ function BookletNavigation({
   onPrevious(): void;
   disabled: boolean;
   bounds?: BookletBounds;
+  pageCount: number;
 }) {
+  const readablePages = Math.max(0, pageCount - 1);
+  const spreadCount = Math.ceil(readablePages / 2);
   const atStart = mobile ? mobilePage === 0 : spread === 0;
-  const atEnd = mobile ? mobilePage === 5 : spread === 2;
+  const atEnd = mobile ? mobilePage === readablePages - 1 : spread === spreadCount - 1;
   const pageLabel = mobile
-    ? `P${mobilePage + 2} / P7`
-    : `P${spread * 2 + 2} — P${spread * 2 + 3}`;
+    ? `P${mobilePage + 2} / P${pageCount}`
+    : `P${spread * 2 + 2} — P${Math.min(pageCount, spread * 2 + 3)}`;
 
   return (
     <div className="ji-detail__booklet-ui" style={bounds}>
@@ -151,7 +156,7 @@ function PlayerPanel({
   );
 }
 
-export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
+export default function LightPaperAlbumDetail({ album }: { album: Album }) {
   const location = useLocation();
   const autoOpenAlbum = Boolean((location.state as { autoOpenAlbum?: boolean } | null)?.autoOpenAlbum);
   const { setDetailProps, setDetailStageVisible } = useAlbumStage(album.id);
@@ -170,9 +175,14 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
   const stage = useRef<HTMLElement>(null);
   const swipe = useRef<number | undefined>(undefined);
   const pages = album.booklet?.previewImages ?? [];
+  const readablePageCount = Math.max(0, pages.length - 1);
+  const spreadCount = Math.ceil(readablePageCount / 2);
   const tracks = album.tracks ?? [];
   const [closedTitle, closedSubtitle] = album.title.split(/\s*[-–—－]\s*/, 2);
   const player = useAlbumAudio(tracks);
+  const isPyeongjo = album.detailExperience?.theme === 'pyeongjo-hoesang-paper';
+  const isYeongsan = album.detailExperience?.theme === 'yeongsan-hoesang-paper';
+  const detailTone = isYeongsan ? 'yeongsan' : isPyeongjo ? 'pyeongjo' : 'ji';
   const handleTransitionChange = useCallback((transitioning: boolean) => {
     setSceneTransitioning(transitioning);
   }, []);
@@ -185,6 +195,10 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
     setVisibleMobilePage(mobilePage);
     setPageTurning(false);
   }, [mobilePage, spread]);
+
+  useEffect(() => {
+    void preloadAlbumDetail(album).catch(() => undefined);
+  }, [album]);
 
   useEffect(() => {
     const mobileQuery = matchMedia('(max-width: 700px)');
@@ -227,11 +241,11 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
 
   const next = useCallback(() => {
     if (pageTurning || sceneTransitioning) return;
-    if ((mobile && mobilePage === 5) || (!mobile && spread === 2)) return;
+    if ((mobile && mobilePage === readablePageCount - 1) || (!mobile && spread === spreadCount - 1)) return;
     setPageTurning(true);
-    if (mobile) setMobilePage((value) => Math.min(5, value + 1));
-    else setSpread((value) => Math.min(2, value + 1));
-  }, [mobile, mobilePage, pageTurning, sceneTransitioning, spread]);
+    if (mobile) setMobilePage((value) => Math.min(readablePageCount - 1, value + 1));
+    else setSpread((value) => Math.min(spreadCount - 1, value + 1));
+  }, [mobile, mobilePage, pageTurning, readablePageCount, sceneTransitioning, spread, spreadCount]);
 
   const openAlbum = useCallback(() => {
     if (sceneTransitioning || mode !== 'CLOSED') return;
@@ -240,15 +254,15 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
   }, [mode, sceneTransitioning]);
 
   const openBooklet = useCallback(() => {
+    if (sceneTransitioning || mode !== 'ALBUM_OPEN') return;
     setSpread(0);
     setMobilePage(0);
     setVisibleSpread(0);
     setVisibleMobilePage(0);
-    if (sceneTransitioning) return;
     setSceneTransitioning(true);
     setMode('BOOKLET_FOCUS');
     if (!mobile) stage.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
-  }, [mobile, reduced, sceneTransitioning]);
+  }, [mobile, mode, reduced, sceneTransitioning]);
 
   const backToAlbum = () => {
     if (sceneTransitioning || pageTurning) return;
@@ -306,14 +320,14 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
   }
 
   return (
-    <article className={`ji-detail ji-detail--${mode.toLowerCase()}`}>
+    <article className={`ji-detail${isPyeongjo ? ' ji-detail--pyeongjo' : ''}${isYeongsan ? ' ji-detail--yeongsan' : ''} ji-detail--${mode.toLowerCase()}`}>
       <section
         className="ji-detail__stage"
         ref={stage}
-        aria-label="지영희류 앨범 인터랙티브 전시"
+        aria-label={`${album.title} 앨범 인터랙티브 전시`}
       >
         {(mode === 'CLOSED' || mode === 'ALBUM_OPEN') && !sceneTransitioning && (
-          <AlbumAdjacentNavigation currentId={album.id} tone="ji" />
+          <AlbumAdjacentNavigation currentId={album.id} tone={detailTone} />
         )}
         {mobile && mode === 'BOOKLET_FOCUS' && (
           <div
@@ -348,8 +362,8 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
         {mode === 'ALBUM_OPEN' && !sceneTransitioning && (
           <AlbumOpenOverlay
             album={album}
-            title="조윤경 해금산조"
-            subtitle="지영희류"
+            title={closedTitle}
+            subtitle={closedSubtitle ?? ''}
             visible={stageVisible}
             onBooklet={openBooklet}
             onTracks={enterPlayer}
@@ -361,7 +375,7 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
             {!mobile && (
               <div className="ji-detail__booklet-hit-areas" aria-label="북클릿 페이지 이동" style={bookletBounds}>
                 <button type="button" aria-label="이전 북클릿 펼침면" disabled={pageTurning || spread === 0} onClick={previous} />
-                <button type="button" aria-label="다음 북클릿 펼침면" disabled={pageTurning || spread === 2} onClick={next} />
+                <button type="button" aria-label="다음 북클릿 펼침면" disabled={pageTurning || spread === spreadCount - 1} onClick={next} />
               </div>
             )}
             <BookletNavigation
@@ -370,6 +384,7 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
               spread={visibleSpread}
               disabled={sceneTransitioning || pageTurning}
               bounds={bookletBounds}
+              pageCount={pages.length}
               onBack={backToAlbum}
               onNext={next}
               onPrevious={previous}

@@ -5,7 +5,7 @@
 .album-adjacent strong span{position:relative}
 .album-adjacent strong span::after{content:"";position:absolute;right:0;bottom:-.12em;left:0;height:1px;background:currentColor;transform:scaleX(0);transform-origin:left;transition:transform 260ms cubic-bezier(.22,1,.36,1)}
 .album-adjacent strong b{font:inherit;transition:transform 260ms cubic-bezier(.22,1,.36,1)}
-.album-adjacent--han{color:#d6ad6c}.album-adjacent--ji{color:#70453f}
+.album-adjacent--han{color:#d6ad6c}.album-adjacent--ji{color:#70453f}.album-adjacent--pyeongjo{color:#80699a}.album-adjacent--yeongsan{color:#145f7d}
 .album-adjacent a:focus-visible{outline:2px solid currentColor;outline-offset:5px}
 .album-adjacent a:focus-visible strong span::after{transform:scaleX(1)}.album-adjacent a:focus-visible strong b{transform:translateX(5px)}
 @media(hover:hover) and (pointer:fine){.album-adjacent a:hover strong span::after{transform:scaleX(1)}.album-adjacent a:hover strong b{transform:translateX(5px)}}

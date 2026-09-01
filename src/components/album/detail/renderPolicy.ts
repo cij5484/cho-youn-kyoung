@@ -9,8 +9,12 @@ export type AlbumFrameState = {
 };
 
 export function needsContinuousAlbumFrames(state: AlbumFrameState) {
-  return state.sceneTransitioning
+  return state.mode === 'CLOSED'
+    || state.sceneTransitioning
     || state.pageTurning
     || state.sceneMotion
-    || (state.mode === 'PLAYER_FOCUS' && state.playing);
+    // The player presentation always keeps the disc turning slowly. `playing`
+    // only changes its speed; albums whose audio is not published still need
+    // continuous frames for the rotation preview.
+    || state.mode === 'PLAYER_FOCUS';
 }

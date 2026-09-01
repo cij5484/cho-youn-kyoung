@@ -50,7 +50,7 @@ export type AlbumHeroSettings = {
 };
 
 export type AlbumDetailExperience = {
-  theme: 'ji-young-hee-paper' | 'han-beom-su-paper';
+  theme: 'ji-young-hee-paper' | 'han-beom-su-paper' | 'pyeongjo-hoesang-paper' | 'yeongsan-hoesang-paper';
   interior: { bookletPanel: string; trayPanel: string };
 };
 
@@ -125,6 +125,224 @@ export type Album = {
 };
 
 export const albums: Album[] = [
+  {
+    id: 'yeongsan-hoesang-2026',
+    title: '조윤경 해금정악 – 영산회상',
+    englishTitle: 'CHO YOUN KYOUNG\nHAEGEUM JEONGAK\nYeongsan Hoesang',
+    year: '2026',
+    releaseStatus: 'coming-soon',
+    description: '해금으로 듣는 영산회상.',
+    coverImage: '/assets/albums/yeongsan-hoesang-2026/web/front.webp',
+    cdLabelImage: '/assets/albums/yeongsan-hoesang-2026/web/cd-label.webp',
+    detailExperience: {
+      theme: 'yeongsan-hoesang-paper',
+      interior: {
+        bookletPanel: '/assets/albums/yeongsan-hoesang-2026/web/interior-booklet.webp',
+        trayPanel: '/assets/albums/yeongsan-hoesang-2026/web/interior-tray.webp',
+      },
+    },
+    albumHero: {
+      theme: 'album-package',
+      background: {
+        desktop: '/assets/albums/yeongsan-hoesang-2026/web/home-hero-desktop.webp',
+        mobile: '/assets/albums/yeongsan-hoesang-2026/web/home-hero-mobile.webp',
+      },
+      backgroundAnchor: {
+        desktop: { sourceWidth: 2560, sourceHeight: 1440, x: 0.5 },
+        mobile: { sourceWidth: 1440, sourceHeight: 2560, x: 0.5 },
+      },
+      packageGeometry: {
+        front: { width: 1664, height: 1477 },
+        back: { width: 1665, height: 1477 },
+        spine: { width: 83, height: 1477 },
+      },
+      textures: {
+        front: '/assets/albums/yeongsan-hoesang-2026/web/front.webp',
+        back: '/assets/albums/yeongsan-hoesang-2026/web/back.webp',
+        spineLeft: '/assets/albums/yeongsan-hoesang-2026/web/spine.webp',
+      },
+    },
+    detailsPath: '/album/yeongsan-hoesang-2026',
+    tracks: [
+      {
+        number: 1,
+        title: '중광지곡 상령산',
+        duration: '13:29',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/yeongsan/01_sangryeongsan.mp3',
+      },
+      {
+        number: 2,
+        title: '중광지곡 중령산',
+        duration: '10:26',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/yeongsan/02_jungnyeongsan.mp3',
+      },
+      {
+        number: 3,
+        title: '중광지곡 세령산',
+        duration: '03:42',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/yeongsan/03_seryongsan.mp3',
+      },
+      {
+        number: 4,
+        title: '중광지곡 가락덜이',
+        duration: '02:28',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/yeongsan/04_garakdeori.mp3',
+      },
+      {
+        number: 5,
+        title: '중광지곡 상현도드리',
+        duration: '04:19',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/yeongsan/05_sanghyeondodeuri.mp3',
+      },
+      {
+        number: 6,
+        title: '중광지곡 하현도드리',
+        duration: '02:58',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/yeongsan/06_hahyeondodeuri.mp3',
+      },
+      {
+        number: 7,
+        title: '중광지곡 염불도드리',
+        duration: '04:10',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/yeongsan/07_yeombuldodeuri.mp3',
+      },
+      {
+        number: 8,
+        title: '중광지곡 타령',
+        duration: '03:06',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/yeongsan/08_taryeong.mp3',
+      },
+      {
+        number: 9,
+        title: '중광지곡 군악',
+        duration: '04:04',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/yeongsan/09_gunak.mp3',
+      },
+    ],
+    participants: [
+      { name: '조윤경', role: '해금' },
+      { name: '이영섭', role: '장구' },
+    ],
+    credits: [
+      { role: 'Producer', names: ['조윤경'] },
+      { role: 'Recording · Mixing · Mastering', names: ['이음사운드'] },
+      { role: 'Distribution', names: ['조은뮤직'] },
+      { role: 'Design', names: ['Soul.P'] },
+    ],
+    booklet: {
+      previewImages: Array.from({ length: 11 }, (_, index) => ({
+        src: `/assets/albums/yeongsan-hoesang-2026/viewer/booklet-${String(index + 1).padStart(2, '0')}.webp`,
+        alt: `영산회상 북클릿 ${index + 1}페이지`,
+        label: `P${index + 1}`,
+      })),
+    },
+  },
+  {
+    id: 'pyeongjo-hoesang-2026',
+    title: '조윤경 해금정악 – 평조회상',
+    englishTitle: 'CHO YOUN KYOUNG\nHAEGEUM JEONGAK\nPyeongjo Hoesang',
+    year: '2026',
+    releaseStatus: 'coming-soon',
+    description: '해금으로 마주한 평조회상.',
+    coverImage: '/assets/albums/pyeongjo-hoesang-2026/web/front.webp',
+    cdLabelImage: '/assets/albums/pyeongjo-hoesang-2026/web/cd-label.webp',
+    detailExperience: {
+      theme: 'pyeongjo-hoesang-paper',
+      interior: {
+        bookletPanel: '/assets/albums/pyeongjo-hoesang-2026/web/interior-booklet.webp',
+        trayPanel: '/assets/albums/pyeongjo-hoesang-2026/web/interior-tray.webp',
+      },
+    },
+    albumHero: {
+      theme: 'album-package',
+      background: {
+        desktop: '/assets/albums/pyeongjo-hoesang-2026/web/home-hero-desktop.webp',
+        mobile: '/assets/albums/pyeongjo-hoesang-2026/web/home-hero-mobile.webp',
+      },
+      backgroundAnchor: {
+        desktop: { sourceWidth: 2560, sourceHeight: 1440, x: 0.5 },
+        mobile: { sourceWidth: 1440, sourceHeight: 2560, x: 0.5 },
+      },
+      packageGeometry: {
+        front: { width: 1664, height: 1477 },
+        back: { width: 1666, height: 1477 },
+        spine: { width: 83, height: 1477 },
+      },
+      textures: {
+        front: '/assets/albums/pyeongjo-hoesang-2026/web/front.webp',
+        back: '/assets/albums/pyeongjo-hoesang-2026/web/back.webp',
+        spineLeft: '/assets/albums/pyeongjo-hoesang-2026/web/spine.webp',
+      },
+    },
+    detailsPath: '/album/pyeongjo-hoesang-2026',
+    tracks: [
+      {
+        number: 1,
+        title: '평조회상 상령산',
+        duration: '13:36',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/pyeongjo/01_sangryeongsan.mp3',
+      },
+      {
+        number: 2,
+        title: '평조회상 중령산',
+        duration: '11:42',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/pyeongjo/02_jungnyeongsan.mp3',
+      },
+      {
+        number: 3,
+        title: '평조회상 세령산',
+        duration: '04:01',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/pyeongjo/03_seryongsan.mp3',
+      },
+      {
+        number: 4,
+        title: '평조회상 가락덜이',
+        duration: '02:31',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/pyeongjo/04_garakdeori.mp3',
+      },
+      {
+        number: 5,
+        title: '평조회상 상현도드리',
+        duration: '04:22',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/pyeongjo/05_sanghyeondodeuri.mp3',
+      },
+      {
+        number: 6,
+        title: '평조회상 염불도드리',
+        duration: '04:18',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/pyeongjo/06_yeombuldodeuri.mp3',
+      },
+      {
+        number: 7,
+        title: '평조회상 타령',
+        duration: '03:14',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/pyeongjo/07_taryeong.mp3',
+      },
+      {
+        number: 8,
+        title: '평조회상 군악',
+        duration: '04:13',
+        webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/pyeongjo/08_gunak.mp3',
+      },
+    ],
+    participants: [
+      { name: '조윤경', role: '해금' },
+      { name: '이영섭', role: '장구' },
+    ],
+    credits: [
+      { role: 'Producer', names: ['조윤경'] },
+      { role: 'Recording · Mixing · Mastering', names: ['이음사운드'] },
+      { role: 'Distribution', names: ['조은뮤직'] },
+      { role: 'Design', names: ['Soul.P'] },
+    ],
+    booklet: {
+      previewImages: Array.from({ length: 11 }, (_, index) => ({
+        src: `/assets/albums/pyeongjo-hoesang-2026/viewer/booklet-${String(index + 1).padStart(2, '0')}.webp`,
+        alt: `평조회상 북클릿 ${index + 1}페이지`,
+        label: `P${index + 1}`,
+      })),
+    },
+  },
   {
     id: 'ji-young-hee-ryu-haegeum-sanjo-2026',
     title: '조윤경 해금산조 – 지영희류',

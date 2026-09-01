@@ -19,12 +19,11 @@
 
 .album-hero--han-beom-su-haegeum-sanjo-2020 {
   --album-accent: #9db9b1;
-  background: transparent;
   color: #f2eee5;
 }
-.album-hero--han-beom-su-haegeum-sanjo-2020 { pointer-events:none; }
-.album-hero--ji-young-hee-ryu-haegeum-sanjo-2026 { background: transparent; }
-.album-hero--ji-young-hee-ryu-haegeum-sanjo-2026 { pointer-events:none; }
+.album-hero--pyeongjo-hoesang-2026 { --album-accent: #80699a; }
+.album-hero--yeongsan-hoesang-2026 { --album-accent: #145f7d; }
+.album-hero.is-persistent { background: transparent; pointer-events: none; }
 
 .album-hero-loading { min-height: 100svh; background: #eeeae0; }
 

@@ -4,6 +4,8 @@ import { AlbumPackage3D } from './album/AlbumPackage3D';
 import { useEffect } from 'react';
 import { useOptionalAlbumStage } from '../album/AlbumStages';
 import { AlbumClosedInfo } from '../album/AlbumClosedInfo';
+import { albums } from '../../data/albums';
+import { preloadAlbumDetail } from '../album/detail/preloadAlbumDetail';
 
 type AlbumHeroProps = {
   slide: HomeHeroSlide;
@@ -18,10 +20,19 @@ export function AlbumHero({ slide }: AlbumHeroProps) {
     setHomeActive(true);
     return () => setHomeActive(false);
   }, [setHomeActive]);
+  useEffect(() => {
+    if (!stage) return;
+    const album = albums.find((item) => item.id === slide.id);
+    if (!album) return;
+    // HOME only warms the route module and browser image cache. Compiling the
+    // full interior scene here can starve the already-visible closed package
+    // and leave the shared WebGL stage blank on heavier albums.
+    void preloadAlbumDetail(album).catch(() => undefined);
+  }, [slide.id, stage]);
   const [year, status] = slide.displayDate.split(' · ');
 
   return (
-    <section className={`album-hero album-hero--${slide.id}`} data-album-id={slide.id} aria-labelledby={`${slide.id}-hero-title`}>
+    <section className={`album-hero album-hero--${slide.id}${persistent ? ' is-persistent' : ''}`} data-album-id={slide.id} aria-labelledby={`${slide.id}-hero-title`}>
       {slide.albumBackground && !persistent ? (
         <picture className="album-hero__background" aria-hidden="true">
           <source media="(max-width: 700px)" srcSet={slide.albumBackground.mobile} />

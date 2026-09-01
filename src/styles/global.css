@@ -125,6 +125,20 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .mobile-menu a.active
 html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .mobile-menu a:focus-visible {
   color: #9db9b1;
 }
+html[data-home-hero-work="pyeongjo-hoesang-2026"] .desktop-nav a.active,
+html[data-home-hero-work="pyeongjo-hoesang-2026"] .desktop-nav a:hover,
+html[data-home-hero-work="pyeongjo-hoesang-2026"] .desktop-nav a:focus-visible,
+html[data-home-hero-work="pyeongjo-hoesang-2026"] .mobile-menu a.active,
+html[data-home-hero-work="pyeongjo-hoesang-2026"] .mobile-menu a:focus-visible {
+  color: #80699a;
+}
+html[data-home-hero-work="yeongsan-hoesang-2026"] .desktop-nav a.active,
+html[data-home-hero-work="yeongsan-hoesang-2026"] .desktop-nav a:hover,
+html[data-home-hero-work="yeongsan-hoesang-2026"] .desktop-nav a:focus-visible,
+html[data-home-hero-work="yeongsan-hoesang-2026"] .mobile-menu a.active,
+html[data-home-hero-work="yeongsan-hoesang-2026"] .mobile-menu a:focus-visible {
+  color: #145f7d;
+}
 .menu-button {
   display: none;
   background: none;
@@ -600,7 +614,7 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .mobile-menu a:focus-
   overflow: hidden;
   isolation: isolate;
 }
-.home-hero-rotator:is([data-work-id="ji-young-hee-ryu-haegeum-sanjo-2026"], [data-work-id="han-beom-su-haegeum-sanjo-2020"]) {
+.home-hero-rotator[data-theme="album-package"] {
   pointer-events: none;
 }
 .home-hero-rotator__stage,
@@ -608,11 +622,11 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .mobile-menu a:focus-
   position: absolute;
   inset: 0;
 }
-.home-hero-rotator:is([data-work-id="ji-young-hee-ryu-haegeum-sanjo-2026"], [data-work-id="han-beom-su-haegeum-sanjo-2020"])
+.home-hero-rotator[data-theme="album-package"]
   .home-hero-rotator__stage {
   pointer-events: none;
 }
-.home-hero-rotator:is([data-work-id="ji-young-hee-ryu-haegeum-sanjo-2026"], [data-work-id="han-beom-su-haegeum-sanjo-2020"])
+.home-hero-rotator[data-theme="album-package"]
   :is(.recent-works, .home-creative-credit) {
   pointer-events: auto;
 }
@@ -627,7 +641,7 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .mobile-menu a:focus-
   pointer-events: auto;
   z-index: 1;
 }
-.home-hero-rotator:is([data-work-id="ji-young-hee-ryu-haegeum-sanjo-2026"], [data-work-id="han-beom-su-haegeum-sanjo-2020"])
+.home-hero-rotator[data-theme="album-package"]
   .home-hero-rotator__slide.is-active {
   pointer-events: none;
 }
@@ -1402,13 +1416,19 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .home-creative-credit
 .site-header--sanjo-detail .mobile-menu a.active {
   color: #1f4f7a;
 }
-.site-header--ji-album-detail {
+.site-header--paper-album-detail {
   background: linear-gradient(180deg, rgba(238, 233, 223, .96), rgba(238, 233, 223, .7) 70%, transparent);
 }
-.site-header--ji-album-detail .brand,
-.site-header--ji-album-detail .desktop-nav a,
-.site-header--ji-album-detail .menu-button { color:#252525; }
-.site-header--ji-album-detail .desktop-nav a.active,
-.site-header--ji-album-detail .desktop-nav a:hover,
-.site-header--ji-album-detail .desktop-nav a:focus-visible { color:#70453f; }
-.site-header--ji-album-detail .menu-button span { background:currentColor; }
+.site-header--paper-album-detail .brand,
+.site-header--paper-album-detail .desktop-nav a,
+.site-header--paper-album-detail .menu-button { color:#252525; }
+.site-header--paper-album-detail .desktop-nav a.active,
+.site-header--paper-album-detail .desktop-nav a:hover,
+.site-header--paper-album-detail .desktop-nav a:focus-visible { color:#70453f; }
+.site-header--pyeongjo-album-detail .desktop-nav a.active,
+.site-header--pyeongjo-album-detail .desktop-nav a:hover,
+.site-header--pyeongjo-album-detail .desktop-nav a:focus-visible { color:#80699a; }
+.site-header--yeongsan-album-detail .desktop-nav a.active,
+.site-header--yeongsan-album-detail .desktop-nav a:hover,
+.site-header--yeongsan-album-detail .desktop-nav a:focus-visible { color:#145f7d; }
+.site-header--paper-album-detail .menu-button span { background:currentColor; }
