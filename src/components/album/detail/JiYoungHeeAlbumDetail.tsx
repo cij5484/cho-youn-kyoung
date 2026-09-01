@@ -7,6 +7,7 @@ import { useAlbumAudio } from './useAlbumAudio';
 import { AlbumAdjacentNavigation } from './AlbumAdjacentNavigation';
 import { AlbumOpenOverlay } from './AlbumOpenOverlay';
 import { useAlbumStage } from '../AlbumStages';
+import { AlbumClosedInfo } from '../AlbumClosedInfo';
 
 const statusLabel = { 'coming-soon': 'COMING SOON', released: 'RELEASED' } as const;
 
@@ -170,6 +171,7 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
   const swipe = useRef<number | undefined>(undefined);
   const pages = album.booklet?.previewImages ?? [];
   const tracks = album.tracks ?? [];
+  const [closedTitle, closedSubtitle] = album.title.split(/\s*[-–—－]\s*/, 2);
   const player = useAlbumAudio(tracks);
   const handleTransitionChange = useCallback((transitioning: boolean) => {
     setSceneTransitioning(transitioning);
@@ -327,15 +329,21 @@ export default function JiYoungHeeAlbumDetail({ album }: { album: Album }) {
           />
         )}
         {mode === 'CLOSED' && !sceneTransitioning && (
-          <div className="ji-detail__intro">
-            <Link to="/works" className="ji-detail__back">← BACK TO WORKS</Link>
-            <p>ALBUM · {album.year}</p>
-            <h1>조윤경 해금산조</h1>
-            <h2>지영희류</h2>
-            <p className="ji-detail__english">{album.englishTitle}</p>
-            {album.releaseStatus && <strong>{statusLabel[album.releaseStatus]}</strong>}
-            <button type="button" disabled={sceneTransitioning} onClick={openAlbum}>OPEN ALBUM <span>→</span></button>
-          </div>
+          <>
+            <Link to="/works" className="album-closed-back">← BACK TO WORKS</Link>
+            <AlbumClosedInfo
+              status={album.releaseStatus ? statusLabel[album.releaseStatus] : undefined}
+              subtitle={closedSubtitle}
+              title={closedTitle}
+              trackCount={tracks.length}
+              year={album.year}
+              action={(
+                <button type="button" disabled={sceneTransitioning} onClick={openAlbum}>
+                  OPEN ALBUM <span aria-hidden="true">→</span>
+                </button>
+              )}
+            />
+          </>
         )}
         {mode === 'ALBUM_OPEN' && !sceneTransitioning && (
           <AlbumOpenOverlay

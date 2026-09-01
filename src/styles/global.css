@@ -613,7 +613,7 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .mobile-menu a:focus-
   pointer-events: none;
 }
 .home-hero-rotator:is([data-work-id="ji-young-hee-ryu-haegeum-sanjo-2026"], [data-work-id="han-beom-su-haegeum-sanjo-2020"])
-  :is(.album-hero__link, .recent-works, .home-creative-credit) {
+  :is(.recent-works, .home-creative-credit) {
   pointer-events: auto;
 }
 .home-hero-rotator__slide {

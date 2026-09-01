@@ -3,6 +3,7 @@ import type { HomeHeroSlide } from '../../data/homeHeroSlides';
 import { AlbumPackage3D } from './album/AlbumPackage3D';
 import { useEffect } from 'react';
 import { useOptionalAlbumStage } from '../album/AlbumStages';
+import { AlbumClosedInfo } from '../album/AlbumClosedInfo';
 
 type AlbumHeroProps = {
   slide: HomeHeroSlide;
@@ -17,7 +18,6 @@ export function AlbumHero({ slide }: AlbumHeroProps) {
     setHomeActive(true);
     return () => setHomeActive(false);
   }, [setHomeActive]);
-  const titleLines = slide.title.split('\n');
   const [year, status] = slide.displayDate.split(' · ');
 
   return (
@@ -31,25 +31,20 @@ export function AlbumHero({ slide }: AlbumHeroProps) {
       {!persistent && <div className="album-hero__stage" role="img" aria-label={`${slide.title} 디지팩 3D 미리보기`}>
         <AlbumPackage3D textures={slide.albumTextures} backgroundAnchor={slide.albumBackgroundAnchor} geometry={slide.albumPackageGeometry} />
       </div>}
-      <div className="album-hero__content">
-        <p className="album-hero__eyebrow">{slide.eyebrow || 'ALBUM'}</p>
-        <h1 id={`${slide.id}-hero-title`}>
-          {titleLines.map((line) => <span key={line}>{line}</span>)}
-        </h1>
-        {slide.subtitle ? <p className="album-hero__subtitle">{slide.subtitle}</p> : null}
-        <p className="album-hero__meta">
-          <span>{year}</span>
-          {status ? <span className="album-hero__status">{status}</span> : null}
-        </p>
-        {slide.trackCount ? <p className="album-hero__tracks">{slide.trackCount} TRACKS</p> : null}
-        <Link
-          className="album-hero__link"
-          to={slide.detailLink}
-          state={persistent ? { autoOpenAlbum: true } : undefined}
-        >
-          VIEW ALBUM <span aria-hidden="true">→</span>
-        </Link>
-      </div>
+      <AlbumClosedInfo
+        eyebrow={slide.eyebrow || 'ALBUM'}
+        headingId={`${slide.id}-hero-title`}
+        status={status}
+        subtitle={slide.subtitle}
+        title={slide.title}
+        trackCount={slide.trackCount}
+        year={year}
+        action={(
+          <Link to={slide.detailLink} state={persistent ? { autoOpenAlbum: true } : undefined}>
+            VIEW ALBUM <span aria-hidden="true">→</span>
+          </Link>
+        )}
+      />
     </section>
   );
 }

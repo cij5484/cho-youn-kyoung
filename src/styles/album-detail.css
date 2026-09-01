@@ -62,24 +62,17 @@
   .album-detail__credits div { grid-template-columns: 1fr; gap: 8px; }
 }
 
-.ji-detail { --ji-ink:#252525; --ji-accent:#70453f; --album-ui-accent:var(--ji-accent); --album-ui-action:var(--ji-accent); --album-ui-muted:rgba(37,37,37,.66); position:relative;z-index:1;background:transparent;color:var(--ji-ink);pointer-events:none; }
+.ji-detail { --ji-ink:#252525; --ji-accent:#70453f; --album-closed-accent:var(--ji-accent); --album-ui-accent:var(--ji-accent); --album-ui-action:var(--ji-accent); --album-ui-muted:rgba(37,37,37,.66); position:relative;z-index:1;background:transparent;color:var(--ji-ink);pointer-events:none; }
 .ji-detail button { color:inherit; font:inherit; }
 .ji-detail button:focus-visible,.ji-detail a:focus-visible { outline:2px solid var(--ji-accent); outline-offset:5px; }
 .ji-detail__stage { position:relative; min-height:100svh; overflow:hidden; isolation:isolate; }
-.ji-detail__intro a,.ji-detail__intro button,.ji-detail__booklet-ui,.ji-detail__booklet-hit-areas,.ji-detail__player,.ji-detail__editorial{pointer-events:auto}
+.ji-detail__booklet-ui,.ji-detail__booklet-hit-areas,.ji-detail__player,.ji-detail__editorial{pointer-events:auto}
 .ji-detail__swipe-surface{position:absolute;z-index:2;inset:var(--header) 0 90px;pointer-events:auto;touch-action:pan-y}
 .ji-detail__background { position:absolute; inset:0; z-index:-2; }
 .ji-detail__background img { width:100%; height:100%; object-fit:cover; }
 .ji-detail__canvas { position:absolute; inset:var(--header) 0 0; touch-action:pan-y; }
-.ji-detail__intro { position:absolute; z-index:2; top:50%; left:70%; right:clamp(24px,4vw,64px); transform:translateY(-45%); }
-.ji-detail__intro p:first-of-type,.ji-detail__label { color:var(--ji-accent); font-size:.7rem; font-weight:700; letter-spacing:.22em; }
-.ji-detail__intro h1 { margin:20px 0 4px; font-family:var(--serif); font-size:clamp(1.6rem,2.55vw,3.1rem); font-weight:500; line-height:1.12; overflow-wrap:anywhere; }
-.ji-detail__intro h2 { margin:0 0 25px; color:var(--ji-accent); font-family:var(--serif); font-size:clamp(1.2rem,2vw,1.7rem); font-weight:500; }
-.ji-detail__english { white-space:pre-line; font-family:var(--serif); line-height:1.65; }
-.ji-detail__intro strong { display:block; margin-top:24px; color:var(--ji-accent); font-size:.72rem; letter-spacing:.2em; }
-.ji-detail__intro button,.ji-detail__booklet-controls button,.ji-detail__player button,.ji-detail__editorial button { border:0; border-bottom:1px solid currentColor; background:none; padding:10px 0; font-size:.72rem; font-weight:700; letter-spacing:.16em; cursor:pointer; }
-.ji-detail__intro>button { margin-top:34px; color:var(--ji-accent); }
-.ji-detail__back { display:inline-block; margin-bottom:clamp(35px,6vh,70px); color:var(--ji-accent); font-size:.7rem; font-weight:700; letter-spacing:.15em; }
+.ji-detail__label { color:var(--ji-accent); font-size:.7rem; font-weight:700; letter-spacing:.22em; }
+.ji-detail__booklet-controls button,.ji-detail__player button,.ji-detail__editorial button { border:0; border-bottom:1px solid currentColor; background:none; padding:10px 0; font-size:.72rem; font-weight:700; letter-spacing:.16em; cursor:pointer; }
 .ji-detail__booklet-ui { position:absolute; z-index:5; pointer-events:none!important; touch-action:pan-y; }
 .ji-detail__booklet-controls { position:absolute;top:-40px;right:12%;left:12%;display:flex;justify-content:space-between; }
 .ji-detail__booklet-controls button,.ji-detail__booklet-footer{pointer-events:auto}
@@ -117,11 +110,11 @@
 .ji-detail__reader button{position:absolute;top:20px;right:20px;color:#f5efe7!important}
 
 @media(max-width:700px){
- .ji-detail__stage{height:100svh;min-height:100svh;max-height:100svh;overflow:hidden;overscroll-behavior:none}.ji-detail__canvas{inset:var(--header) 0 0}.ji-detail__intro{top:auto;right:24px;bottom:25px;left:24px;width:auto;transform:none}.ji-detail__back{margin-bottom:12px}.ji-detail__intro h1{margin-top:10px;font-size:clamp(1.9rem,9vw,2.25rem);white-space:normal}.ji-detail__intro h2{margin-bottom:10px}.ji-detail__english{font-size:.76rem;line-height:1.45}.ji-detail__intro strong{margin-top:9px}.ji-detail__intro>button{margin-top:12px}
+ .ji-detail__stage{height:100svh;min-height:100svh;max-height:100svh;overflow:hidden;overscroll-behavior:none}.ji-detail__canvas{inset:var(--header) 0 0}
  .ji-detail__booklet-ui{inset:calc(var(--header) + 10px) 18px max(12px,env(safe-area-inset-bottom))}.ji-detail__booklet-controls{position:static;padding:0 4%}.ji-detail__booklet-controls button{min-width:44px;min-height:44px}.ji-detail__booklet-footer{top:auto;bottom:0}.ji-detail__booklet-footer button{min-height:44px}
  .ji-detail__player{top:auto;right:22px;bottom:18px;left:22px;width:auto;transform:none}.ji-detail__player ol{margin:8px 0 10px}.ji-detail__player li button{padding:6px 0}.ji-detail__selected{margin:8px 0}.ji-detail__editorial section{grid-template-columns:1fr;gap:22px}.ji-detail__editorial dl div{grid-template-columns:1fr;gap:5px}
 }
-.ji-detail__intro,.ji-detail__booklet-ui,.ji-detail__player{animation:ji-ui-in .32s ease both}
+.ji-detail .album-closed-info,.ji-detail__booklet-ui,.ji-detail__player{animation:ji-ui-in .32s ease both}
 @keyframes ji-ui-in{from{opacity:0}to{opacity:1}}
 @keyframes ji-track-item{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.ji-detail *{scroll-behavior:auto!important;transition:none!important;animation-duration:.01ms!important;animation-delay:0ms!important}}

@@ -1,11 +1,8 @@
 .album-hero {
   --album-accent: #70453f;
+  --album-closed-accent: var(--album-accent);
   position: relative;
   box-sizing: border-box;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 28%);
-  column-gap: clamp(40px, 4vw, 72px);
-  align-items: center;
   min-height: 100svh;
   padding: var(--header) clamp(24px, 4vw, 64px) clamp(150px, 18vh, 210px);
   overflow: clip;
@@ -26,16 +23,8 @@
   color: #f2eee5;
 }
 .album-hero--han-beom-su-haegeum-sanjo-2020 { pointer-events:none; }
-.album-hero--han-beom-su-haegeum-sanjo-2020 .album-hero__link { pointer-events:auto; }
 .album-hero--ji-young-hee-ryu-haegeum-sanjo-2026 { background: transparent; }
 .album-hero--ji-young-hee-ryu-haegeum-sanjo-2026 { pointer-events:none; }
-.album-hero--ji-young-hee-ryu-haegeum-sanjo-2026 .album-hero__link { pointer-events:auto; }
-
-.album-hero--han-beom-su-haegeum-sanjo-2020 .album-hero__subtitle,
-.album-hero--han-beom-su-haegeum-sanjo-2020 .album-hero__meta,
-.album-hero--han-beom-su-haegeum-sanjo-2020 .album-hero__tracks {
-  color: rgba(242, 238, 229, .72);
-}
 
 .album-hero-loading { min-height: 100svh; background: #eeeae0; }
 
@@ -53,56 +42,30 @@
 .album-hero__stage:active { cursor: grabbing; }
 .album-package-canvas { display: block; width: 100%; height: 100%; }
 .album-package-fallback { width: min(55vw, 420px); aspect-ratio: 1; margin: auto; background: #cbc8c1; }
-.album-hero__content {
-  position: relative;
-  z-index: 2;
-  grid-column: 2;
-  max-width: 560px;
+.album-hero .album-closed-info {
   opacity: 0;
   filter: blur(4px);
-  transform: translateY(8px);
   animation: albumInfoIn 1.7s cubic-bezier(.22, .61, .36, 1) .62s both;
 }
-.album-hero__eyebrow { margin: 0 0 20px; color: var(--album-accent); font-size: .72rem; font-weight: 700; letter-spacing: .2em; }
-.album-hero h1 { margin: 0; font-family: var(--serif); font-size: clamp(1.6rem, 2.55vw, 3.1rem); font-weight: 400; line-height: 1.2; letter-spacing: -.025em; }
-.album-hero h1 span { display: block; overflow-wrap: anywhere; }
-.album-hero__subtitle { margin: 14px 0 0; font-family: var(--serif); font-size: clamp(1rem, 1.3vw, 1.4rem); line-height: 1.5; }
-.album-hero__meta { display: flex; align-items: center; gap: 10px; margin: 18px 0 0; font-size: .78rem; letter-spacing: .12em; }
-.album-hero__status { color: var(--album-accent); font-weight: 700; }
-.album-hero__status::before { content: ''; display: inline-block; width: 22px; margin-right: 10px; border-top: 1px solid color-mix(in srgb, var(--album-accent) 68%, transparent); vertical-align: .25em; }
-.album-hero__tracks { margin: 8px 0 0; font-size: .7rem; font-weight: 700; letter-spacing: .14em; }
-.album-hero__link { position: relative; display: inline-flex; gap: 12px; margin-top: 34px; padding-bottom: 7px; color: var(--album-accent); font-size: .74rem; font-weight: 700; letter-spacing: .14em; }
-.album-hero__link::after { content: ''; position: absolute; right: 0; bottom: 0; left: 0; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .35s cubic-bezier(.22, .61, .36, 1); }
-.album-hero__link:hover::after, .album-hero__link:focus-visible::after { transform: scaleX(1); }
-.album-hero__link span { transition: transform .2s ease; }
-.album-hero__link:hover span, .album-hero__link:focus-visible span { transform: translateX(4px); }
 
 @keyframes albumPackageIn {
   to { opacity: 1; filter: blur(0); transform: translateY(0) scale(1); }
 }
 
 @keyframes albumInfoIn {
-  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+  to { opacity: 1; filter: blur(0); }
 }
 
 @media (max-width: 700px) {
   .album-hero { display: block; min-height: 100svh; padding: calc(var(--header) + 40svh) 20px 72px; }
-  .album-hero__content { margin-top: -4px; }
-  .album-hero__eyebrow { margin-bottom: 10px; }
-  .album-hero h1 { font-size: clamp(1.5rem, 6.8vw, 2rem); }
-  .album-hero__subtitle { margin-top: 10px; font-size: clamp(.9rem, 3.8vw, 1.1rem); line-height: 1.4; }
-  .album-hero__meta { margin-top: 10px; }
-  .album-hero__link { margin-top: 18px; }
+  .album-hero .album-closed-info h1 { font-size: clamp(1.5rem, 6.8vw, 2rem); }
 }
 
 @media (max-width: 360px) {
   .album-hero { padding-inline: 16px; }
-  .album-hero__tracks { margin-top: 5px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .album-hero__stage,
-  .album-hero__content { opacity: 1; filter: none; transform: none; animation: none; }
-  .album-hero__link::after,
-  .album-hero__link span { transition: none; }
+  .album-hero .album-closed-info { opacity: 1; filter: none; animation: none; }
 }
