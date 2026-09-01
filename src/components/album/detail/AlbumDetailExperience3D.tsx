@@ -8,7 +8,7 @@ import { assetUrl } from '../../../utils/assetUrl';
 import { PACKAGE_PANEL } from '../packageGeometry';
 import { getPackageProfile } from './packageProfile';
 import type { PackageProfile } from './packageProfile';
-import { DiscMotion } from './discMotion';
+import { DiscMotion, DISC_SEATED_EPSILON } from './discMotion';
 import { PackageFade } from './packageFade';
 import { needsContinuousAlbumFrames } from './renderPolicy';
 import { CdPolycarbonateMaterial, IvoryEdgeMaterial, OuterPlasticMaterial, PrintedPaperMaterial, TrayClearPlasticMaterial } from '../PackageMaterials';
@@ -243,7 +243,7 @@ function CdDisc({ label, profile, mode, playing, reduced, tray, onPlayer, onSett
       // fading booklet. Restore physical occlusion as soon as it is seated.
       labelMaterial.current.depthTest = !(player || (mode === 'ALBUM_OPEN' && transformError + tiltError >= 0.015));
     }
-    onSettled(transformError + tiltError < 0.015);
+    onSettled(transformError + tiltError < DISC_SEATED_EPSILON);
 
     if (mode === 'PLAYER_FOCUS' && onAnchor) {
       rig.current.getWorldPosition(projected).project(camera);
@@ -307,7 +307,7 @@ function TrayRig({ texture, label, profile, mode, playing, reduced, onPlayer, on
   const cdTray = useRef<THREE.Group>(null);
   const trayContext = useRef<THREE.Group>(null);
   const opacity = useRef(1);
-  const { dimensions, backInnerZ, trayPlateZ, recessZ, hubZ, cdMountZ } = profile;
+  const { dimensions, backInnerZ, trayPlateZ, recessZ, cdMountZ } = profile;
   useFrame((_, delta) => {
     const group = trayContext.current;
     if (!group) return;
@@ -331,16 +331,14 @@ function TrayRig({ texture, label, profile, mode, playing, reduced, onPlayer, on
         <mesh position={[0, 0, trayPlateZ]} receiveShadow userData={{ baseOpacity: 0.5 }}><boxGeometry args={[dimensions.backWidth * 0.95, dimensions.backHeight * 0.95, TRAY_THICKNESS]} /><TrayClearPlasticMaterial opacity={0.34} thickness={TRAY_THICKNESS} /></mesh>
         <mesh position={[0, 0, recessZ]} receiveShadow userData={{ baseOpacity: 0.68 }}><ringGeometry args={[CD_RADIUS, PANEL * 0.475, 96]} /><TrayClearPlasticMaterial opacity={0.36} thickness={0.008} /></mesh>
         <mesh position={[0, 0, recessZ + SURFACE_OFFSET]} userData={{ baseOpacity: 0.15 }}><ringGeometry args={[0.18, CD_RADIUS - 0.04, 96]} /><TrayClearPlasticMaterial opacity={0.15} thickness={0.006} /></mesh>
-        {profile.scanned
-          ? <ScannedTrayAccents dimensions={dimensions} cdMountZ={cdMountZ} />
-          : <mesh position={[0, 0, hubZ]} rotation={[Math.PI / 2, 0, 0]} castShadow userData={{ baseOpacity: 0.62 }}><cylinderGeometry args={[0.16, 0.145, 0.018, 32]} /><TrayClearPlasticMaterial opacity={0.3} thickness={0.012} /></mesh>}
+        <ClearCdTrayAccents dimensions={dimensions} cdMountZ={cdMountZ} />
       </group>
     </group>
     {createPortal(<CdDisc label={label} profile={profile} tray={cdTray} mode={mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={onDiscSettled} onAnchor={onCdAnchor} />, scene)}
   </>;
 }
 
-function ScannedTrayAccents({ dimensions, cdMountZ }: {
+function ClearCdTrayAccents({ dimensions, cdMountZ }: {
   dimensions: PackageProfile['dimensions'];
   cdMountZ: number;
 }) {

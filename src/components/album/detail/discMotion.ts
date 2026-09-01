@@ -1,5 +1,7 @@
 import { Group, Quaternion, Scene, Vector3 } from 'three';
 
+export const DISC_SEATED_EPSILON = 0.015;
+
 /**
  * Keeps a seated disc parented to its tray so package motion is inherited
  * exactly. The disc only becomes scene-owned while travelling to/from the
@@ -43,7 +45,7 @@ export class DiscMotion {
     const error = rig.position.distanceTo(this.targetPosition)
       + rig.quaternion.angleTo(this.targetQuaternion)
       + rig.scale.distanceTo(this.targetScale);
-    if (!player && error < 0.001) {
+    if (!player && error < DISC_SEATED_EPSILON) {
       tray.attach(rig);
       rig.position.copy(this.mount);
       rig.quaternion.identity();

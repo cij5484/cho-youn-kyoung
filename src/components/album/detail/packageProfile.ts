@@ -18,7 +18,7 @@ export function getPackageProfile(album: Album) {
   const recessZ = trayPlateZ + 0.018 / 2 + 0.001;
   return {
     scanned, dimensions, paperThickness, halfDepth, frontCenterZ, backCenterZ,
-    backInnerZ, trayPlateZ, recessZ, hubZ: recessZ + 0.009, cdMountZ: recessZ + 0.046,
+    backInnerZ, trayPlateZ, recessZ, cdMountZ: recessZ + 0.046,
   };
 }
 
