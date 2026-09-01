@@ -97,7 +97,12 @@ const PLAYER_TARGET_RADIUS = CD_RADIUS * 1.72;
 const PAGE_TURN_DURATION = 0.72;
 const PAGE_TURN_SEGMENTS = 48;
 const BOOKLET_EDGE_INSET = 0.003;
+const MAX_ANIMATION_DELTA = 1 / 30;
 type OpeningPhase = 'IDLE' | 'OPENING';
+
+function animationDelta(delta: number) {
+  return Math.min(delta, MAX_ANIMATION_DELTA);
+}
 
 function configureTextures(textures: THREE.Texture[], maxAnisotropy: number) {
   textures.forEach((texture) => {
@@ -207,7 +212,8 @@ function CdDisc({ label, profile, mode, playing, reduced, tray, onPlayer, onSett
   }, [CENTER_HOLE_RADIUS, profile.scanned]);
   useFrame((_, delta) => {
     if (!rig.current) return;
-    const ease = reduced ? 1 : 1 - Math.exp(-7 * delta);
+    const step = animationDelta(delta);
+    const ease = reduced ? 1 : 1 - Math.exp(-7 * step);
     const player = mode === 'PLAYER_FOCUS';
     if (!tray.current) return;
     const playerScale = size.width <= 700 ? viewport.width * 0.7 / (CD_RADIUS * 2) : PLAYER_TARGET_RADIUS / CD_RADIUS;
@@ -217,11 +223,11 @@ function CdDisc({ label, profile, mode, playing, reduced, tray, onPlayer, onSett
     initialized.current = true;
 
     const targetVelocity = player && !reduced ? (playing ? Math.PI / 9 : Math.PI / 18) : 0;
-    velocity.current = THREE.MathUtils.lerp(velocity.current, targetVelocity, 1 - Math.exp(-3 * delta));
-    if (spin.current) spin.current.rotation.z -= velocity.current * delta;
+    velocity.current = THREE.MathUtils.lerp(velocity.current, targetVelocity, 1 - Math.exp(-3 * step));
+    if (spin.current) spin.current.rotation.z -= velocity.current * step;
     if (tilt.current) {
       if (mode !== 'PLAYER_FOCUS') tiltTarget.current = { x: 0, y: 0 };
-      const tiltEase = reduced ? 1 : 1 - Math.exp(-10 * delta);
+      const tiltEase = reduced ? 1 : 1 - Math.exp(-10 * step);
       tilt.current.rotation.x = THREE.MathUtils.lerp(tilt.current.rotation.x, tiltTarget.current.x, tiltEase);
       tilt.current.rotation.y = THREE.MathUtils.lerp(tilt.current.rotation.y, tiltTarget.current.y, tiltEase);
     }
@@ -299,8 +305,9 @@ function TrayRig({ texture, label, profile, mode, playing, reduced, onPlayer, on
   useFrame((_, delta) => {
     const group = trayContext.current;
     if (!group) return;
+    const step = animationDelta(delta);
     const target = mode === 'PLAYER_FOCUS' ? 0 : mode === 'BOOKLET_FOCUS' ? 0.48 : 1;
-    opacity.current = THREE.MathUtils.lerp(opacity.current, target, reduced ? 1 : 1 - Math.exp(-7 * delta));
+    opacity.current = THREE.MathUtils.lerp(opacity.current, target, reduced ? 1 : 1 - Math.exp(-7 * step));
     group.visible = opacity.current > 0.002;
     group.traverse((object) => {
       if (!(object instanceof THREE.Mesh)) return;
@@ -396,7 +403,7 @@ function MobileTurningPage({ pages, turn, onDone }: {
   const side = turn.direction > 0 ? -1 : 1;
   useFrame((_, delta) => {
     if (!leaf.current) return;
-    elapsed.current = Math.min(0.48, elapsed.current + delta);
+    elapsed.current = Math.min(0.48, elapsed.current + animationDelta(delta));
     const progress = elapsed.current / 0.48;
     const eased = progress * progress * (3 - 2 * progress);
     leaf.current.rotation.y = side * Math.PI * eased;
@@ -426,7 +433,7 @@ function TurningPage({ pages, width, turn, onDone, frontTexture, backTexture, du
   const back = backTexture ?? (turn.direction > 0 ? pages[turn.target * 2] : pages[turn.target * 2 + 1]);
   useFrame((_, delta) => {
     if (!frontSurface.current || !backSurface.current) return;
-    elapsed.current = Math.min(duration, elapsed.current + delta);
+    elapsed.current = Math.min(duration, elapsed.current + animationDelta(delta));
     const t = elapsed.current / duration;
     const side = turn.direction > 0 ? 1 : -1;
     const segmentLength = width / PAGE_TURN_SEGMENTS;
@@ -523,13 +530,14 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
 
   useFrame((_, delta) => {
     if (!rig.current || !cover.current) return;
+    const step = animationDelta(delta);
     if (phase === 'ENTERING' && !detached.current && rig.current.parent) {
       originalParent.current = rig.current.parent;
       scene.attach(rig.current);
       detached.current = true;
     }
-    const ease = reduced ? 1 : 1 - Math.exp(-7 * delta);
-    const fadeEase = reduced ? 1 : 1 - Math.exp(-12 * delta);
+    const ease = reduced ? 1 : 1 - Math.exp(-7 * step);
+    const fadeEase = reduced ? 1 : 1 - Math.exp(-12 * step);
     const targetPosition = mountPosition.clone();
     const targetQuaternion = new THREE.Quaternion();
     const targetScale = new THREE.Vector3(1, 1, 1);
@@ -689,20 +697,21 @@ function Scene(props: SceneProps) {
 
   useFrame((_, delta) => {
     if (!packageRig.current || !hinge.current) return;
+    const step = animationDelta(delta);
     const closed = mode === 'CLOSED';
-    if (closed && autoRotate.current && !reduced) rotation.current.y += delta * Math.PI / 12;
+    if (closed && autoRotate.current && !reduced) rotation.current.y += step * Math.PI / 12;
     const openInteractive = mode === 'ALBUM_OPEN' && aligned.current && openingPhaseRef.current === 'IDLE';
     if (!drag.current && !autoRotate.current && !reduced && (closed || openInteractive)) {
-      rotation.current.x += inertia.current.x * delta;
-      rotation.current.y += inertia.current.y * delta;
+      rotation.current.x += inertia.current.x * step;
+      rotation.current.y += inertia.current.y * step;
       const pitchCenter = openInteractive ? openPitch : 0;
       const pitchLimit = openInteractive ? THREE.MathUtils.degToRad(6) : 0.48;
       rotation.current.x = THREE.MathUtils.clamp(rotation.current.x, pitchCenter - pitchLimit, pitchCenter + pitchLimit);
-      const decay = Math.exp(-5.2 * delta);
+      const decay = Math.exp(-5.2 * step);
       inertia.current.x *= decay;
       inertia.current.y *= decay;
     }
-    const ease = reduced ? 1 : 1 - Math.exp(-6.5 * delta);
+    const ease = reduced ? 1 : 1 - Math.exp(-6.5 * step);
     if (!closed && !aligned.current) {
       rotation.current.x = THREE.MathUtils.lerp(rotation.current.x, openPitch, ease);
       rotation.current.y = THREE.MathUtils.lerp(rotation.current.y, alignedYaw.current, ease);
