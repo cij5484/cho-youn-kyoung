@@ -216,13 +216,13 @@ export const albums: Album[] = [
     releaseStatus: 'released',
     releaseDate: '2020-11-19',
     description: '한범수류 해금산조의 결을 담은 조윤경의 산조 음반.',
-    coverImage: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/front.webp',
-    cdLabelImage: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/cd-label.webp',
+    coverImage: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/display/front.webp',
+    cdLabelImage: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/display/cd-label.webp',
     detailExperience: {
       theme: 'han-beom-su-paper',
       interior: {
-        bookletPanel: '/assets/albums/han-beom-su-haegeum-sanjo-2020/viewer/booklet-01.webp',
-        trayPanel: '/assets/albums/han-beom-su-haegeum-sanjo-2020/viewer/booklet-01.webp',
+        bookletPanel: '/assets/albums/han-beom-su-haegeum-sanjo-2020/viewer/display/booklet-01.webp',
+        trayPanel: '/assets/albums/han-beom-su-haegeum-sanjo-2020/viewer/display/booklet-01.webp',
       },
     },
     detailsPath: '/album/han-beom-su-haegeum-sanjo-2020',
@@ -242,8 +242,8 @@ export const albums: Album[] = [
         spine: { width: 182, height: 2946 },
       },
       textures: {
-        front: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/front.webp',
-        back: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/back.webp',
+        front: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/display/front.webp',
+        back: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/display/back.webp',
         spineLeft: '/assets/albums/han-beom-su-haegeum-sanjo-2020/web/spine.webp',
       },
     },
@@ -282,7 +282,7 @@ export const albums: Album[] = [
     ],
     booklet: {
       previewImages: Array.from({ length: 11 }, (_, index) => ({
-        src: `/assets/albums/han-beom-su-haegeum-sanjo-2020/viewer/booklet-${String(index + 1).padStart(2, '0')}.webp`,
+        src: `/assets/albums/han-beom-su-haegeum-sanjo-2020/viewer/display/booklet-${String(index + 1).padStart(2, '0')}.webp`,
         alt: `한범수류 북클릿 ${index + 1}페이지`,
         label: `P${index + 1}`,
       })),
