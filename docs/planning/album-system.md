@@ -246,7 +246,7 @@
 ### 검증
 
 - `npm run lint`, `npm run build` 통과. 약 884KB 공유 3D chunk 경고는 남아 있다. bundle 파일 크기는 FPS나 최초 방문 전송량 측정값이 아니다.
-- `node --test scripts/test-album-motion.mjs`: 5개 통과. world transform 대응, 회전/scale을 포함한 완료 판정, 중간 방향 반전의 연속성, reduced-motion 한 단계 정착, 외장 opacity·depthWrite 보존을 검사한다. Node 24.15.0에서 실행했으며 브라우저 전체 기능 테스트와 구분한다.
+- `node --test scripts/test-album-motion.mjs`: 6개 통과. world transform 대응, 회전/scale을 포함한 완료 판정, 중간 방향 반전의 연속성, 안착 후 트레이의 급격한 이동을 지연 없이 추종하는지, reduced-motion 한 단계 정착, 외장 opacity·depthWrite 보존을 검사한다. Node 24.15.0에서 실행했으며 브라우저 전체 기능 테스트와 구분한다.
 - 내부 브라우저의 로컬 production preview, 1444×986: 두 앨범 OPEN·TRACKS·BACK·BOOKLET 진입, 지영희류 P2–P3→P4–P5→P6–P7 끝 경계·PREVIOUS·BACK·CLOSE, 06 선택·12:06 표시 확인.
 - 한범수류 P2–P3부터 P10–P11까지 NEXT 4회, 마지막 NEXT 비활성, PREVIOUS·BACK·CLOSE 확인. 최종 빌드에서 CD 확대 화면의 외곽/중앙 투명 영역과 복귀 중 라벨이 북클릿에 잘리지 않는 장면을 캡처했다.
 - HOME 새 진입 후 RECENT WORKS에서 지영희류를 선택하고 내부를 열지 않은 상태의 뒷표지 인쇄면을 확인했다. VIEW ALBUM→열린 상세와 NEXT ALBUM 양방향 이동도 확인했다.

@@ -297,10 +297,10 @@ function TrayRig({ texture, label, profile, mode, playing, reduced, onPlayer, on
     </mesh>
     <group ref={cdTray}>
       <group ref={trayContext}>
-        <mesh position={[0, 0, trayPlateZ]} userData={{ baseOpacity: 0.34 }}><boxGeometry args={[dimensions.backWidth * 0.95, dimensions.backHeight * 0.95, TRAY_THICKNESS]} /><TrayClearPlasticMaterial opacity={0.34} /></mesh>
-        <mesh position={[0, 0, recessZ]} userData={{ baseOpacity: 0.36 }}><ringGeometry args={[CD_RADIUS, PANEL * 0.475, 96]} /><TrayClearPlasticMaterial opacity={0.36} /></mesh>
-        <mesh position={[0, 0, recessZ + SURFACE_OFFSET]} userData={{ baseOpacity: 0.15 }}><ringGeometry args={[0.18, CD_RADIUS - 0.04, 96]} /><TrayClearPlasticMaterial opacity={0.15} /></mesh>
-        <mesh position={[0, 0, hubZ]} rotation={[Math.PI / 2, 0, 0]} userData={{ baseOpacity: 0.3 }}><cylinderGeometry args={[0.16, 0.145, 0.018, 32]} /><TrayClearPlasticMaterial opacity={0.3} /></mesh>
+        <mesh position={[0, 0, trayPlateZ]} receiveShadow userData={{ baseOpacity: 0.5 }}><boxGeometry args={[dimensions.backWidth * 0.95, dimensions.backHeight * 0.95, TRAY_THICKNESS]} /><TrayClearPlasticMaterial opacity={0.34} thickness={TRAY_THICKNESS} /></mesh>
+        <mesh position={[0, 0, recessZ]} receiveShadow userData={{ baseOpacity: 0.68 }}><ringGeometry args={[CD_RADIUS, PANEL * 0.475, 96]} /><TrayClearPlasticMaterial opacity={0.36} thickness={0.008} /></mesh>
+        <mesh position={[0, 0, recessZ + SURFACE_OFFSET]} userData={{ baseOpacity: 0.15 }}><ringGeometry args={[0.18, CD_RADIUS - 0.04, 96]} /><TrayClearPlasticMaterial opacity={0.15} thickness={0.006} /></mesh>
+        <mesh position={[0, 0, hubZ]} rotation={[Math.PI / 2, 0, 0]} castShadow userData={{ baseOpacity: 0.62 }}><cylinderGeometry args={[0.16, 0.145, 0.018, 32]} /><TrayClearPlasticMaterial opacity={0.3} thickness={0.012} /></mesh>
       </group>
     </group>
     {createPortal(<CdDisc label={label} profile={profile} tray={cdTray} mode={mode} playing={playing} reduced={reduced} onPlayer={onPlayer} onSettled={onDiscSettled} onAnchor={onCdAnchor} />, scene)}
