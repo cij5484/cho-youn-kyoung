@@ -9,6 +9,7 @@
 .album-adjacent a:focus-visible{outline:2px solid currentColor;outline-offset:5px}
 .album-adjacent a:focus-visible strong span::after{transform:scaleX(1)}.album-adjacent a:focus-visible strong b{transform:translateX(5px)}
 @media(hover:hover) and (pointer:fine){.album-adjacent a:hover strong span::after{transform:scaleX(1)}.album-adjacent a:hover strong b{transform:translateX(5px)}}
+@media(min-width:701px){.album-adjacent__label{font-size:.75rem}.album-adjacent strong{font-size:clamp(1.08rem,1.5vw,1.4rem)}}
 @media(max-width:700px){.album-adjacent{right:18px;bottom:calc(env(safe-area-inset-bottom) + 122px)}.album-adjacent a{display:flex;align-items:center}.album-adjacent strong span{display:none}.album-adjacent strong{font:inherit}.album-adjacent__label{font-size:.62rem}}
 @keyframes album-adjacent-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.album-adjacent{animation:none}.album-adjacent strong span::after,.album-adjacent strong b{transition:none}}

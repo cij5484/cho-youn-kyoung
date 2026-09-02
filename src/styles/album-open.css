@@ -66,6 +66,11 @@
 .album-open__action:hover { text-decoration: underline; text-underline-offset: 6px; }
 .album-open__action:focus-visible { outline: 2px solid var(--album-ui-accent); outline-offset: 3px; }
 
+@media (min-width: 701px) {
+  .album-open .album-open__action { font-size: .8rem; }
+  .album-open .album-open__close { font-size: .72rem; }
+}
+
 @media (max-width: 700px) {
   .album-open__header { top: calc(var(--header) + 16px); width: calc(100% - 40px); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
   .album-open__info h1 { font-size: 1rem; }
