@@ -132,6 +132,15 @@ html[data-home-hero-work="pyeongjo-hoesang-2026"] .mobile-menu a.active,
 html[data-home-hero-work="pyeongjo-hoesang-2026"] .mobile-menu a:focus-visible {
   color: #80699a;
 }
+html[data-home-hero-work="ji-young-hee-ryu-haegeum-sanjo-2026"] .menu-button {
+  color: #70453f;
+}
+html[data-home-hero-work="pyeongjo-hoesang-2026"] .menu-button {
+  color: #80699a;
+}
+html[data-home-hero-work="yeongsan-hoesang-2026"] .menu-button {
+  color: #145f7d;
+}
 html[data-home-hero-work="yeongsan-hoesang-2026"] .desktop-nav a.active,
 html[data-home-hero-work="yeongsan-hoesang-2026"] .desktop-nav a:hover,
 html[data-home-hero-work="yeongsan-hoesang-2026"] .desktop-nav a:focus-visible,

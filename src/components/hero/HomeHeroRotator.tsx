@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   getDefaultHomeHeroIndex,
   getRecentWorks,
@@ -9,6 +10,7 @@ import { HomeHero } from './HomeHero';
 import { SanjoMatiereHero } from './SanjoMatiereHero';
 import { HaegeumJeongakHero } from './HaegeumJeongakHero';
 import { HomeCreativeCredit } from './HomeCreativeCredit';
+import { HOME_HERO_RESET_EVENT } from './homeHeroEvents';
 import { RecentWorks } from './recent-works/RecentWorks';
 
 const AlbumHero = lazy(() => import('./AlbumHero').then((module) => ({ default: module.AlbumHero })));
@@ -33,10 +35,18 @@ const renderSlide = (slide: HomeHeroSlide, isActive: boolean) => {
 };
 
 export function HomeHeroRotator() {
+  const location = useLocation();
   const works = useMemo(() => getRecentWorks(homeHeroSlides), []);
-  const [activeIndex, setActiveIndex] = useState(() => getDefaultHomeHeroIndex(works));
+  const shouldResetHomeHero = Boolean((location.state as { resetHomeHeroAt?: number } | null)?.resetHomeHeroAt);
+  const [activeIndex, setActiveIndex] = useState(() => shouldResetHomeHero ? 0 : getDefaultHomeHeroIndex(works));
   const activeTheme = works[activeIndex]?.theme;
   const activeWorkId = works[activeIndex]?.id;
+
+  useEffect(() => {
+    const resetHomeHero = () => setActiveIndex(0);
+    window.addEventListener(HOME_HERO_RESET_EVENT, resetHomeHero);
+    return () => window.removeEventListener(HOME_HERO_RESET_EVENT, resetHomeHero);
+  }, []);
 
   useEffect(() => {
     if (!activeTheme || !activeWorkId) return undefined;
