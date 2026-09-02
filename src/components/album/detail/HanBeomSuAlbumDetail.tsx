@@ -6,6 +6,7 @@ import type { BookletBounds, ExperienceMode } from './AlbumDetailExperience3D';
 import { useAlbumAudio } from './useAlbumAudio';
 import { AlbumAdjacentNavigation } from './AlbumAdjacentNavigation';
 import { AlbumOpenOverlay } from './AlbumOpenOverlay';
+import { scheduleAlbumDetailPreload } from './preloadAlbumDetail';
 import { useAlbumStage } from '../AlbumStages';
 import { AlbumClosedInfo } from '../AlbumClosedInfo';
 
@@ -191,6 +192,10 @@ export default function HanBeomSuAlbumDetail({ album }: { album: Album }) {
     setVisibleMobilePage(mobilePage);
     setPageTurning(false);
   }, [mobilePage, spread]);
+
+  useEffect(() => {
+    return scheduleAlbumDetailPreload(album);
+  }, [album]);
 
   useEffect(() => {
     const mobileQuery = matchMedia('(max-width: 700px)');

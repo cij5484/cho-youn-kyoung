@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { useOptionalAlbumStage } from '../album/AlbumStages';
 import { AlbumClosedInfo } from '../album/AlbumClosedInfo';
 import { albums } from '../../data/albums';
-import { preloadAlbumDetail } from '../album/detail/preloadAlbumDetail';
+import { scheduleAlbumDetailPreload } from '../album/detail/preloadAlbumDetail';
 
 type AlbumHeroProps = {
   slide: HomeHeroSlide;
@@ -24,10 +24,9 @@ export function AlbumHero({ slide }: AlbumHeroProps) {
     if (!stage) return;
     const album = albums.find((item) => item.id === slide.id);
     if (!album) return;
-    // HOME only warms the route module and browser image cache. Compiling the
-    // full interior scene here can starve the already-visible closed package
-    // and leave the shared WebGL stage blank on heavier albums.
-    void preloadAlbumDetail(album).catch(() => undefined);
+    // Prepare the interior after the visible cover has had a chance to paint.
+    // Shader compilation remains owned by the detail stage.
+    return scheduleAlbumDetailPreload(album);
   }, [slide.id, stage]);
   const [year, status] = slide.displayDate.split(' · ');
 

@@ -6,11 +6,11 @@ import {
   homeHeroSlides,
 } from '../data/homeHeroSlides';
 import { assetUrl } from '../utils/assetUrl';
-import { preloadAlbumDetail } from './album/detail/preloadAlbumDetail';
+import { preloadAlbumEntry } from './album/detail/preloadAlbumDetail';
 import '../styles/initial-load-screen.css';
 
-const MINIMUM_VISIBLE_MS = 320;
-const MAXIMUM_WAIT_MS = 7000;
+const MINIMUM_VISIBLE_MS = 1000;
+const MAXIMUM_WAIT_MS = 3000;
 const EXIT_MS = 480;
 
 function decodeImage(src: string | undefined) {
@@ -30,7 +30,7 @@ function prepareInitialView() {
   const albumId = pathname.match(/^\/album\/([^/]+)$/)?.[1];
   if (albumId) {
     const album = albums.find((item) => item.id === albumId);
-    return album ? preloadAlbumDetail(album) : Promise.resolve();
+    return album ? preloadAlbumEntry(album) : Promise.resolve();
   }
 
   if (pathname !== '/') return Promise.resolve();

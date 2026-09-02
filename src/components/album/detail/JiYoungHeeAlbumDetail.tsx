@@ -6,7 +6,7 @@ import type { BookletBounds, ExperienceMode } from './AlbumDetailExperience3D';
 import { useAlbumAudio } from './useAlbumAudio';
 import { AlbumAdjacentNavigation } from './AlbumAdjacentNavigation';
 import { AlbumOpenOverlay } from './AlbumOpenOverlay';
-import { preloadAlbumDetail } from './preloadAlbumDetail';
+import { scheduleAlbumDetailPreload } from './preloadAlbumDetail';
 import { useAlbumStage } from '../AlbumStages';
 import { AlbumClosedInfo } from '../AlbumClosedInfo';
 
@@ -197,7 +197,7 @@ export default function LightPaperAlbumDetail({ album }: { album: Album }) {
   }, [mobilePage, spread]);
 
   useEffect(() => {
-    void preloadAlbumDetail(album).catch(() => undefined);
+    return scheduleAlbumDetailPreload(album);
   }, [album]);
 
   useEffect(() => {
