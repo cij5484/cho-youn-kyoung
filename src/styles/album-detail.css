@@ -111,6 +111,11 @@
 .ji-detail__reader img{display:block;max-width:90vw;max-height:calc(100svh - 92px);object-fit:contain;box-shadow:0 18px 60px rgba(0,0,0,.26)}
 .ji-detail__reader button{position:absolute;top:20px;right:20px;color:#f5efe7!important}
 
+@media(min-width:701px){
+ .ji-detail--yeongsan.ji-detail--album_open .album-open__action,
+ .ji-detail--yeongsan.ji-detail--album_open .album-adjacent{color:#f4eadb;text-shadow:0 1px 8px rgba(12,14,14,.78)}
+}
+
 @media(max-width:700px){
  .ji-detail__stage{height:100svh;min-height:100svh;max-height:100svh;overflow:hidden;overscroll-behavior:none}.ji-detail__canvas{inset:var(--header) 0 0}
  .ji-detail__booklet-ui{inset:calc(var(--header) + 10px) 18px max(12px,env(safe-area-inset-bottom))}.ji-detail__booklet-controls{position:static;padding:0 4%}.ji-detail__booklet-controls button{min-width:44px;min-height:44px}.ji-detail__booklet-footer{top:auto;bottom:0}.ji-detail__booklet-footer button{min-height:44px}
@@ -119,6 +124,7 @@
  .ji-detail--yeongsan.ji-detail--closed .album-adjacent{color:#a8d0da}
  .ji-detail--yeongsan.ji-detail--closed .album-closed-back{color:#145f7d}
  .ji-detail--yeongsan.ji-detail--album_open .album-open__action{color:#f4eadb;text-shadow:0 1px 8px rgba(12,14,14,.7)}
+ .ji-detail--yeongsan.ji-detail--album_open .album-adjacent{color:#f4eadb;text-shadow:0 1px 8px rgba(12,14,14,.78)}
  .ji-detail--yeongsan.ji-detail--player_focus{--ji-ink:#f4eadb;--ji-accent:#a8d0da}
  .ji-detail--yeongsan.ji-detail--player_focus .ji-detail__player{padding:14px;border-radius:4px;background:linear-gradient(180deg,rgba(25,24,22,.18),rgba(25,24,22,.58));box-shadow:0 12px 34px rgba(20,15,10,.2);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
  .ji-detail--yeongsan.ji-detail--player_focus .ji-detail__player ol{border-color:rgba(244,234,219,.28)}
