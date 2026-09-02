@@ -1,4 +1,4 @@
-.han-detail { --han-ink:#f2eee5; --han-accent:#9db9b1; --han-muted:rgba(242,238,229,.72); --album-closed-accent:var(--han-accent); --album-ui-accent:var(--han-accent); --album-ui-action:#d6ad6c; --album-ui-muted:rgba(242,238,229,.66); --album-ui-action-surface:rgba(3,12,11,.4); position:relative;z-index:1;background:transparent;color:var(--han-ink);pointer-events:none; }
+.han-detail { --han-ink:#f2eee5; --han-accent:#9db9b1; --han-muted:rgba(242,238,229,.72); --album-closed-accent:var(--han-accent); --album-ui-accent:var(--han-accent); --album-ui-action:#d6ad6c; --album-ui-muted:rgba(242,238,229,.66); position:relative;z-index:1;background:transparent;color:var(--han-ink);pointer-events:none; }
 .han-detail button { color:inherit; font:inherit; }
 .han-detail button:focus-visible,.han-detail a:focus-visible { outline:2px solid var(--han-accent); outline-offset:5px; }
 .han-detail__stage { position:relative; min-height:100svh; overflow:hidden; isolation:isolate; }

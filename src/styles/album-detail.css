@@ -62,9 +62,9 @@
   .album-detail__credits div { grid-template-columns: 1fr; gap: 8px; }
 }
 
-.ji-detail { --ji-ink:#252525; --ji-accent:#70453f; --album-closed-accent:var(--ji-accent); --album-ui-accent:var(--ji-accent); --album-ui-action:var(--ji-accent); --album-ui-muted:rgba(37,37,37,.66); --album-ui-action-surface:rgba(248,244,237,.56); position:relative;z-index:1;background:transparent;color:var(--ji-ink);pointer-events:none; }
+.ji-detail { --ji-ink:#252525; --ji-accent:#70453f; --album-closed-accent:var(--ji-accent); --album-ui-accent:var(--ji-accent); --album-ui-action:var(--ji-accent); --album-ui-muted:rgba(37,37,37,.66); position:relative;z-index:1;background:transparent;color:var(--ji-ink);pointer-events:none; }
 .ji-detail--pyeongjo { --ji-accent:#80699a; }
-.ji-detail--yeongsan { --ji-accent:#145f7d; --album-ui-action-surface:rgba(22,25,25,.42); }
+.ji-detail--yeongsan { --ji-accent:#145f7d; }
 .ji-detail button { color:inherit; font:inherit; }
 .ji-detail button:focus-visible,.ji-detail a:focus-visible { outline:2px solid var(--ji-accent); outline-offset:5px; }
 .ji-detail__stage { position:relative; min-height:100svh; overflow:hidden; isolation:isolate; }
