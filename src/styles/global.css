@@ -1244,13 +1244,23 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .home-creative-credit
     padding-top: clamp(calc(var(--header) + 34px), 25svh, 233px);
   }
   .recent-works {
-  bottom: 8px;
-  width: 100%;
-  pointer-events: none;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: 100%;
+    pointer-events: none;
   }
 
   .recent-works__trigger {
+    min-height: 44px;
+    border-radius: 999px;
+    background: rgba(244, 241, 235, 0.78);
+    color: rgba(31, 31, 29, 0.94);
+    box-shadow: 0 4px 18px rgba(20, 18, 16, 0.14);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
     pointer-events: auto;
+  }
+  .home-hero-rotator .album-hero .album-closed-info {
+    bottom: calc(82px + env(safe-area-inset-bottom));
   }
   .home-creative-credit {
     z-index: 6;

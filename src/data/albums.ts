@@ -498,6 +498,12 @@ export const albums: Album[] = [
         webAudioUrl: 'https://pub-dd5041e867ea448a9d025ebe26192631.r2.dev/hanbeomsu/06_short-sanjo.mp3',
       },
     ],
+    credits: [
+      { role: 'Producer', names: ['조윤경 · Cho youn-kyoung'] },
+      { role: 'Recording & Mixing & Mastering', names: ['이음사운드 · E-UM SOUND'] },
+      { role: 'Photo', names: ['한상균 · Han sang-kyun', '어반그레이스튜디오 · Urbangraystudio'] },
+      { role: 'Design', names: ['디자인끌림 · Designdrag'] },
+    ],
     booklet: {
       previewImages: Array.from({ length: 11 }, (_, index) => ({
         src: `/assets/albums/han-beom-su-haegeum-sanjo-2020/viewer/display/booklet-${String(index + 1).padStart(2, '0')}.webp`,
