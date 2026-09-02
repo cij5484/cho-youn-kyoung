@@ -1,17 +1,46 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, lazy, Suspense, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { Component, createContext, lazy, Suspense, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { albums } from '../../data/albums';
 import type { Album } from '../../data/albums';
 import { assetUrl } from '../../utils/assetUrl';
 import '../../styles/album-stage.css';
-import type { ExperienceProps } from './detail/AlbumDetailExperience3D';
+import type { AlbumAssetFailure, ExperienceProps } from './detail/AlbumDetailExperience3D';
 
 const Experience3D = lazy(() => import('./detail/AlbumDetailExperience3D'));
 // Keep the outgoing WebGL scene past the CSS fade so a delayed frame cannot
 // expose an empty stage at the end of the route handoff.
 const STAGE_EXIT_MS = 700;
+
+type StageFailure = AlbumAssetFailure | 'background' | 'scene';
+
+const failureMessage: Record<StageFailure, string> = {
+  background: '앨범 배경 이미지를 불러오지 못했습니다.',
+  cover: '앨범 표지 이미지를 불러오지 못했습니다.',
+  interior: '앨범 내부 이미지를 불러오지 못했습니다.',
+  booklet: '북클릿 페이지를 불러오지 못했습니다.',
+  scene: '3D 앨범 화면을 시작하지 못했습니다.',
+};
+
+class AlbumStageErrorBoundary extends Component<{
+  children: ReactNode;
+  onError(): void;
+}, { failed: boolean }> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch() {
+    this.props.onError();
+  }
+
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
 
 type StageContextValue = {
   setDetailProps(props: ExperienceProps | null): void;
@@ -49,6 +78,8 @@ function AlbumStage({ album, children }: { album: Album; children: ReactNode }) 
   const [mobile, setMobile] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [homeActivationKey, setHomeActivationKey] = useState(0);
+  const [failure, setFailure] = useState<StageFailure | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const previousPath = useRef(location.pathname);
   const homeActiveRef = useRef(false);
   const prewarmReady = useRef(false);
@@ -60,6 +91,28 @@ function AlbumStage({ album, children }: { album: Album; children: ReactNode }) 
     resolvePrewarm.current?.();
     resolvePrewarm.current = null;
   }, []);
+
+  const handleAssetFailure = useCallback((kind: AlbumAssetFailure) => {
+    setFailure((current) => current ?? kind);
+  }, []);
+  const handleSceneFailure = useCallback(() => {
+    setFailure((current) => current ?? 'scene');
+  }, []);
+  const retryStage = useCallback(() => {
+    // React.lazy retains a rejected module promise. A document reload is the
+    // only reliable retry for a failed 3D chunk; texture failures can remount
+    // just this album stage without resetting the rest of the application.
+    if (failure === 'scene') {
+      window.location.reload();
+      return;
+    }
+    setFailure(null);
+    setAttempt((value) => value + 1);
+    prewarmReady.current = false;
+    prewarmPromise.current = null;
+    resolvePrewarm.current?.();
+    resolvePrewarm.current = null;
+  }, [failure]);
 
   const updateHomeActive = useCallback((active: boolean) => {
     if (active && !homeActiveRef.current) setHomeActivationKey((key) => key + 1);
@@ -156,15 +209,29 @@ function AlbumStage({ album, children }: { album: Album; children: ReactNode }) 
     <StageContext.Provider value={context}>
       <div className={`album-persistent-stage${visible ? ' is-visible' : ''}`} aria-hidden={!visible}>
         {renderStage ? <>
-          <picture className="album-persistent-stage__background">
+          <picture className="album-persistent-stage__background" key={`background-${attempt}`}>
             <source media="(max-width:700px)" srcSet={assetUrl(album.albumHero!.background.mobile)} />
-            <img src={assetUrl(album.albumHero!.background.desktop)} alt="" />
+            <img src={assetUrl(album.albumHero!.background.desktop)} alt="" onError={() => setFailure((current) => current ?? 'background')} />
           </picture>
           <div className={`album-persistent-stage__canvas${detailRoute && !detailStageVisible ? ' is-editorial-hidden' : ''}`}>
-            <Suspense fallback={null}>
-              <Experience3D {...(detailRoute && detailProps ? { ...detailProps, preloadInterior: true } : fallbackProps)} renderEnabled={renderEnabled} />
-            </Suspense>
+            <AlbumStageErrorBoundary key={`scene-${attempt}`} onError={handleSceneFailure}>
+              <Suspense fallback={null}>
+                <Experience3D {...(detailRoute && detailProps ? { ...detailProps, preloadInterior: true } : fallbackProps)} onAssetError={handleAssetFailure} renderEnabled={renderEnabled} />
+              </Suspense>
+            </AlbumStageErrorBoundary>
           </div>
+          {failure && (
+            <div className="album-persistent-stage__error" role="alert">
+              <div>
+                <p>{failureMessage[failure]}</p>
+                <span>네트워크 상태를 확인한 뒤 다시 시도해 주세요.</span>
+                <div className="album-persistent-stage__error-actions">
+                  <button type="button" onClick={retryStage}>다시 불러오기</button>
+                  <Link to="/works">WORKS로 돌아가기</Link>
+                </div>
+              </div>
+            </div>
+          )}
         </> : null}
       </div>
       {children}

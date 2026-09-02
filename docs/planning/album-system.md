@@ -257,7 +257,7 @@
 
 - 원본 변환 도구·면 매핑 승인·신규 앨범 등록은 아직 시작하지 않았다. 평조회상 CD 칼선 기준과 접착면 제외 계약은 그대로 유지한다.
 - 일반 페이지 전환, 초기 texture decode/upload, 캐시 정책과 비활성 frame 연산은 별도 계측·개선이 필요하다. 이 단계로 전체 stutter가 해소됐다고 주장하지 않는다.
-- 북클릿 내부의 frame별 임시 객체/재질 순회, 자산 로딩 실패의 사용자 안내 등은 아직 남아 있다. stage prewarm timeout은 모든 다운로드·모든 오류를 처리하는 전역 보장값이 아니다.
+- 북클릿 내부의 frame별 임시 객체/재질 순회와 자산 로딩 실패의 사용자 안내는 당시 남은 과제였다. 자산 오류 안내는 아래 11단계에서 처리했으며, stage prewarm timeout 자체가 모든 다운로드·모든 오류를 처리하는 전역 보장값은 아니다.
 - 시작 전부터 변경돼 있던 운영 Markdown 16개는 이번 소스 체크포인트에 섞지 않고 보존한다. 운영 문서의 이전 engine 이름·배경 anchor 기준 설명보다 이 절의 최신 코드 책임을 우선한다. 그 문서들의 기존 수정분과 충돌하지 않는 통합 정리는 별도 검토가 필요하다.
 
 ## 10. 연결성·오디오·초기 텍스처 개선 (2026-09-01)
@@ -289,6 +289,26 @@
 ### 정지 화면 렌더 중단
 
 - 3D Canvas는 `frameloop="demand"`를 사용한다. 장면 전환·북클릿 페이지 넘김·직접 드래그/관성·닫힌 앨범 자동 회전·CD 재생 중에만 scheduler가 연속 frame을 요청한다.
-- 완전히 정지한 ALBUM_OPEN·BOOKLET_FOCUS·일시정지 PLAYER_FOCUS는 마지막 frame만 유지한다. 포인터로 CD 기울기를 바꾸는 경우에는 해당 입력 frame을 명시적으로 요청한다.
+- 완전히 정지한 ALBUM_OPEN·BOOKLET_FOCUS는 마지막 frame만 유지한다. PLAYER_FOCUS는 기본 idle rotation 때문에 연속 frame을 요청하고 재생 중에는 회전 속도만 높인다. `prefers-reduced-motion`에서는 CLOSED와 PLAYER_FOCUS의 자동 회전을 중단하고 정지 후 demand rendering으로 돌아가며, 포인터 입력이나 전환이 있을 때만 필요한 frame을 요청한다.
 - 실제 로컬 production 화면에서 CLOSED→ALBUM_OPEN, BOOKLET P2–P3→P4–P5→BACK, TRACKS→PLAY→BACK, CLOSE, NEXT ALBUM 진입을 확인했다. 모든 구간에서 Canvas는 한 앨범당 하나를 유지했고, 앨범 간 handoff가 끝난 뒤 직전 Canvas가 제거됐다.
-- `scripts/test-album-render-policy.mjs` 2개를 추가해 정지 상태는 demand, 전환·페이지·직접 motion·재생은 continuous로 분류되는지 검사한다. 이 변경도 실제 FPS 상승 수치로 표현하지 않는다.
+- `scripts/test-album-render-policy.mjs`는 정지 상태의 demand, 전환·페이지·직접 motion의 continuous, 일반 모션과 reduced-motion의 CLOSED/PLAYER_FOCUS 차이를 검사한다. 이 변경도 실제 FPS 상승 수치로 표현하지 않는다.
+
+## 11. 렌더 정책 회귀 정리와 자산 오류 복구 (2026-09-02)
+
+### 렌더 정책
+
+- 안착한 CD를 Scene 자식으로 가정하던 motion 테스트를 현재 구현 계약에 맞췄다. CD는 트레이에 안착하면 트레이 자식이며, PLAYER_FOCUS로 이동하는 동안에만 Scene이 소유한다. 테스트는 local transform과 world 위치·회전·scale을 각각 확인한다.
+- 일반 모션에서는 CLOSED package와 PLAYER_FOCUS의 idle CD가 연속 frame을 요청한다. `prefers-reduced-motion`에서는 두 자동 회전을 제거하므로 전환·페이지·직접 입력이 끝난 뒤 demand rendering으로 돌아간다.
+- 오디오 2개, motion 6개, render policy 3개를 한 번에 실행하는 `npm run test:album`을 추가했다.
+
+### 자산 오류 복구
+
+- 외부 표지 texture, 내부 booklet/tray/CD texture와 북클릿 페이지 로딩 실패를 구분해 persistent stage에 전달한다. 3D lazy module 또는 render 오류는 Error Boundary가 별도로 처리한다.
+- 오류를 조용히 삼킨 채 OPEN/BOOKLET 전환이 계속 대기하던 경로 대신, 한국어 오류 안내와 `다시 불러오기`, `WORKS로 돌아가기`를 표시한다. texture 재시도는 해당 stage를 새로 mount하고, React.lazy가 거부된 Promise를 보관하는 3D chunk 오류는 문서를 다시 로드해 모듈 요청부터 재실행한다.
+- WebGL을 처음부터 사용할 수 없는 2D fallback의 링크도 조작할 수 있도록 pointer event를 복원했다.
+
+### 측정과 검증
+
+- production build의 공유 3D chunk는 883.98kB, gzip 234.91kB다. 주 구성은 Three.js와 React Three Fiber이며 이미 앨범 3D 진입 시 lazy-load된다. 파일을 다시 나누는 것만으로 실제 다운로드 총량은 줄지 않으므로 이번 단계에서는 임의 manual chunk 분할이나 경고 임계값 상향을 하지 않았다.
+- 평조회상 내부 booklet texture를 production 출력에서 임시로 제외해 오류 안내 노출을 확인했다. 파일 복구 후 `다시 불러오기`를 선택하자 오류가 사라졌고 OPEN 전환과 BOOKLET/TRACKS/CLOSE 조작이 다시 표시됐다. 검수 후 임시 이름은 원래 파일명으로 복구했다.
+- `npm run test:album`, `npm run lint`, `npm run build`, `git diff --check`를 통과했다. 로컬 production preview에서 오류 복구 뒤 브라우저 console error가 없음을 확인했다.

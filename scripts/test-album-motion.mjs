@@ -18,13 +18,14 @@ function fixture() {
   return { scene, pack, tray, disc, motion: new DiscMotion() };
 }
 
-test('disc matches translated, rotated and scaled tray without changing parent', () => {
+test('seated disc is mounted to the translated, rotated and scaled tray', () => {
   const { scene, tray, disc, motion } = fixture();
   assert.ok(motion.step(disc, tray, scene, 0.06, false, -1.55, 0.08, 1.72, 1) < 1e-6);
   const expected = tray.localToWorld(new Vector3(0, 0, 0.06));
-  assert.ok(disc.position.distanceTo(expected) < 1e-6);
-  assert.ok(disc.quaternion.angleTo(tray.getWorldQuaternion(new Quaternion())) < 1e-6);
-  assert.equal(disc.parent, scene);
+  assert.ok(disc.getWorldPosition(new Vector3()).distanceTo(expected) < 1e-6);
+  assert.ok(disc.getWorldQuaternion(new Quaternion()).angleTo(tray.getWorldQuaternion(new Quaternion())) < 1e-6);
+  assert.equal(disc.parent, tray);
+  assert.ok(disc.position.distanceTo(new Vector3(0, 0, 0.06)) < 1e-6);
 });
 
 test('return includes quaternion and scale error, not only position', () => {
@@ -44,11 +45,17 @@ test('reversing mid-flight preserves continuous transforms and converges', () =>
   const target = tray.localToWorld(new Vector3(0, 0, 0.06));
   motion.step(disc, tray, scene, 0.06, false, -1.55, 0.08, 1.72, 0.1);
   assert.ok(Math.abs(disc.position.distanceTo(before) - before.distanceTo(target) * 0.1) < 1e-6);
+  assert.equal(disc.parent, scene);
+  let settled = false;
   for (let frame = 0; frame < 240; frame++) {
-    motion.step(disc, tray, scene, 0.06, false, -1.55, 0.08, 1.72, 0.1);
-    assert.equal(disc.parent, scene);
+    if (motion.step(disc, tray, scene, 0.06, false, -1.55, 0.08, 1.72, 0.1) === 0) {
+      settled = true;
+      break;
+    }
   }
-  assert.ok(motion.step(disc, tray, scene, 0.06, false, -1.55, 0.08, 1.72, 0.1) < 1e-6);
+  assert.equal(settled, true);
+  assert.equal(disc.parent, tray);
+  assert.ok(disc.position.distanceTo(new Vector3(0, 0, 0.06)) < 1e-6);
 });
 
 test('a seated disc follows abrupt tray movement exactly without interpolation lag', () => {
@@ -60,9 +67,10 @@ test('a seated disc follows abrupt tray movement exactly without interpolation l
   const expected = tray.localToWorld(new Vector3(0, 0, 0.06));
   const error = motion.step(disc, tray, scene, 0.06, false, -1.55, 0.08, 1.72, 0.03);
   assert.equal(error, 0);
-  assert.ok(disc.position.distanceTo(expected) < 1e-6);
-  assert.ok(disc.quaternion.angleTo(tray.getWorldQuaternion(new Quaternion())) < 1e-6);
-  assert.ok(disc.scale.distanceTo(tray.getWorldScale(new Vector3())) < 1e-6);
+  assert.equal(disc.parent, tray);
+  assert.ok(disc.getWorldPosition(new Vector3()).distanceTo(expected) < 1e-6);
+  assert.ok(disc.getWorldQuaternion(new Quaternion()).angleTo(tray.getWorldQuaternion(new Quaternion())) < 1e-6);
+  assert.ok(disc.getWorldScale(new Vector3()).distanceTo(tray.getWorldScale(new Vector3())) < 1e-6);
 });
 
 test('reduced motion settles in one step for both directions', () => {

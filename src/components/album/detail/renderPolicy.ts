@@ -3,18 +3,17 @@ import type { ExperienceMode } from './AlbumDetailExperience3D';
 export type AlbumFrameState = {
   mode: ExperienceMode;
   playing: boolean;
+  reduced: boolean;
   sceneTransitioning: boolean;
   pageTurning: boolean;
   sceneMotion: boolean;
 };
 
 export function needsContinuousAlbumFrames(state: AlbumFrameState) {
-  return state.mode === 'CLOSED'
-    || state.sceneTransitioning
+  return state.sceneTransitioning
     || state.pageTurning
     || state.sceneMotion
-    // The player presentation always keeps the disc turning slowly. `playing`
-    // only changes its speed; albums whose audio is not published still need
-    // continuous frames for the rotation preview.
-    || state.mode === 'PLAYER_FOCUS';
+    // Closed packages and the player disc rotate continuously unless the
+    // visitor has asked for reduced motion. `playing` only changes disc speed.
+    || (!state.reduced && (state.mode === 'CLOSED' || state.mode === 'PLAYER_FOCUS'));
 }
