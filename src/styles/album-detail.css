@@ -62,9 +62,9 @@
   .album-detail__credits div { grid-template-columns: 1fr; gap: 8px; }
 }
 
-.ji-detail { --ji-ink:#252525; --ji-accent:#70453f; --album-closed-accent:var(--ji-accent); --album-ui-accent:var(--ji-accent); --album-ui-action:var(--ji-accent); --album-ui-muted:rgba(37,37,37,.66); position:relative;z-index:1;background:transparent;color:var(--ji-ink);pointer-events:none; }
+.ji-detail { --ji-ink:#252525; --ji-accent:#70453f; --album-closed-accent:var(--ji-accent); --album-ui-accent:var(--ji-accent); --album-ui-action:var(--ji-accent); --album-ui-muted:rgba(37,37,37,.66); --album-ui-action-surface:rgba(248,244,237,.56); position:relative;z-index:1;background:transparent;color:var(--ji-ink);pointer-events:none; }
 .ji-detail--pyeongjo { --ji-accent:#80699a; }
-.ji-detail--yeongsan { --ji-accent:#145f7d; }
+.ji-detail--yeongsan { --ji-accent:#145f7d; --album-ui-action-surface:rgba(22,25,25,.42); }
 .ji-detail button { color:inherit; font:inherit; }
 .ji-detail button:focus-visible,.ji-detail a:focus-visible { outline:2px solid var(--ji-accent); outline-offset:5px; }
 .ji-detail__stage { position:relative; min-height:100svh; overflow:hidden; isolation:isolate; }
@@ -118,6 +118,11 @@
  .ji-detail--yeongsan.ji-detail--closed{--ji-ink:#f4eadb;--ji-accent:#a8d0da}
  .ji-detail--yeongsan.ji-detail--closed .album-adjacent{color:#a8d0da}
  .ji-detail--yeongsan.ji-detail--closed .album-closed-back{color:#145f7d}
+ .ji-detail--yeongsan.ji-detail--album_open .album-open__action{color:#f4eadb;text-shadow:0 1px 8px rgba(12,14,14,.7)}
+ .ji-detail--yeongsan.ji-detail--player_focus{--ji-ink:#f4eadb;--ji-accent:#a8d0da}
+ .ji-detail--yeongsan.ji-detail--player_focus .ji-detail__player{padding:14px;border-radius:4px;background:linear-gradient(180deg,rgba(25,24,22,.18),rgba(25,24,22,.58));box-shadow:0 12px 34px rgba(20,15,10,.2);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+ .ji-detail--yeongsan.ji-detail--player_focus .ji-detail__player ol{border-color:rgba(244,234,219,.28)}
+ .ji-detail--yeongsan.ji-detail--player_focus .ji-detail__player li button{border-color:rgba(244,234,219,.2)}
 }
 .ji-detail .album-closed-info,.ji-detail__booklet-ui,.ji-detail__player{animation:ji-ui-in .32s ease both}
 @keyframes ji-ui-in{from{opacity:0}to{opacity:1}}

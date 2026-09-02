@@ -75,7 +75,16 @@
   .album-open__credits dl { gap: 5px; }
   .album-open__credits dt { font-size: .55rem; }
   .album-open__credits dd { font-size: .65rem; }
-  .album-open__actions { bottom: max(18px, env(safe-area-inset-bottom)); width: calc(100% - 40px); }
+  .album-open__actions {
+    bottom: clamp(165px, 27svh, 300px);
+    width: calc(100% - 40px);
+    padding: 6px 8px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, transparent, var(--album-ui-action-surface, rgba(245, 241, 234, .5)) 16%, var(--album-ui-action-surface, rgba(245, 241, 234, .5)) 84%, transparent);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  .album-open .album-open__action { font-size: .76rem; }
 }
 
 @keyframes album-open-in { from { opacity: 0; } to { opacity: 1; } }
