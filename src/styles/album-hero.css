@@ -58,6 +58,10 @@
 @media (max-width: 700px) {
   .album-hero { display: block; min-height: 100svh; padding: calc(var(--header) + 40svh) 20px 72px; }
   .album-hero .album-closed-info h1 { font-size: clamp(1.5rem, 6.8vw, 2rem); }
+  .album-hero--yeongsan-hoesang-2026 {
+    --album-accent: #a8d0da;
+    color: #f4eadb;
+  }
 }
 
 @media (max-width: 360px) {
