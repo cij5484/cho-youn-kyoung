@@ -149,6 +149,7 @@ function AlbumStage({ album, children }: { album: Album; children: ReactNode }) 
     return () => window.clearTimeout(timeout);
   }, [stageActive]);
   const renderStage = stageActive || stageRetained;
+  const renderEnabled = prewarming || (visible && (!detailRoute || detailStageVisible));
   const context = useMemo(() => ({ ...parentStages, [album.id]: { setDetailProps, setDetailStageVisible, setHomeActive: updateHomeActive, prepareDetail } }), [album.id, parentStages, prepareDetail, updateHomeActive]);
 
   return (
@@ -161,7 +162,7 @@ function AlbumStage({ album, children }: { album: Album; children: ReactNode }) 
           </picture>
           <div className={`album-persistent-stage__canvas${detailRoute && !detailStageVisible ? ' is-editorial-hidden' : ''}`}>
             <Suspense fallback={null}>
-              <Experience3D {...(detailRoute && detailProps ? { ...detailProps, preloadInterior: true } : fallbackProps)} />
+              <Experience3D {...(detailRoute && detailProps ? { ...detailProps, preloadInterior: true } : fallbackProps)} renderEnabled={renderEnabled} />
             </Suspense>
           </div>
         </> : null}

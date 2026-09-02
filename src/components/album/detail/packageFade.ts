@@ -4,9 +4,11 @@ import { Group, Material, Mesh } from 'three';
 export class PackageFade {
   private entries: Array<{ material: Material; opacity: number; depthWrite: boolean }> = [];
   private originals = new WeakMap<Material, { opacity: number; depthWrite: boolean }>();
+  private lastOpacity = Number.NaN;
 
   capture(root: Group | null) {
     this.entries = [];
+    this.lastOpacity = Number.NaN;
     root?.traverse((object) => {
       if (!(object instanceof Mesh) || !object.userData.packageSurface) return;
       for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
@@ -20,9 +22,11 @@ export class PackageFade {
   }
 
   update(opacity: number) {
+    if (Math.abs(this.lastOpacity - opacity) <= 0.001) return;
     for (const entry of this.entries) {
       entry.material.opacity = entry.opacity * opacity;
       entry.material.depthWrite = entry.depthWrite && opacity > 0.99;
     }
+    this.lastOpacity = opacity;
   }
 }

@@ -35,6 +35,7 @@ export type ExperienceProps = {
   onPageTurnComplete?(): void;
   onPrewarmReady?(): void;
   preloadInterior?: boolean;
+  renderEnabled?: boolean;
 };
 
 type InteriorTextures = {
@@ -66,9 +67,10 @@ function PrewarmReady({ onReady }: { onReady?: () => void }) {
   return null;
 }
 
-function RenderScheduler({ active, motionKey }: { active: boolean; motionKey: string }) {
+function RenderScheduler({ active, enabled, motionKey }: { active: boolean; enabled: boolean; motionKey: string }) {
   const invalidate = useThree((state) => state.invalidate);
   useEffect(() => {
+    if (!enabled) return undefined;
     // A mode change gets a bounded render window of its own. This keeps a
     // newly-started transition alive even if the outgoing mode reports its
     // final settled frame during the same React update.
@@ -80,7 +82,7 @@ function RenderScheduler({ active, motionKey }: { active: boolean; motionKey: st
     };
     frame = requestAnimationFrame(render);
     return () => cancelAnimationFrame(frame);
-  }, [active, invalidate, motionKey]);
+  }, [active, enabled, invalidate, motionKey]);
   return null;
 }
 
@@ -274,7 +276,10 @@ function CdDisc({ label, profile, mode, playing, reduced, tray, onPlayer, onSett
     velocity.current = THREE.MathUtils.lerp(velocity.current, targetVelocity, 1 - Math.exp(-3 * step));
     if (spin.current) spin.current.rotation.z -= velocity.current * step;
     if (tilt.current) {
-      if (mode !== 'PLAYER_FOCUS') tiltTarget.current = { x: 0, y: 0 };
+      if (mode !== 'PLAYER_FOCUS') {
+        tiltTarget.current.x = 0;
+        tiltTarget.current.y = 0;
+      }
       const tiltEase = reduced ? 1 : 1 - Math.exp(-10 * step);
       tilt.current.rotation.x = THREE.MathUtils.lerp(tilt.current.rotation.x, tiltTarget.current.x, tiltEase);
       tilt.current.rotation.y = THREE.MathUtils.lerp(tilt.current.rotation.y, tiltTarget.current.y, tiltEase);
@@ -349,6 +354,7 @@ function TrayRig({ texture, label, profile, mode, playing, reduced, onPlayer, on
   const cdTray = useRef<THREE.Group>(null);
   const trayContext = useRef<THREE.Group>(null);
   const opacity = useRef(1);
+  const appliedOpacity = useRef(Number.NaN);
   const { dimensions, backInnerZ, trayPlateZ, recessZ, cdMountZ } = profile;
   useFrame((_, delta) => {
     const group = trayContext.current;
@@ -357,11 +363,14 @@ function TrayRig({ texture, label, profile, mode, playing, reduced, onPlayer, on
     const target = mode === 'CLOSED' || mode === 'PLAYER_FOCUS' ? 0 : mode === 'BOOKLET_FOCUS' ? 0.48 : 1;
     opacity.current = THREE.MathUtils.lerp(opacity.current, target, reduced ? 1 : 1 - Math.exp(-7 * step));
     group.visible = opacity.current > 0.002;
-    group.traverse((object) => {
-      if (!(object instanceof THREE.Mesh)) return;
-      const material = object.material as THREE.Material;
-      material.opacity = Number(object.userData.baseOpacity) * opacity.current;
-    });
+    if (Math.abs(appliedOpacity.current - opacity.current) > 0.001) {
+      group.traverse((object) => {
+        if (!(object instanceof THREE.Mesh)) return;
+        const material = object.material as THREE.Material;
+        material.opacity = Number(object.userData.baseOpacity) * opacity.current;
+      });
+      appliedOpacity.current = opacity.current;
+    }
     onSettled(Math.abs(opacity.current - target) < 0.018);
   });
   return <>
@@ -731,6 +740,7 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
   const opacity = useRef(1);
   const coverOpacity = useRef(1);
   const readerOpacity = useRef(0);
+  const appliedGroupOpacity = useRef({ cover: Number.NaN, reader: Number.NaN });
   const detached = useRef(false);
   const originalParent = useRef<THREE.Object3D | null>(null);
   const entryProgress = useRef(0);
@@ -742,13 +752,30 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
   const returnStartQuaternion = useRef(new THREE.Quaternion());
   const returnStartScale = useRef(new THREE.Vector3(1, 1, 1));
   const foldProgress = useRef(mode === 'BOOKLET_FOCUS' ? 1 : 0);
+  const foldOpenProgress = useRef(mode === 'BOOKLET_FOCUS' ? 1 : 0);
   const lastBounds = useRef<BookletBounds | null>(null);
   const p1Width = PAGE_HEIGHT * textureAspect(p1);
   const mountPosition = useMemo(() => new THREE.Vector3(-p1Width / 2, 0, 0.08), [p1Width]);
+  const scratch = useMemo(() => ({
+    targetPosition: new THREE.Vector3(),
+    targetQuaternion: new THREE.Quaternion(),
+    targetScale: new THREE.Vector3(1, 1, 1),
+    desiredPosition: new THREE.Vector3(),
+    desiredQuaternion: new THREE.Quaternion(),
+    desiredScale: new THREE.Vector3(1, 1, 1),
+    desiredEuler: new THREE.Euler(),
+    desiredWorld: new THREE.Matrix4(),
+    mountMatrix: new THREE.Matrix4(),
+    mountWorld: new THREE.Matrix4(),
+    mountQuaternion: new THREE.Quaternion(),
+    unitScale: new THREE.Vector3(1, 1, 1),
+    corners: [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()],
+  }), []);
 
   useEffect(() => {
     if (mode === 'BOOKLET_FOCUS' && previousMode.current !== 'BOOKLET_FOCUS') {
       entryProgress.current = 0;
+      foldOpenProgress.current = 0;
       returnProgress.current = 0;
       lastBounds.current = null;
       setDetailsMounted(true);
@@ -765,7 +792,8 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
     previousMode.current = mode;
   }, [mode]);
 
-  const setGroupOpacity = (group: THREE.Group | null, value: number) => {
+  const setGroupOpacity = (group: THREE.Group | null, value: number, key: 'cover' | 'reader') => {
+    if (!group || Math.abs(appliedGroupOpacity.current[key] - value) <= 0.001) return;
     group?.traverse((object) => {
       if (!(object instanceof THREE.Mesh) || object.userData.keepOpacity) return;
       const material = object.material as THREE.Material & { opacity: number };
@@ -773,6 +801,7 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
       material.opacity = value;
       material.depthWrite = value > 0.08;
     });
+    appliedGroupOpacity.current[key] = value;
   };
 
   useFrame((_, delta) => {
@@ -788,13 +817,13 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
     }
     const ease = reduced ? 1 : 1 - Math.exp(-7 * step);
     const fadeEase = reduced ? 1 : 1 - Math.exp(-12 * step);
-    const targetPosition = mountPosition.clone();
-    const targetQuaternion = new THREE.Quaternion();
-    const targetScale = new THREE.Vector3(1, 1, 1);
+    const targetPosition = scratch.targetPosition.copy(mountPosition);
+    const targetQuaternion = scratch.targetQuaternion.identity();
+    const targetScale = scratch.targetScale.set(1, 1, 1);
     let transitioning = false;
     let foldTarget = phase === 'READING' ? 1 : 0;
     if ((phase === 'ENTERING' || phase === 'READING') && detached.current) {
-      const desiredPosition = new THREE.Vector3(0, mobile ? 0.35 : 0.08, 0.82);
+      const desiredPosition = scratch.desiredPosition.set(0, mobile ? 0.35 : 0.08, 0.82);
       const focusViewport = viewport.getCurrentViewport(camera, desiredPosition);
       const mobileFocusScale = Math.min(focusViewport.width * 0.95 / p1Width, focusViewport.height * 0.91 / PAGE_HEIGHT) * 0.9;
       const isScannedBooklet = album.id === 'han-beom-su-haegeum-sanjo-2020';
@@ -805,10 +834,12 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
         focusViewport.width * desktopWidthFit / (p1Width * 2),
         focusViewport.height * desktopHeightFit / PAGE_HEIGHT,
       ) * desktopMargin;
-      const desiredWorld = new THREE.Matrix4().compose(
+      scratch.desiredScale.setScalar(mobile ? mobileFocusScale : desktopFocusScale);
+      scratch.desiredQuaternion.setFromEuler(scratch.desiredEuler.set(mobile ? -0.04 : -0.08, 0, 0));
+      const desiredWorld = scratch.desiredWorld.compose(
         desiredPosition,
-        new THREE.Quaternion().setFromEuler(new THREE.Euler(mobile ? -0.04 : -0.08, 0, 0)),
-        new THREE.Vector3(mobile ? mobileFocusScale : desktopFocusScale, mobile ? mobileFocusScale : desktopFocusScale, mobile ? mobileFocusScale : desktopFocusScale),
+        scratch.desiredQuaternion,
+        scratch.desiredScale,
       );
       desiredWorld.decompose(targetPosition, targetQuaternion, targetScale);
       if (phase === 'ENTERING') {
@@ -821,13 +852,16 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
         rig.current.position.z += Math.sin(Math.PI * eased) * 0.14;
         rig.current.quaternion.slerpQuaternions(entryStartQuaternion.current, targetQuaternion, eased);
         rig.current.scale.lerpVectors(entryStartScale.current, targetScale, eased);
-        foldTarget = detailsReady ? THREE.MathUtils.smoothstep(progress, 0.06, 0.9) : 0;
+        foldOpenProgress.current = detailsReady
+          ? (reduced ? 1 : Math.min(1, foldOpenProgress.current + step / BOOKLET_OPEN_DURATION))
+          : 0;
+        foldTarget = THREE.MathUtils.smoothstep(foldOpenProgress.current, 0.06, 0.9);
         transitioning = true;
       }
     } else if (phase === 'RETURNING' && detached.current && originalParent.current) {
       originalParent.current.updateWorldMatrix(true, false);
-      const mountMatrix = new THREE.Matrix4().compose(mountPosition, new THREE.Quaternion(), new THREE.Vector3(1, 1, 1));
-      originalParent.current.matrixWorld.clone().multiply(mountMatrix).decompose(targetPosition, targetQuaternion, targetScale);
+      scratch.mountMatrix.compose(mountPosition, scratch.mountQuaternion.identity(), scratch.unitScale.set(1, 1, 1));
+      scratch.mountWorld.copy(originalParent.current.matrixWorld).multiply(scratch.mountMatrix).decompose(targetPosition, targetQuaternion, targetScale);
       returnProgress.current = reduced
         ? 1
         : Math.min(1, returnProgress.current + step / BOOKLET_RETURN_DURATION);
@@ -859,19 +893,31 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
     const coverTarget = 1 - THREE.MathUtils.smoothstep(foldProgress.current, 0.58, 0.92);
     coverOpacity.current = THREE.MathUtils.lerp(coverOpacity.current, coverTarget, fadeEase);
     readerOpacity.current = THREE.MathUtils.lerp(readerOpacity.current, readerTarget, fadeEase);
-    setGroupOpacity(cover.current, coverOpacity.current * opacity.current);
-    setGroupOpacity(reader.current, readerOpacity.current * opacity.current);
+    setGroupOpacity(cover.current, coverOpacity.current * opacity.current, 'cover');
+    setGroupOpacity(reader.current, readerOpacity.current * opacity.current, 'reader');
     const crossfadeError = Math.abs(coverOpacity.current - coverTarget) + Math.abs(readerOpacity.current - readerTarget);
 
     if (mode === 'BOOKLET_FOCUS' && phase === 'READING' && !mobile && onBounds) {
-      const corners = [
-        new THREE.Vector3(-p1Width, PAGE_HEIGHT / 2, 0), new THREE.Vector3(p1Width, PAGE_HEIGHT / 2, 0),
-        new THREE.Vector3(-p1Width, -PAGE_HEIGHT / 2, 0), new THREE.Vector3(p1Width, -PAGE_HEIGHT / 2, 0),
-      ].map((corner) => rig.current!.localToWorld(corner).project(camera));
-      const xs = corners.map((corner) => (corner.x * 0.5 + 0.5) * size.width);
-      const ys = corners.map((corner) => (-corner.y * 0.5 + 0.5) * size.height);
+      const corners = scratch.corners;
+      corners[0].set(-p1Width, PAGE_HEIGHT / 2, 0);
+      corners[1].set(p1Width, PAGE_HEIGHT / 2, 0);
+      corners[2].set(-p1Width, -PAGE_HEIGHT / 2, 0);
+      corners[3].set(p1Width, -PAGE_HEIGHT / 2, 0);
+      let minX = Number.POSITIVE_INFINITY;
+      let maxX = Number.NEGATIVE_INFINITY;
+      let minY = Number.POSITIVE_INFINITY;
+      let maxY = Number.NEGATIVE_INFINITY;
+      corners.forEach((corner) => {
+        rig.current!.localToWorld(corner).project(camera);
+        const x = (corner.x * 0.5 + 0.5) * size.width;
+        const y = (-corner.y * 0.5 + 0.5) * size.height;
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
+      });
       const canvasRect = gl.domElement.getBoundingClientRect();
-      const bounds = { left: canvasRect.left + Math.min(...xs), top: canvasRect.top + Math.min(...ys), width: Math.max(...xs) - Math.min(...xs), height: Math.max(...ys) - Math.min(...ys) };
+      const bounds = { left: canvasRect.left + minX, top: canvasRect.top + minY, width: maxX - minX, height: maxY - minY };
       const last = lastBounds.current;
       if (!last || Math.abs(last.left - bounds.left) + Math.abs(last.top - bounds.top) + Math.abs(last.width - bounds.width) + Math.abs(last.height - bounds.height) > 0.5) {
         lastBounds.current = bounds;
@@ -880,7 +926,7 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
     }
 
     const foldError = Math.abs(foldProgress.current - foldTarget);
-    if (phase === 'ENTERING' && entryProgress.current >= 1 && detailsReady && crossfadeError < 0.035 && foldError < 0.02) setPhase('READING');
+    if (phase === 'ENTERING' && entryProgress.current >= 1 && foldOpenProgress.current >= 1 && detailsReady && crossfadeError < 0.035 && foldError < 0.02) setPhase('READING');
     if (phase === 'RETURNING' && returnProgress.current >= 1 && crossfadeError < 0.035 && foldError < 0.02 && transformError < 0.035) {
       if (detached.current && originalParent.current) {
         originalParent.current.attach(rig.current);
@@ -1166,8 +1212,14 @@ export default function AlbumDetailExperience3D(props: ExperienceProps) {
   const [sceneTransitioning, setSceneTransitioning] = useState(true);
   const [pageTurning, setPageTurning] = useState(false);
   const [sceneMotion, setSceneMotion] = useState(props.mode === 'CLOSED' && !props.reduced);
+  const [documentVisible, setDocumentVisible] = useState(() => document.visibilityState !== 'hidden');
   const previousMode = useRef(props.mode);
   const previousPage = useRef(props.page);
+  useEffect(() => {
+    const update = () => setDocumentVisible(document.visibilityState !== 'hidden');
+    document.addEventListener('visibilitychange', update);
+    return () => document.removeEventListener('visibilitychange', update);
+  }, []);
   useEffect(() => {
     if (previousMode.current === props.mode) return;
     previousMode.current = props.mode;
@@ -1198,11 +1250,12 @@ export default function AlbumDetailExperience3D(props: ExperienceProps) {
     pageTurning,
     sceneMotion,
   });
+  const renderEnabled = props.renderEnabled !== false && documentVisible;
   return (
-    <Canvas aria-label={`열고 탐색할 수 있는 ${props.album.title} 3D 디지팩`} camera={{ position: [0, 0, 7], fov: 42 }} dpr={[1, 2]} frameloop={props.mode === 'CLOSED' ? 'always' : 'demand'} shadows="soft" gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }} onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}>
-      <RenderScheduler active={props.mode !== 'CLOSED' && continuous} motionKey={props.mode} />
+    <Canvas aria-label={`열고 탐색할 수 있는 ${props.album.title} 3D 디지팩`} camera={{ position: [0, 0, 7], fov: 42 }} dpr={props.mobile ? [1, 1.5] : [1, 2]} frameloop={!renderEnabled ? 'never' : props.mode === 'CLOSED' ? 'always' : 'demand'} shadows="soft" gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }} onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}>
+      <RenderScheduler active={props.mode !== 'CLOSED' && continuous} enabled={renderEnabled} motionKey={`${props.mode}:${renderEnabled}`} />
       <ambientLight intensity={1.05} />
-      <directionalLight castShadow intensity={1.8} position={[4.5, 6, 7]} shadow-mapSize-width={1024} shadow-mapSize-height={1024} shadow-camera-left={-6} shadow-camera-right={6} shadow-camera-top={5} shadow-camera-bottom={-5} shadow-radius={7} shadow-bias={-0.0002} />
+      <directionalLight castShadow intensity={1.8} position={[4.5, 6, 7]} shadow-mapSize-width={props.mobile ? 512 : 1024} shadow-mapSize-height={props.mobile ? 512 : 1024} shadow-camera-left={-6} shadow-camera-right={6} shadow-camera-top={5} shadow-camera-bottom={-5} shadow-radius={props.mobile ? 5 : 7} shadow-bias={-0.0002} />
       <directionalLight intensity={0.25} position={[-3, 1, 4]} />
       <Scene {...props} onTransitionChange={handleTransitionChange} onPageTurnComplete={handlePageTurnComplete} onRenderActivityChange={setSceneMotion} />
     </Canvas>

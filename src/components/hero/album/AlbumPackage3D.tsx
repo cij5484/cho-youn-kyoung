@@ -254,22 +254,22 @@ function Package({ textures, geometry, scale, position }: PackageProps) {
 }
 
 export function AlbumPackage3D({ textures, backgroundAnchor, geometry }: AlbumPackage3DProps) {
+  const mobile = useMobileViewport();
   return (
     <Canvas
       className="album-package-canvas"
       camera={{ position: [0, 0, 5], fov: 36 }}
-      dpr={[1, 2]}
+      dpr={mobile ? [1, 1.5] : [1, 2]}
       fallback={<div className="album-package-fallback" aria-hidden="true" />}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       shadows="soft"
     >
-      <AlbumPackageScene textures={textures} backgroundAnchor={backgroundAnchor} geometry={geometry} />
+      <AlbumPackageScene textures={textures} backgroundAnchor={backgroundAnchor} geometry={geometry} mobile={mobile} />
     </Canvas>
   );
 }
 
-function AlbumPackageScene({ textures, backgroundAnchor, geometry }: AlbumPackage3DProps) {
-  const mobile = useMobileViewport();
+function AlbumPackageScene({ textures, backgroundAnchor, geometry, mobile }: AlbumPackage3DProps & { mobile: boolean }) {
   const { size, viewport } = useThree();
   const source = mobile
     ? backgroundAnchor?.mobile ?? DEFAULT_BACKGROUND_ANCHORS.mobile
@@ -298,8 +298,8 @@ function AlbumPackageScene({ textures, backgroundAnchor, geometry }: AlbumPackag
         position={[4.5, 6, 5.5]}
         intensity={1.65}
         castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
+        shadow-mapSize-width={mobile ? 512 : 1024}
+        shadow-mapSize-height={mobile ? 512 : 1024}
         shadow-camera-left={-4}
         shadow-camera-right={4}
         shadow-camera-top={4}
@@ -307,7 +307,7 @@ function AlbumPackageScene({ textures, backgroundAnchor, geometry }: AlbumPackag
         shadow-camera-near={1}
         shadow-camera-far={12}
         shadow-bias={-0.0002}
-        shadow-radius={8}
+        shadow-radius={mobile ? 6 : 8}
       />
       <directionalLight position={[-3.5, 1.5, 3]} intensity={0.28} />
       <Package textures={textures} geometry={geometry} scale={packageScale} position={[packageX, packageY, 0]} />

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
+import { albums } from '../../../data/albums';
 import type { HomeHeroSlide } from '../../../data/homeHeroSlides';
+import { preloadAlbumDetail } from '../../album/detail/preloadAlbumDetail';
 
 type RecentWorksProps = {
   works: HomeHeroSlide[];
@@ -20,6 +22,11 @@ export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) 
   const scrollFrameRef = useRef<number | null>(null);
 
   const hasFineHoverPointer = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const warmWork = (work: HomeHeroSlide) => {
+    if (work.workType !== 'ALBUM') return;
+    const album = albums.find((item) => item.id === work.id);
+    if (album) void preloadAlbumDetail(album).catch(() => undefined);
+  };
 
   useEffect(() => {
     const handleEscape = (event: globalThis.KeyboardEvent) => {
@@ -57,6 +64,7 @@ export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) 
   };
 
   const selectWork = (index: number) => {
+    warmWork(works[index]);
     setPreviewIndex(index);
     onSelect(index);
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -135,9 +143,16 @@ export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) 
               ref={(node) => { cardRefs.current[index] = node; }}
               onClick={() => selectWork(index)}
               onKeyDown={(event) => handleCardKeyDown(event, index)}
-              onPointerEnter={(event) => { if (event.pointerType === 'mouse' && hasFineHoverPointer()) setInteractionIndex(index); }}
+              onPointerEnter={(event) => {
+                if (event.pointerType !== 'mouse' || !hasFineHoverPointer()) return;
+                warmWork(work);
+                setInteractionIndex(index);
+              }}
               onPointerLeave={(event) => { if (event.pointerType === 'mouse') setInteractionIndex(null); }}
-              onFocus={() => setInteractionIndex(index)}
+              onFocus={() => {
+                warmWork(work);
+                setInteractionIndex(index);
+              }}
               onBlur={() => setInteractionIndex(null)}
             >
               <span className="recent-work-card__image-wrap">
