@@ -144,8 +144,8 @@ export const albums: Album[] = [
     albumHero: {
       theme: 'album-package',
       background: {
-        desktop: '/assets/albums/yeongsan-hoesang-2026/web/home-hero-desktop.webp',
-        mobile: '/assets/albums/yeongsan-hoesang-2026/web/home-hero-mobile.webp',
+        desktop: '/assets/albums/yeongsan-hoesang-2026/web/ai-background-desktop-v1.webp',
+        mobile: '/assets/albums/yeongsan-hoesang-2026/web/ai-background-mobile-v1.webp',
       },
       backgroundAnchor: {
         desktop: { sourceWidth: 2560, sourceHeight: 1440, x: 0.5 },
@@ -256,8 +256,8 @@ export const albums: Album[] = [
     albumHero: {
       theme: 'album-package',
       background: {
-        desktop: '/assets/albums/pyeongjo-hoesang-2026/web/home-hero-desktop.webp',
-        mobile: '/assets/albums/pyeongjo-hoesang-2026/web/home-hero-mobile.webp',
+        desktop: '/assets/albums/pyeongjo-hoesang-2026/web/ai-background-desktop-v1.webp',
+        mobile: '/assets/albums/pyeongjo-hoesang-2026/web/ai-background-mobile-v1.webp',
       },
       backgroundAnchor: {
         desktop: { sourceWidth: 2560, sourceHeight: 1440, x: 0.5 },

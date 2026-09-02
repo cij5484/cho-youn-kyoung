@@ -115,6 +115,9 @@
  .ji-detail__stage{height:100svh;min-height:100svh;max-height:100svh;overflow:hidden;overscroll-behavior:none}.ji-detail__canvas{inset:var(--header) 0 0}
  .ji-detail__booklet-ui{inset:calc(var(--header) + 10px) 18px max(12px,env(safe-area-inset-bottom))}.ji-detail__booklet-controls{position:static;padding:0 4%}.ji-detail__booklet-controls button{min-width:44px;min-height:44px}.ji-detail__booklet-footer{top:auto;bottom:0}.ji-detail__booklet-footer button{min-height:44px}
  .ji-detail__player{top:auto;right:22px;bottom:18px;left:22px;width:auto;transform:none}.ji-detail__player ol{margin:8px 0 10px}.ji-detail__player li button{padding:6px 0}.ji-detail__selected{margin:8px 0}.ji-detail__editorial section{grid-template-columns:1fr;gap:22px}.ji-detail__editorial dl div{grid-template-columns:1fr;gap:5px}
+ .ji-detail--yeongsan.ji-detail--closed{--ji-ink:#f4eadb;--ji-accent:#a8d0da}
+ .ji-detail--yeongsan.ji-detail--closed .album-adjacent{color:#a8d0da}
+ .ji-detail--yeongsan.ji-detail--closed .album-closed-back{color:#145f7d}
 }
 .ji-detail .album-closed-info,.ji-detail__booklet-ui,.ji-detail__player{animation:ji-ui-in .32s ease both}
 @keyframes ji-ui-in{from{opacity:0}to{opacity:1}}
