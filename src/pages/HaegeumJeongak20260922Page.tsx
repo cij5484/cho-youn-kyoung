@@ -63,7 +63,6 @@ export function HaegeumJeongak20260922Page({ performance }: { performance: Perfo
       <section className="hj-detail__hero" id="overview" aria-labelledby="hj-detail-title">
         <PerformanceBackLink className="hj-detail__back" tone="violet" />
         <div className="hj-detail__hero-art">
-          <div className="hj-detail__hero-texture" aria-hidden="true"><SafeImage src={assetUrl(performance.heroImage)} alt="" fallbackClassName="safe-image-fallback" /></div>
           <div className="hj-detail__poster"><SafeImage src={assetUrl(poster?.previewImages[0]?.src ?? performance.heroImage)} alt="풀고, 엮다 공연 포스터" fallbackClassName="safe-image-fallback" fallbackLabel={performance.title} /></div>
           <span className="hj-detail__edition" aria-hidden="true">RECITAL · BUSAN · 2026</span>
         </div>
@@ -72,7 +71,7 @@ export function HaegeumJeongak20260922Page({ performance }: { performance: Perfo
           <h1 id="hj-detail-title"><span>풀고,</span><span>엮다</span></h1>
           <p className="hj-detail__subtitle"><span>조윤경의 해금정악</span><span>해금상령산풀이 · 관악영산회상</span></p>
           <div className="hj-detail__event" aria-label="공연 일시와 장소">
-            <time className="hj-detail__date" dateTime={performance.date}><strong><span>09</span><i>.</i><span>22</span></strong><span>2026 · SEPTEMBER</span></time>
+            <time className="hj-detail__date" dateTime={performance.date}><strong><span>09</span><i>.</i><span>22</span></strong><span>2026 · 화요일</span></time>
             <div className="hj-detail__venue"><strong>19:30</strong><p>{performance.venue}</p><small>{performance.venueAddress}</small></div>
           </div>
           <div className="hj-detail__attendance"><strong>{performance.performer}</strong><p>{performance.ticketPrice} · {performance.seating}</p><small>{performance.ageRestriction}</small></div>
