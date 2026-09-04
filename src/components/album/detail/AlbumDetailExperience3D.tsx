@@ -105,8 +105,7 @@ const BOOKLET_OPEN_DURATION = 1.2;
 const BOOKLET_RETURN_DURATION = 1.15;
 const PAGE_TURN_SEGMENTS = 48;
 const BOOKLET_EDGE_INSET = 0.003;
-const CLOSED_PRESENTATION_YAW = THREE.MathUtils.degToRad(18);
-const CLOSED_PRESENTATION_SPEED = Math.PI / 7;
+const CLOSED_ROTATION_SPEED = (Math.PI * 2) / 22;
 // Preserve real elapsed time through short decode/upload stalls. A 0.1s cap
 // stretched one-second transitions to 7-12 seconds on the denser booklet
 // textures. A one-second ceiling only filters genuine tab-resume gaps; normal
@@ -999,10 +998,6 @@ function Scene(props: SceneProps) {
   const inertia = useRef({ x: 0, y: 0 });
   const rotation = useRef({ x: -0.1, y: 0.12 });
   const autoRotate = useRef(true);
-  const autoPresentation = useRef({
-    center: 0,
-    phase: Math.asin(0.12 / CLOSED_PRESENTATION_YAW),
-  });
   const aligned = useRef(mode !== 'CLOSED');
   const alignedYaw = useRef(0);
   const openingPhaseRef = useRef<OpeningPhase>('IDLE');
@@ -1023,8 +1018,6 @@ function Scene(props: SceneProps) {
   useEffect(() => {
     if (homeActivationKey > 0) {
       autoRotate.current = !reduced;
-      autoPresentation.current.center = THREE.MathUtils.euclideanModulo(rotation.current.y + Math.PI, Math.PI * 2) - Math.PI;
-      autoPresentation.current.phase = 0;
       onRenderActivityChange(autoRotate.current);
     }
   }, [homeActivationKey, onRenderActivityChange, reduced]);
@@ -1066,9 +1059,7 @@ function Scene(props: SceneProps) {
     const closed = mode === 'CLOSED';
     const packageMode = mode;
     if (closed && autoRotate.current && !reduced) {
-      autoPresentation.current.phase += step * CLOSED_PRESENTATION_SPEED;
-      rotation.current.y = autoPresentation.current.center
-        + Math.sin(autoPresentation.current.phase) * CLOSED_PRESENTATION_YAW;
+      rotation.current.y += step * CLOSED_ROTATION_SPEED;
     }
     const openInteractive = mode === 'ALBUM_OPEN' && aligned.current && openingPhaseRef.current === 'IDLE';
     if (!drag.current && !autoRotate.current && !reduced && (closed || openInteractive)) {
