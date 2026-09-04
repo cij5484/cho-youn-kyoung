@@ -15,6 +15,7 @@ import { CdPolycarbonateMaterial, IvoryEdgeMaterial, OuterPlasticMaterial, Print
 
 export type ExperienceMode = 'CLOSED' | 'ALBUM_OPEN' | 'BOOKLET_FOCUS' | 'PLAYER_FOCUS';
 export type BookletBounds = { left: number; top: number; width: number; height: number };
+export type AlbumAssetFailure = 'cover' | 'interior' | 'booklet';
 
 export type ExperienceProps = {
   album: Album;
@@ -34,6 +35,7 @@ export type ExperienceProps = {
   onTransitionChange?(transitioning: boolean): void;
   onPageTurnComplete?(): void;
   onPrewarmReady?(): void;
+  onAssetError?(kind: AlbumAssetFailure): void;
   preloadInterior?: boolean;
   renderEnabled?: boolean;
 };
@@ -148,7 +150,7 @@ function textureAspect(texture: THREE.Texture) {
   return image?.width && image?.height ? image.width / image.height : 1;
 }
 
-function useCoreTextures(album: Album, loadInterior: boolean): CoreTextures {
+function useCoreTextures(album: Album, loadInterior: boolean, onAssetError?: (kind: AlbumAssetFailure) => void): CoreTextures {
   const { gl } = useThree();
   const hero = album.albumHero!;
   const detail = album.detailExperience!;
@@ -163,12 +165,19 @@ function useCoreTextures(album: Album, loadInterior: boolean): CoreTextures {
   }, []);
   const [outer, setOuter] = useState<THREE.Texture[] | null>(null);
   const [interior, setInterior] = useState<InteriorTextures | null>(null);
+  const reportedFailures = useRef(new Set<AlbumAssetFailure>());
+  const reportFailure = useCallback((kind: AlbumAssetFailure) => {
+    if (reportedFailures.current.has(kind)) return;
+    reportedFailures.current.add(kind);
+    onAssetError?.(kind);
+  }, [onAssetError]);
 
   useEffect(() => {
     let cancelled = false;
     let loaded: THREE.Texture[] | null = null;
     void Promise.allSettled(outerUrls.map((url) => new THREE.TextureLoader().loadAsync(url)))
       .then((results) => {
+        if (results.some((result) => result.status === 'rejected')) reportFailure('cover');
         loaded = results.flatMap((result) => result.status === 'fulfilled' ? [result.value] : []);
         configureTextures(loaded, gl.capabilities.getMaxAnisotropy());
         if (cancelled) loaded.forEach((texture) => texture.dispose());
@@ -181,7 +190,7 @@ function useCoreTextures(album: Album, loadInterior: boolean): CoreTextures {
   // A stable URL key avoids restarting the three parallel image decodes when
   // the surrounding detail state changes without changing the album.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gl, outerKey, placeholder]);
+  }, [gl, outerKey, placeholder, reportFailure]);
 
   useEffect(() => () => placeholder.dispose(), [placeholder]);
 
@@ -209,12 +218,14 @@ function useCoreTextures(album: Album, loadInterior: boolean): CoreTextures {
           });
         }
       })
-      .catch(() => undefined);
+      .catch(() => {
+        if (!cancelled) reportFailure('interior');
+      });
     return () => {
       cancelled = true;
       loaded?.forEach((texture) => texture.dispose());
     };
-  }, [album, detail, gl, loadInterior]);
+  }, [album, detail, gl, loadInterior, reportFailure]);
 
   return {
     front: outer?.[0] ?? placeholder,
@@ -492,7 +503,7 @@ function bookletTextureIndices(page: number, mobile: boolean, pageCount: number)
   return Array.from(indices).sort((a, b) => a - b);
 }
 
-function useBookletTextureWindow(album: Album, page: number, mobile: boolean) {
+function useBookletTextureWindow(album: Album, page: number, mobile: boolean, onAssetError?: (kind: AlbumAssetFailure) => void) {
   const { gl } = useThree();
   const urls = useMemo(
     () => album.booklet!.previewImages.slice(1).map(({ src }) => assetUrl(src)!),
@@ -502,6 +513,7 @@ function useBookletTextureWindow(album: Album, page: number, mobile: boolean) {
   const current = useMemo(() => bookletCurrentIndices(page, mobile, urls.length), [mobile, page, urls.length]);
   const [textures, setTextures] = useState(() => new Map<number, THREE.Texture>());
   const texturesForCleanup = useRef(textures);
+  const failureReported = useRef(false);
   useEffect(() => { texturesForCleanup.current = textures; }, [textures]);
 
   useEffect(() => {
@@ -544,13 +556,16 @@ function useBookletTextureWindow(album: Album, page: number, mobile: boolean) {
         if (cancelled) return;
         await load(wanted.filter((index) => !current.includes(index)));
       } catch {
-        // A missing optional preview must not take down the whole album scene.
+        if (!cancelled && !failureReported.current) {
+          failureReported.current = true;
+          onAssetError?.('booklet');
+        }
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [current, gl, urls, wanted]);
+  }, [current, gl, onAssetError, urls, wanted]);
 
   useEffect(() => () => {
     texturesForCleanup.current.forEach((texture) => texture.dispose());
@@ -560,15 +575,16 @@ function useBookletTextureWindow(album: Album, page: number, mobile: boolean) {
   return { textures, urls };
 }
 
-function BookletPages({ album, page, mobile, reduced, active, onReadyChange, onPageTurnComplete, onPrevious, onNext }: {
+function BookletPages({ album, page, mobile, reduced, active, onReadyChange, onPageTurnComplete, onPrevious, onNext, onAssetError }: {
   album: Album; page: number; mobile: boolean; reduced: boolean; active: boolean;
   onPrevious(): void; onNext(): void;
   onReadyChange(ready: boolean): void; onPageTurnComplete(): void;
+  onAssetError?(kind: AlbumAssetFailure): void;
 }) {
   const previous = useRef(page);
   const [settled, setSettled] = useState(page);
   const [turn, setTurn] = useState<PageTurn | null>(null);
-  const window = useBookletTextureWindow(album, settled, mobile);
+  const window = useBookletTextureWindow(album, settled, mobile, onAssetError);
   const requestedIndices = bookletCurrentIndices(page, mobile, window.urls.length);
   const settledIndices = bookletCurrentIndices(settled, mobile, window.urls.length);
   const requestedReady = requestedIndices.every((index) => window.textures.has(index));
@@ -724,10 +740,11 @@ function TurningPage({ pages, width, turn, onDone, frontTexture, backTexture, du
 
 type BookletPhase = 'RESTING' | 'ENTERING' | 'READING' | 'RETURNING';
 
-function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettled, onPageTurnComplete, onPrevious, onNext, onBounds }: {
+function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettled, onPageTurnComplete, onPrevious, onNext, onBounds, onAssetError }: {
   album: Album; p1: THREE.Texture; mode: ExperienceMode; page: number; mobile: boolean; reduced: boolean;
   onBooklet(): void; onSettled(settled: boolean): void; onPageTurnComplete(): void; onPrevious(): void; onNext(): void;
   onBounds?(bounds: BookletBounds): void;
+  onAssetError?(kind: AlbumAssetFailure): void;
 }) {
   const { camera, gl, scene, size, viewport } = useThree();
   const rig = useRef<THREE.Group>(null);
@@ -945,7 +962,7 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
   return (
     <group ref={rig} position={[-p1Width / 2, 0, 0.08]} onClick={(event) => { event.stopPropagation(); if (mode === 'ALBUM_OPEN') onBooklet(); }}>
       {detailsMounted && <group ref={reader} visible={phase !== 'RESTING'}>
-        <Suspense fallback={null}><BookletPages album={album} page={page} mobile={mobile} reduced={reduced} active={mode === 'BOOKLET_FOCUS'} onReadyChange={setDetailsReady} onPageTurnComplete={onPageTurnComplete} onPrevious={onPrevious} onNext={onNext} /></Suspense>
+        <Suspense fallback={null}><BookletPages album={album} page={page} mobile={mobile} reduced={reduced} active={mode === 'BOOKLET_FOCUS'} onReadyChange={setDetailsReady} onPageTurnComplete={onPageTurnComplete} onPrevious={onPrevious} onNext={onNext} onAssetError={onAssetError} /></Suspense>
       </group>}
       <group ref={cover} position={[0, 0, 0.035]}>
         <mesh position={[p1Width / 2, 0, 0]} castShadow><planeGeometry args={[p1Width, PAGE_HEIGHT]} /><PaperMaterial texture={p1} /></mesh>
@@ -961,14 +978,14 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
 type SceneProps = ExperienceProps & { onRenderActivityChange(active: boolean): void };
 
 function Scene(props: SceneProps) {
-  const { album, mode, page, mobile, playing, reduced, homeActivationKey, onOpen, onBooklet, onPlayer, onPrevious, onNext, onCdAnchor, onBookletBounds, onTransitionChange, onRenderActivityChange } = props;
+  const { album, mode, page, mobile, playing, reduced, homeActivationKey, onOpen, onBooklet, onPlayer, onPrevious, onNext, onCdAnchor, onBookletBounds, onTransitionChange, onRenderActivityChange, onAssetError } = props;
   const openPitch = mobile ? -0.1 : 0;
   const wantsInterior = Boolean(props.preloadInterior || mode !== 'CLOSED');
   const [interiorRequested, setInteriorRequested] = useState(wantsInterior);
   if (wantsInterior && !interiorRequested) setInteriorRequested(true);
   // Retain loaded internals through CLOSE/HOME. Dispose only when the scene leaves.
   const loadInterior = wantsInterior || interiorRequested;
-  const textures = useCoreTextures(album, loadInterior);
+  const textures = useCoreTextures(album, loadInterior, onAssetError);
   const profile = useMemo(() => getPackageProfile(album), [album]);
   const { dimensions, paperThickness, halfDepth, frontCenterZ, backCenterZ } = profile;
   const panelWidth = dimensions.frontWidth;
@@ -1184,7 +1201,7 @@ function Scene(props: SceneProps) {
             {textures.interior && <>
               <mesh position={[0, 0, -paperThickness / 2 - SURFACE_OFFSET]} rotation={[0, Math.PI, 0]} userData={{ packageSurface: true }} receiveShadow><planeGeometry args={[panelWidth, PANEL]} /><PaperMaterial texture={textures.interior.interiorBooklet} /></mesh>
               <group position={[0, 0, 0.064]} rotation={[0, Math.PI, 0]}>
-                <BookletRig album={album} p1={textures.interior.p1} mode={mode} page={page} mobile={mobile} reduced={reduced} onBooklet={onBooklet} onSettled={setBookletSettled} onPageTurnComplete={() => props.onPageTurnComplete?.()} onPrevious={onPrevious} onNext={onNext} onBounds={onBookletBounds} />
+                <BookletRig album={album} p1={textures.interior.p1} mode={mode} page={page} mobile={mobile} reduced={reduced} onBooklet={onBooklet} onSettled={setBookletSettled} onPageTurnComplete={() => props.onPageTurnComplete?.()} onPrevious={onPrevious} onNext={onNext} onBounds={onBookletBounds} onAssetError={onAssetError} />
               </group>
             </>}
           </group>
@@ -1246,13 +1263,14 @@ export default function AlbumDetailExperience3D(props: ExperienceProps) {
   const continuous = needsContinuousAlbumFrames({
     mode: props.mode,
     playing: props.playing,
+    reduced: props.reduced,
     sceneTransitioning,
     pageTurning,
     sceneMotion,
   });
   const renderEnabled = props.renderEnabled !== false && documentVisible;
   return (
-    <Canvas aria-label={`열고 탐색할 수 있는 ${props.album.title} 3D 디지팩`} camera={{ position: [0, 0, 7], fov: 42 }} dpr={props.mobile ? [1, 1.5] : [1, 2]} frameloop={!renderEnabled ? 'never' : props.mode === 'CLOSED' ? 'always' : 'demand'} shadows="soft" gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }} onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}>
+    <Canvas aria-label={`열고 탐색할 수 있는 ${props.album.title} 3D 디지팩`} camera={{ position: [0, 0, 7], fov: 42 }} dpr={props.mobile ? [1, 1.5] : [1, 2]} frameloop={!renderEnabled ? 'never' : props.mode === 'CLOSED' && continuous ? 'always' : 'demand'} shadows="soft" gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }} onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}>
       <RenderScheduler active={props.mode !== 'CLOSED' && continuous} enabled={renderEnabled} motionKey={`${props.mode}:${renderEnabled}`} />
       <ambientLight intensity={1.05} />
       <directionalLight castShadow intensity={1.8} position={[4.5, 6, 7]} shadow-mapSize-width={props.mobile ? 512 : 1024} shadow-mapSize-height={props.mobile ? 512 : 1024} shadow-camera-left={-6} shadow-camera-right={6} shadow-camera-top={5} shadow-camera-bottom={-5} shadow-radius={props.mobile ? 5 : 7} shadow-bias={-0.0002} />

@@ -37,7 +37,7 @@
 .han-detail__editorial ol,.han-detail__editorial dl { margin:0; padding:0; list-style:none; }
 .han-detail__editorial li,.han-detail__editorial dl div { display:grid; grid-template-columns:45px 1fr auto; gap:20px; padding:13px 0; border-bottom:1px solid rgba(242,238,229,.12); }
 .han-detail__editorial dl div { grid-template-columns:minmax(190px,.5fr) 1fr; }.han-detail__editorial dd{margin:0}.han-detail__works{color:var(--han-accent);font-size:.7rem;letter-spacing:.14em}
-.han-detail--fallback { padding:calc(var(--header) + 50px) max(20px,5vw); }.han-detail--fallback>img{display:block;width:min(420px,100%);margin:40px 0}.han-detail__fallback-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}.han-detail__fallback-grid img{width:100%}
+.han-detail--fallback { padding:calc(var(--header) + 50px) max(20px,5vw);pointer-events:auto; }.han-detail--fallback>img{display:block;width:min(420px,100%);margin:40px 0}.han-detail__fallback-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}.han-detail__fallback-grid img{width:100%}
 
 @media(min-width:701px){
  .han-detail .album-open__actions{bottom:clamp(60px,8svh,84px);width:min(860px,68%)}
