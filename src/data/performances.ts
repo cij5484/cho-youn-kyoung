@@ -134,7 +134,7 @@ export const performances: Performance[] = [
     homeHero: { theme: 'haegeum-jeongak' },
     archiveLabel: 'HAEGEUM JEONGAK',
     listDescription: '해금상령산풀이·관악영산회상',
-    ticketPrice: '전석 초대석',
+    ticketPrice: '전석 무료',
     seating: '지정석',
     ageRestriction: '미취학 아동 입장 불가',
     introduction: [],
