@@ -51,6 +51,16 @@
   --works-row-wash: rgba(113, 93, 130, 0.1);
 }
 
+.works-archive__row--yeongsan-hoesang-2026 {
+  --works-row-accent: #8fc6d7;
+  --works-row-wash: rgba(20, 95, 125, 0.16);
+}
+
+.works-archive__row--pyeongjo-hoesang-2026 {
+  --works-row-accent: #b9a2cf;
+  --works-row-wash: rgba(128, 105, 154, 0.16);
+}
+
 .works-archive__row--ji-young-hee-ryu-haegeum-sanjo-2026 {
   --works-row-accent: #b87970;
   --works-row-wash: rgba(184, 121, 112, 0.08);

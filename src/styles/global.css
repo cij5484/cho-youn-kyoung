@@ -78,6 +78,16 @@ html[data-home-hero-theme="haegeum-jeongak"] .site-header {
   background: linear-gradient(180deg, rgba(239, 237, 242, .72), rgba(239, 237, 242, 0));
   box-shadow: none;
 }
+html[data-home-hero-work="haegeum-jeongak-2026-09-22"] .site-header {
+  background: linear-gradient(
+    180deg,
+    rgba(244, 243, 246, 0.96) 0%,
+    rgba(244, 243, 246, 0.8) 58%,
+    rgba(244, 243, 246, 0) 100%
+  );
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
 html[data-home-hero-theme="haegeum-jeongak"] .brand,
 html[data-home-hero-theme="haegeum-jeongak"] .desktop-nav a,
 html[data-home-hero-theme="haegeum-jeongak"] .menu-button { color: #29272d; }
@@ -1144,16 +1154,6 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .home-creative-credit
 @media (max-width: 760px) {
   :root {
     --header: 70px;
-  }
-  html[data-home-hero-work="haegeum-jeongak-2026-09-22"] .site-header {
-    background: linear-gradient(
-      180deg,
-      rgba(244, 243, 246, 0.94) 0%,
-      rgba(244, 243, 246, 0.72) 58%,
-      rgba(244, 243, 246, 0) 100%
-    );
-    -webkit-backdrop-filter: blur(2px);
-    backdrop-filter: blur(2px);
   }
   .desktop-nav {
     display: none;

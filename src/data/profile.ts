@@ -249,6 +249,13 @@ export const profile = {
     '전 부산예술중·고등학교 강사',
   ],
   performances: [
+    {
+      year: '2026',
+      title: '풀고, 엮다',
+      date: '2026-09-22',
+      description: '해금상령산풀이 · 관악영산회상',
+      href: '/performance/haegeum-jeongak-2026-09-22',
+    },
     { year: '2009', title: '활의 노래' },
     { year: '2011', title: '활의 노래Ⅱ' },
     { year: '2014', title: '편' },

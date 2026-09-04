@@ -19,7 +19,6 @@ const compareTimelineItems = (a: { item: ProfilePerformance; index: number }, b:
 };
 
 export function AboutPage() {
-  const featuredAlbum = profile.discography[0];
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const stripRef = useRef<HTMLDivElement>(null);
   const thumbnailRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -277,20 +276,45 @@ export function AboutPage() {
           </details>
         </Reveal>
 
-        {featuredAlbum && (
+        {profile.discography.length > 0 && (
           <Reveal as="section" className="about-section about-discography" aria-labelledby="discography-title">
             <div className="about-section__heading reveal__heading">
               <span>03</span>
               <h2 id="discography-title">DISCOGRAPHY</h2>
             </div>
-            <div className={`about-discography__item reveal__content${featuredAlbum.coverImage ? " has-cover" : ""}`}>
-              {featuredAlbum.coverImage && <SafeImage src={assetUrl(featuredAlbum.coverImage)} alt={`${featuredAlbum.title} 앨범 커버`} />}
-              <div>
-                <p>{featuredAlbum.year}</p>
-                <h3>「{featuredAlbum.title}」</h3>
-                <span>{featuredAlbum.description}</span>
-                {featuredAlbum.detailsPath && <Link to={featuredAlbum.detailsPath}>VIEW DETAILS</Link>}
-              </div>
+            <div className="about-discography__grid reveal__content">
+              {profile.discography.map((album) => {
+                const content = (
+                  <>
+                    <div className="about-discography__cover">
+                      {album.coverImage && (
+                        <SafeImage
+                          src={assetUrl(album.coverImage)}
+                          alt={`${album.title} 앨범 커버`}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      )}
+                    </div>
+                    <div className="about-discography__copy">
+                      <p>{album.year}</p>
+                      <h3>「{album.title}」</h3>
+                      <span>{album.description}</span>
+                      {album.detailsPath && <strong>VIEW ALBUM <i aria-hidden="true">→</i></strong>}
+                    </div>
+                  </>
+                );
+
+                return album.detailsPath ? (
+                  <Link className="about-discography__item" to={album.detailsPath} key={album.id}>
+                    {content}
+                  </Link>
+                ) : (
+                  <article className="about-discography__item" key={album.id}>
+                    {content}
+                  </article>
+                );
+              })}
             </div>
           </Reveal>
         )}
