@@ -152,6 +152,15 @@ export const performances: Performance[] = [
     ],
     collaborators: [
       {
+        id: 'kim-seong-jun',
+        name: '김성준',
+        role: '피리',
+        image: 'assets/people/kim-seong-jun/portrait.jpg',
+        shortBio: '부산대학교 교수. 한국 정악원 이사.',
+        fullBio: ['부산대학교 교수', '한국 정악원 이사', '박범훈류 피리산조 보존회 이사', '금정문화재단 이사'],
+        participatingWorks: ['관악영산회상'],
+      },
+      {
         id: 'heo-yu-jin',
         name: '허유진',
         role: '대금',
@@ -166,8 +175,17 @@ export const performances: Performance[] = [
         fullBio: ['現 국립부산국악원 기악단 부수석', '부산대학교 한국음악학과 및 동 대학원 졸업', '한양대학교 음악연주학 박사(D.M.A)', '서울시 무형유산 제25호 판소리고법 이수자'],
         participatingWorks: ['관악영산회상'],
       },
+      {
+        id: 'hong-se-a',
+        name: '홍세아',
+        role: '사회',
+        image: 'assets/people/hong-se-a/portrait.jpg',
+        shortBio: '국립부산국악원 학예연구사. 음악학 박사(Ph.D.).',
+        fullBio: ['現 국립부산국악원 학예연구사', '음악학 박사(Ph.D.)', '국가무형유산 종묘제례악 이수자', '국가유산진흥원 예술단 연주단원 역임'],
+        participatingWorks: ['풀고, 엮다'],
+      },
     ],
-    simpleCast: [{ role: '해금', name: '조윤경' }, { role: '피리', name: '김성준' }, { role: '대금', name: '허유진' }, { role: '장구', name: '윤승환' }],
+    simpleCast: [{ role: '해금', name: '조윤경' }, { role: '피리', name: '김성준' }, { role: '장구', name: '윤승환' }, { role: '대금', name: '허유진' }, { role: '사회', name: '홍세아' }],
     archiveMaterials: [
       { label: 'POSTER', viewLabel: 'VIEW POSTER', previewImages: [{ src: 'assets/performances/haegeum-jeongak-2026-09-22/viewer/poster.webp', alt: '풀고, 엮다 공연 포스터' }], downloadUrl: 'assets/performances/haegeum-jeongak-2026-09-22/downloads/poster.pdf', downloadLabel: 'DOWNLOAD PDF' },
       { label: 'LEAFLET', viewLabel: 'VIEW LEAFLET', previewImages: [{ src: 'assets/performances/haegeum-jeongak-2026-09-22/viewer/leaflet-outer.webp', alt: '풀고, 엮다 리플렛 바깥면', label: 'OUTER' }, { src: 'assets/performances/haegeum-jeongak-2026-09-22/viewer/leaflet-inner.webp', alt: '풀고, 엮다 리플렛 안쪽면', label: 'INNER' }], downloadUrl: 'assets/performances/haegeum-jeongak-2026-09-22/downloads/leaflet.pdf', downloadLabel: 'DOWNLOAD PDF' },
