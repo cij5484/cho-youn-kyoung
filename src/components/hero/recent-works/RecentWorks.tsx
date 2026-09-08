@@ -20,6 +20,17 @@ export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) 
   const interactionPointerTypeRef = useRef<string | null>(null);
   const suppressFocusOpenRef = useRef(false);
   const scrollFrameRef = useRef<number | null>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancelClose = () => {
+    if (closeTimerRef.current !== null) clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = null;
+  };
+  const groups = (['PERFORMANCE', 'ALBUM'] as const).map((type) => ({
+    type,
+    label: type === 'PERFORMANCE' ? '독주회' : '앨범',
+    items: works.map((work, index) => ({ work, index })).filter(({ work }) => work.workType === type),
+  })).filter((group) => group.items.length > 0);
+  const orderedIndices = groups.flatMap((group) => group.items.map(({ index }) => index));
 
   const hasFineHoverPointer = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   const warmWork = (work: HomeHeroSlide) => {
@@ -42,6 +53,7 @@ export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) 
 
   useEffect(() => () => {
     if (scrollFrameRef.current !== null) cancelAnimationFrame(scrollFrameRef.current);
+    if (closeTimerRef.current !== null) clearTimeout(closeTimerRef.current);
   }, []);
 
   const updateMobilePreview = () => {
@@ -83,12 +95,13 @@ export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) 
   const handleCardKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
-    const nextIndex = event.key === 'Home'
+    const position = orderedIndices.indexOf(index);
+    const nextPosition = event.key === 'Home'
       ? 0
       : event.key === 'End'
         ? works.length - 1
-        : (index + (event.key === 'ArrowRight' ? 1 : -1) + works.length) % works.length;
-    cardRefs.current[nextIndex]?.focus();
+        : (position + (event.key === 'ArrowRight' ? 1 : -1) + works.length) % works.length;
+    cardRefs.current[orderedIndices[nextPosition]]?.focus();
   };
 
   return (
@@ -97,12 +110,20 @@ export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) 
       ref={rootRef}
       onPointerDownCapture={(event) => { interactionPointerTypeRef.current = event.pointerType; }}
       onPointerEnter={(event) => {
+        cancelClose();
         if (event.pointerType === 'mouse' && hasFineHoverPointer()) setIsOpen(true);
       }}
       onPointerLeave={(event) => {
-        if (event.pointerType === 'mouse' && hasFineHoverPointer()) setIsOpen(false);
+        if (event.pointerType === 'mouse' && hasFineHoverPointer()) {
+          cancelClose();
+          closeTimerRef.current = setTimeout(() => {
+            setIsOpen(false);
+            setInteractionIndex(null);
+          }, 150);
+        }
       }}
       onFocus={() => {
+        cancelClose();
         if (suppressFocusOpenRef.current) return;
         if (
           interactionPointerTypeRef.current === null
@@ -126,15 +147,18 @@ export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) 
           interactionPointerTypeRef.current = null;
         }}
       >
-        <span>RECENT WORKS</span>
+        <span>EXPLORE WORKS</span>
         <span className="recent-works__trigger-mark" aria-hidden="true">{isOpen ? '−' : '+'}</span>
       </button>
-      <div className="recent-works__panel" id="recent-works-list" aria-label="최근 작품 선택">
+      <div className="recent-works__panel" id="recent-works-list" aria-label="작품 둘러보기">
         <div className="recent-works__track" role="listbox" aria-label="HOME Hero 작품" ref={trackRef} onScroll={updateMobilePreview}>
-          {works.map((work, index) => (
+          {groups.map((group) => (
+            <div className="recent-works__group" role="group" aria-labelledby={`recent-works-${group.type}`} key={group.type}>
+              <div className="recent-works__group-label" id={`recent-works-${group.type}`}>{group.label}</div>
+              <div className="recent-works__shelf" role="presentation">
+          {group.items.map(({ work, index }) => (
             <button
               className={`recent-work-card recent-work-card--${work.workType.toLowerCase()}${index === activeIndex && interactionIndex === null ? ' is-active' : ''}${index === interactionIndex ? ' is-interacting' : ''}${index === previewIndex ? ' is-preview' : ''}`}
-              style={{ '--work-index': index, '--work-count': works.length } as React.CSSProperties}
               type="button"
               role="option"
               aria-selected={index === activeIndex}
@@ -159,12 +183,14 @@ export function RecentWorks({ works, activeIndex, onSelect }: RecentWorksProps) 
                 <img src={`${import.meta.env.BASE_URL}${work.cardImage.replace(/^\//, '')}`} alt="" loading="lazy" />
               </span>
               <span className="recent-work-card__meta">
-                <span className="recent-work-card__type">{work.workType}</span>
                 <strong>{work.cardTitle ?? work.title}</strong>
                 {work.cardSubtitle ? <span>{work.cardSubtitle}</span> : null}
                 <span>{work.displayDate}</span>
               </span>
             </button>
+          ))}
+              </div>
+            </div>
           ))}
         </div>
       </div>

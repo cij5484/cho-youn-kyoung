@@ -783,12 +783,11 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .home-creative-credit
   --credit-personal-color: rgba(242, 238, 229, .58);
 }
 .recent-works {
-  --recent-work-card-step: 85px;
   position: absolute;
   z-index: 8;
   left: 50%;
   bottom: clamp(20px, 3.5vh, 38px);
-  width: min(620px, calc(100% - 40px));
+  width: min(1100px, calc(100% - 48px));
   transform: translateX(-50%);
   color: rgba(241, 237, 229, 0.88);
 }
@@ -824,7 +823,7 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .home-creative-credit
   left: 50%;
   bottom: 34px;
   width: 100%;
-  height: 230px;
+  height: min(340px, calc(100svh - 140px));
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
@@ -840,58 +839,87 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .home-creative-credit
 }
 .recent-works__track {
   position: relative;
+  display: flex;
+  gap: 32px;
   width: 100%;
   height: 100%;
+  overflow: auto;
+  padding: 16px 20px 20px;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scroll-padding-inline: 20px;
+}
+.recent-works__group {
+  flex: 0 0 auto;
+}
+.recent-works__group:first-child {
+  margin-left: auto;
+}
+.recent-works__group:last-child {
+  margin-right: auto;
+}
+.recent-works__group + .recent-works__group {
+  border-left: 1px solid currentColor;
+  padding-left: 32px;
+}
+.recent-works__group-label {
+  margin-bottom: 20px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+.recent-works__shelf {
+  display: flex;
+  align-items: flex-start;
+  gap: 22px;
 }
 .recent-work-card {
-  --fan-position: calc(var(--work-index) - (var(--work-count) - 1) / 2);
-  position: absolute;
-  z-index: calc(var(--work-index) + 1);
-  left: 50%;
-  bottom: 8px;
-  width: 118px;
+  position: relative;
+  flex: 0 0 124px;
+  width: 124px;
   padding: 0;
   border: 0;
   background: transparent;
   color: inherit;
   text-align: left;
   cursor: pointer;
-  opacity: 0.72;
-  transform: translateX(calc(-50% + var(--fan-position) * var(--recent-work-card-step))) rotate(calc(var(--fan-position) * 1.5deg));
-  transform-origin: 50% 110%;
+  opacity: 0.88;
   transition: opacity 260ms ease, transform 540ms cubic-bezier(0.22, 1, 0.36, 1), filter 260ms ease;
 }
 .recent-work-card.is-active {
-  z-index: calc(var(--work-count) + 1);
   opacity: 1;
-  transform: translateX(calc(-50% + var(--fan-position) * var(--recent-work-card-step))) translateY(-8px) rotate(calc(var(--fan-position) * 0.5deg)) scale(1.07);
+}
+.recent-work-card[aria-selected="true"] .recent-work-card__meta {
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 6px;
 }
 .recent-work-card.is-interacting {
-  z-index: calc(var(--work-count) + 2);
   opacity: 1;
   filter: drop-shadow(0 18px 18px rgba(0, 0, 0, 0.28));
-  transform: translateX(calc(-50% + var(--fan-position) * var(--recent-work-card-step))) translateY(-20px) rotate(calc(var(--fan-position) * 0.25deg)) scale(1.09);
+  transform: translateY(-10px);
 }
 .recent-work-card__image-wrap {
-  display: block;
+  display: flex;
+  align-items: flex-end;
   aspect-ratio: 0.707 / 1;
   overflow: hidden;
-  background: #151515;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.26);
+  background: transparent;
 }
 .recent-work-card__image-wrap img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: bottom;
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.22));
 }
 .recent-work-card--album .recent-work-card__image-wrap {
-  aspect-ratio: auto;
+  aspect-ratio: 0.707 / 1;
   background: transparent;
 }
 .recent-work-card--album .recent-work-card__image-wrap img {
   display: block;
-  height: auto;
-  object-fit: initial;
+  height: 100%;
+  object-fit: contain;
 }
 .recent-work-card__meta {
   display: grid;
@@ -1299,20 +1327,26 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .home-creative-credit
   }
   .recent-works__panel {
     bottom: 38px;
-    height: 216px;
+    height: min(310px, calc(100svh - 130px));
     overflow: hidden;
     background: linear-gradient(180deg, transparent, rgba(8, 9, 9, 0.46));
   }
   .recent-works__track {
     display: flex;
-    align-items: end;
-    gap: 16px;
+    align-items: start;
+    gap: 24px;
     overflow-x: auto;
-    padding: 12px calc(50% - 54px) 14px;
-    scroll-snap-type: x mandatory;
+    padding: 12px 24px 14px;
+    scroll-snap-type: x proximity;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
     touch-action: pan-x;
+  }
+  .recent-works__group + .recent-works__group {
+    padding-left: 24px;
+  }
+  .recent-works__shelf {
+    gap: 18px;
   }
   .recent-work-card {
     position: relative;
@@ -1325,12 +1359,12 @@ html[data-home-hero-work="han-beom-su-haegeum-sanjo-2020"] .home-creative-credit
   .recent-work-card.is-active,
   .recent-work-card.is-preview,
   .recent-work-card.is-interacting {
-    transform: translateY(-5px) scale(1.04);
+    transform: translateY(-5px);
     opacity: 1;
   }
   .recent-work-card:not(.is-preview) {
-    opacity: 0.68;
-    transform: scale(0.97);
+    opacity: 0.88;
+    transform: none;
   }
   .sanjo-hero {
     display: flex;
