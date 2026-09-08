@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { Group, Mesh, MeshBasicMaterial, BoxGeometry, Quaternion, Scene, Vector3 } from 'three';
 import { DiscMotion } from '../src/components/album/detail/discMotion.ts';
 import { PackageFade, PACKAGE_FADE_EPSILON } from '../src/components/album/detail/packageFade.ts';
+import { packageAlignmentError, prepareFrontFacingPackage } from '../src/components/album/detail/packageAlignment.ts';
 
 function fixture() {
   const scene = new Scene();
@@ -17,6 +18,43 @@ function fixture() {
   tray.position.set(0.7, 0, 0);
   return { scene, pack, tray, disc, motion: new DiscMotion() };
 }
+
+test('opening from any HOME rotation targets the nearest front and clears tilt/inertia', () => {
+  for (const yaw of [-19, -Math.PI, -1.4, 0.12, 1.8, Math.PI, 7.8, 22]) {
+    const rotation = { x: 0.42, y: yaw };
+    const inertia = { x: 1.2, y: -2.1 };
+    const target = prepareFrontFacingPackage(rotation, inertia);
+    assert.equal(rotation.x, 0);
+    assert.equal(rotation.y, target);
+    assert.deepEqual(inertia, { x: 0, y: 0 });
+    assert.ok(Math.abs(target - yaw) <= Math.PI + 1e-10);
+    assert.ok(Math.abs(Math.sin(target)) < 1e-10);
+    assert.ok(Math.cos(target) > 0.99999);
+  }
+});
+
+test('responsive re-entry cannot finish alignment using only the reset target', () => {
+  const rendered = { x: 0.3, y: 1.6 };
+  const control = { ...rendered };
+  const inertia = { x: 0.4, y: 0.8 };
+  let target = prepareFrontFacingPackage(control, inertia);
+  for (let frame = 0; frame < 180; frame++) {
+    // Simulate mobile detection / repeated effect setup during entry.
+    if (frame < 12) target = prepareFrontFacingPackage(control, inertia);
+    if (frame === 0) assert.ok(packageAlignmentError(rendered, target) > 1);
+    rendered.x += (0 - rendered.x) * 0.1;
+    rendered.y += (target - rendered.y) * 0.1;
+  }
+  assert.ok(packageAlignmentError(rendered, target) < 0.0001);
+});
+
+test('reduced-motion entry settles to the front in one frame', () => {
+  const rendered = { x: -0.4, y: 5.2 };
+  const control = { ...rendered };
+  const target = prepareFrontFacingPackage(control, { x: 0, y: 1 });
+  Object.assign(rendered, control);
+  assert.equal(packageAlignmentError(rendered, target), 0);
+});
 
 test('seated disc is mounted to the translated, rotated and scaled tray', () => {
   const { scene, tray, disc, motion } = fixture();
