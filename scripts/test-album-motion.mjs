@@ -141,6 +141,46 @@ test('shell fade preserves base opacity, excludes disc and survives recapture', 
   shell.geometry.dispose(); disc.geometry.dispose(); paper.dispose(); plastic.dispose(); disc.material.dispose();
 });
 
+test('booklet focus hides the package but preserves both detached paper faces and their return', () => {
+  const scene = new Scene();
+  const pack = new Group();
+  const booklet = new Group();
+  const front = new MeshBasicMaterial();
+  const back = new MeshBasicMaterial();
+  const paper = new Mesh(new BoxGeometry(), [front, back]);
+  paper.userData = { packageSurface: true, bookletSurface: true };
+  const shell = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+  shell.userData.packageSurface = true;
+  const tray = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+  scene.add(pack);
+  pack.add(shell, tray, booklet);
+  booklet.add(paper);
+  const fade = new PackageFade();
+  fade.capture(pack);
+  // Parent fade runs before the booklet detaches, including reduced motion.
+  fade.update(0, true);
+  scene.attach(booklet);
+  const visible = [];
+  scene.traverseVisible((node) => { if (node instanceof Mesh) visible.push(node); });
+  assert.deepEqual(visible, [paper]);
+  for (const material of [front, back]) {
+    assert.equal(material.opacity, 1);
+    assert.equal(material.depthWrite, true);
+  }
+  fade.update(0.25, true);
+  assert.equal(front.opacity, 1); // Returning paper must not blink with the shell.
+  fade.update(1, true);
+  pack.attach(booklet);
+  assert.equal(pack.visible, true);
+  assert.equal(shell.material.opacity, 1);
+  fade.update(0, false);
+  assert.equal(front.opacity, 0);
+  fade.update(0, true); // Same shell opacity, different focus owner.
+  assert.equal(front.opacity, 1);
+  paper.geometry.dispose(); shell.geometry.dispose(); tray.geometry.dispose();
+  front.dispose(); back.dispose(); shell.material.dispose(); tray.material.dispose();
+});
+
 test('player hides the entire digipack, including both booklet faces and untagged tray parts', () => {
   const { scene, pack, tray, disc, motion } = fixture();
   const front = new MeshBasicMaterial();

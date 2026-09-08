@@ -805,9 +805,10 @@ function Scene(props: SceneProps) {
     const targetZ = packageMode === 'BOOKLET_FOCUS' ? -1 : packageMode === 'PLAYER_FOCUS' ? -2.4 : 0;
     packageRig.current.position.z = THREE.MathUtils.lerp(packageRig.current.position.z, targetZ, ease);
     packageRig.current.scale.setScalar(THREE.MathUtils.lerp(packageRig.current.scale.x, scale, ease));
-    const fadeTarget = mode === 'PLAYER_FOCUS' ? 0 : 1;
+    const hidePackage = mode === 'PLAYER_FOCUS' || mode === 'BOOKLET_FOCUS';
+    const fadeTarget = hidePackage ? 0 : 1;
     packageOpacity.current = THREE.MathUtils.lerp(packageOpacity.current, fadeTarget, ease);
-    shellFade.update(packageOpacity.current);
+    shellFade.update(packageOpacity.current, mode !== 'PLAYER_FOCUS');
     const packageError = Math.abs(packageOpacity.current - fadeTarget) + Math.abs(packageRig.current.position.x - x)
       + Math.abs(packageRig.current.position.y - y)
       + Math.abs(packageRig.current.position.z - targetZ)
@@ -825,7 +826,7 @@ function Scene(props: SceneProps) {
       && openingFromClosedComplete
       && hingeError < 0.04
       && packageError < 0.055
-      && (mode !== 'PLAYER_FOCUS' || !packageRig.current.visible)
+      && (!hidePackage || !packageRig.current.visible)
       && (mode === 'CLOSED' || Boolean(textures.interior))
       && bookletSettled.current
       && traySettled.current
