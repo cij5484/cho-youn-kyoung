@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { Group, Mesh, MeshBasicMaterial, BoxGeometry, Quaternion, Scene, Vector3 } from 'three';
 import { DiscMotion } from '../src/components/album/detail/discMotion.ts';
 import { PackageFade, PACKAGE_FADE_EPSILON } from '../src/components/album/detail/packageFade.ts';
+import { packageAlignmentError, prepareFrontFacingPackage } from '../src/components/album/detail/packageAlignment.ts';
 
 function fixture() {
   const scene = new Scene();
@@ -17,6 +18,43 @@ function fixture() {
   tray.position.set(0.7, 0, 0);
   return { scene, pack, tray, disc, motion: new DiscMotion() };
 }
+
+test('opening from any HOME rotation targets the nearest front and clears tilt/inertia', () => {
+  for (const yaw of [-19, -Math.PI, -1.4, 0.12, 1.8, Math.PI, 7.8, 22]) {
+    const rotation = { x: 0.42, y: yaw };
+    const inertia = { x: 1.2, y: -2.1 };
+    const target = prepareFrontFacingPackage(rotation, inertia);
+    assert.equal(rotation.x, 0);
+    assert.equal(rotation.y, target);
+    assert.deepEqual(inertia, { x: 0, y: 0 });
+    assert.ok(Math.abs(target - yaw) <= Math.PI + 1e-10);
+    assert.ok(Math.abs(Math.sin(target)) < 1e-10);
+    assert.ok(Math.cos(target) > 0.99999);
+  }
+});
+
+test('responsive re-entry cannot finish alignment using only the reset target', () => {
+  const rendered = { x: 0.3, y: 1.6 };
+  const control = { ...rendered };
+  const inertia = { x: 0.4, y: 0.8 };
+  let target = prepareFrontFacingPackage(control, inertia);
+  for (let frame = 0; frame < 180; frame++) {
+    // Simulate mobile detection / repeated effect setup during entry.
+    if (frame < 12) target = prepareFrontFacingPackage(control, inertia);
+    if (frame === 0) assert.ok(packageAlignmentError(rendered, target) > 1);
+    rendered.x += (0 - rendered.x) * 0.1;
+    rendered.y += (target - rendered.y) * 0.1;
+  }
+  assert.ok(packageAlignmentError(rendered, target) < 0.0001);
+});
+
+test('reduced-motion entry settles to the front in one frame', () => {
+  const rendered = { x: -0.4, y: 5.2 };
+  const control = { ...rendered };
+  const target = prepareFrontFacingPackage(control, { x: 0, y: 1 });
+  Object.assign(rendered, control);
+  assert.equal(packageAlignmentError(rendered, target), 0);
+});
 
 test('seated disc is mounted to the translated, rotated and scaled tray', () => {
   const { scene, tray, disc, motion } = fixture();
@@ -101,6 +139,46 @@ test('shell fade preserves base opacity, excludes disc and survives recapture', 
   assert.equal(plastic.opacity, 0.24);
   assert.equal(plastic.depthWrite, false);
   shell.geometry.dispose(); disc.geometry.dispose(); paper.dispose(); plastic.dispose(); disc.material.dispose();
+});
+
+test('booklet focus hides the package but preserves both detached paper faces and their return', () => {
+  const scene = new Scene();
+  const pack = new Group();
+  const booklet = new Group();
+  const front = new MeshBasicMaterial();
+  const back = new MeshBasicMaterial();
+  const paper = new Mesh(new BoxGeometry(), [front, back]);
+  paper.userData = { packageSurface: true, bookletSurface: true };
+  const shell = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+  shell.userData.packageSurface = true;
+  const tray = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+  scene.add(pack);
+  pack.add(shell, tray, booklet);
+  booklet.add(paper);
+  const fade = new PackageFade();
+  fade.capture(pack);
+  // Parent fade runs before the booklet detaches, including reduced motion.
+  fade.update(0, true);
+  scene.attach(booklet);
+  const visible = [];
+  scene.traverseVisible((node) => { if (node instanceof Mesh) visible.push(node); });
+  assert.deepEqual(visible, [paper]);
+  for (const material of [front, back]) {
+    assert.equal(material.opacity, 1);
+    assert.equal(material.depthWrite, true);
+  }
+  fade.update(0.25, true);
+  assert.equal(front.opacity, 1); // Returning paper must not blink with the shell.
+  fade.update(1, true);
+  pack.attach(booklet);
+  assert.equal(pack.visible, true);
+  assert.equal(shell.material.opacity, 1);
+  fade.update(0, false);
+  assert.equal(front.opacity, 0);
+  fade.update(0, true); // Same shell opacity, different focus owner.
+  assert.equal(front.opacity, 1);
+  paper.geometry.dispose(); shell.geometry.dispose(); tray.geometry.dispose();
+  front.dispose(); back.dispose(); shell.material.dispose(); tray.material.dispose();
 });
 
 test('player hides the entire digipack, including both booklet faces and untagged tray parts', () => {

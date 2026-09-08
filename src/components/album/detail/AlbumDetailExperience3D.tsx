@@ -10,6 +10,7 @@ import { getPackageProfile } from './packageProfile';
 import type { PackageProfile } from './packageProfile';
 import { DiscMotion, DISC_SEATED_EPSILON } from './discMotion';
 import { PackageFade } from './packageFade';
+import { packageAlignmentError, prepareFrontFacingPackage } from './packageAlignment';
 import { needsContinuousAlbumFrames } from './renderPolicy';
 import { PhysicalBooklet } from './PhysicalBooklet';
 import { bookletReadingPose } from './bookletSheets';
@@ -688,7 +689,7 @@ type SceneProps = ExperienceProps & { onRenderActivityChange(active: boolean): v
 
 function Scene(props: SceneProps) {
   const { album, mode, page, mobile, playing, reduced, homeActivationKey, onOpen, onBooklet, onPlayer, onPrevious, onNext, onCdAnchor, onBookletBounds, onTransitionChange, onRenderActivityChange, onAssetError } = props;
-  const openPitch = mobile ? -0.1 : 0;
+  const openPitch = 0;
   const wantsInterior = Boolean(props.preloadInterior || mode !== 'CLOSED');
   const [interiorRequested, setInteriorRequested] = useState(wantsInterior);
   if (wantsInterior && !interiorRequested) setInteriorRequested(true);
@@ -734,24 +735,21 @@ function Scene(props: SceneProps) {
 
   useEffect(() => {
     const priorMode = previousMode.current;
-    const openingFromClosed = priorMode === 'CLOSED' && mode !== 'CLOSED';
     const enteringBooklet = priorMode === 'ALBUM_OPEN' && mode === 'BOOKLET_FOCUS';
     const leavingBooklet = priorMode === 'BOOKLET_FOCUS' && mode === 'ALBUM_OPEN';
     if (enteringBooklet || leavingBooklet) bookletSettled.current = false;
-    if (openingFromClosed) {
+    if (mode !== 'CLOSED') {
       autoRotate.current = false;
       onRenderActivityChange(false);
-      inertia.current = { x: 0, y: 0 };
-      alignedYaw.current = Math.round(rotation.current.y / (Math.PI * 2)) * Math.PI * 2;
+      alignedYaw.current = prepareFrontFacingPackage(rotation.current, inertia.current);
+      const activeDrag = drag.current;
+      if (activeDrag?.canvas.hasPointerCapture(activeDrag.id)) activeDrag.canvas.releasePointerCapture(activeDrag.id);
+      drag.current = null;
+      interactionActive.current = false;
+      // Responsive updates or callback changes must not prematurely mark
+      // the inherited HOME pose aligned while it is still rotating.
       aligned.current = false;
       openingPhaseRef.current = 'OPENING';
-    } else if (mode !== 'CLOSED') {
-      if (!mobile) {
-        rotation.current.x = openPitch;
-        rotation.current.y = alignedYaw.current;
-      }
-      aligned.current = true;
-      openingPhaseRef.current = 'IDLE';
     } else {
       aligned.current = true;
       openingPhaseRef.current = 'IDLE';
@@ -783,10 +781,6 @@ function Scene(props: SceneProps) {
       inertia.current.y *= decay;
     }
     const ease = reduced ? 1 : 1 - Math.exp(-6.5 * step);
-    if (!closed && !aligned.current) {
-      rotation.current.x = THREE.MathUtils.lerp(rotation.current.x, openPitch, ease);
-      rotation.current.y = THREE.MathUtils.lerp(rotation.current.y, alignedYaw.current, ease);
-    }
     packageRig.current.rotation.x = THREE.MathUtils.lerp(packageRig.current.rotation.x, closed || openInteractive ? rotation.current.x : openPitch, ease);
     packageRig.current.rotation.y = THREE.MathUtils.lerp(packageRig.current.rotation.y, closed || openInteractive ? rotation.current.y : alignedYaw.current, ease);
     const targetHinge = closed ? 0 : OPEN_ANGLE;
@@ -811,16 +805,19 @@ function Scene(props: SceneProps) {
     const targetZ = packageMode === 'BOOKLET_FOCUS' ? -1 : packageMode === 'PLAYER_FOCUS' ? -2.4 : 0;
     packageRig.current.position.z = THREE.MathUtils.lerp(packageRig.current.position.z, targetZ, ease);
     packageRig.current.scale.setScalar(THREE.MathUtils.lerp(packageRig.current.scale.x, scale, ease));
-    const fadeTarget = mode === 'PLAYER_FOCUS' ? 0 : 1;
+    const hidePackage = mode === 'PLAYER_FOCUS' || mode === 'BOOKLET_FOCUS';
+    const fadeTarget = hidePackage ? 0 : 1;
     packageOpacity.current = THREE.MathUtils.lerp(packageOpacity.current, fadeTarget, ease);
-    shellFade.update(packageOpacity.current);
+    shellFade.update(packageOpacity.current, mode !== 'PLAYER_FOCUS');
     const packageError = Math.abs(packageOpacity.current - fadeTarget) + Math.abs(packageRig.current.position.x - x)
       + Math.abs(packageRig.current.position.y - y)
       + Math.abs(packageRig.current.position.z - targetZ)
       + Math.abs(packageRig.current.scale.x - scale);
     const hingeError = Math.abs(hinge.current.rotation.y - targetHinge);
-    const alignmentError = closed ? 0 : Math.abs(rotation.current.x - openPitch) + Math.abs(rotation.current.y - alignedYaw.current);
+    const alignmentError = closed ? 0 : packageAlignmentError(packageRig.current.rotation, alignedYaw.current);
     if (openingPhaseRef.current === 'OPENING' && alignmentError < 0.025 && hingeError < 0.04 && packageError < 0.055) {
+      packageRig.current.rotation.x = openPitch;
+      packageRig.current.rotation.y = alignedYaw.current;
       aligned.current = true;
       openingPhaseRef.current = 'IDLE';
     }
@@ -829,7 +826,7 @@ function Scene(props: SceneProps) {
       && openingFromClosedComplete
       && hingeError < 0.04
       && packageError < 0.055
-      && (mode !== 'PLAYER_FOCUS' || !packageRig.current.visible)
+      && (!hidePackage || !packageRig.current.visible)
       && (mode === 'CLOSED' || Boolean(textures.interior))
       && bookletSettled.current
       && traySettled.current
