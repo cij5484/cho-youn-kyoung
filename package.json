@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "test:album": "node scripts/test-album-audio.mjs && node scripts/test-album-motion.mjs && node scripts/test-album-render-policy.mjs",
+    "test:album": "node scripts/test-album-audio.mjs && node scripts/test-album-motion.mjs && node scripts/test-album-render-policy.mjs && node scripts/test-album-booklet.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

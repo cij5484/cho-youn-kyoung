@@ -9,15 +9,17 @@ export function OuterPlasticMaterial() {
   return <meshPhysicalMaterial color="#ffffff" transparent opacity={0.24} roughness={0.24} metalness={0} clearcoat={0.12} clearcoatRoughness={0.78} transmission={0.16} thickness={0.018} depthWrite={false} />;
 }
 
-export function PrintedPaperMaterial({ texture, side = THREE.FrontSide, contrast = 1, gamma = 1 }: {
+export function PrintedPaperMaterial({ texture, side = THREE.FrontSide, contrast = 1, gamma = 1, attach }: {
   texture: THREE.Texture;
   side?: THREE.Side;
   contrast?: number;
   gamma?: number;
+  attach?: string;
 }) {
   const cacheKey = `printed-paper-${contrast.toFixed(3)}-${gamma.toFixed(3)}`;
   return (
     <meshBasicMaterial
+      attach={attach}
       map={texture}
       side={side}
       toneMapped={false}
