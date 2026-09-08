@@ -474,7 +474,6 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
   const [detailsReady, setDetailsReady] = useState(false);
   const [phase, setPhase] = useState<BookletPhase>(mode === 'BOOKLET_FOCUS' ? 'ENTERING' : 'RESTING');
   const previousMode = useRef(mode);
-  const opacity = useRef(1);
   const detached = useRef(false);
   const originalParent = useRef<THREE.Object3D | null>(null);
   const entryProgress = useRef(0);
@@ -616,21 +615,9 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
     foldProgress.current = reduced
       ? foldTarget
       : THREE.MathUtils.lerp(foldProgress.current, foldTarget, fadeEase);
-    opacity.current = THREE.MathUtils.lerp(opacity.current, mode === 'PLAYER_FOCUS' ? 0 : 1, ease);
     const transformError = rig.current.position.distanceTo(targetPosition)
       + rig.current.quaternion.angleTo(targetQuaternion)
       + rig.current.scale.distanceTo(targetScale);
-    // Opacity is only for leaving the entire booklet for PLAYER mode.
-    // Opening, closing and turning pages use opaque physical leaves.
-    rig.current.traverse((object) => {
-      if (!(object instanceof THREE.Mesh)) return;
-      const materials = Array.isArray(object.material) ? object.material : [object.material];
-      materials.forEach((material) => {
-        material.transparent = opacity.current < 0.999;
-        material.opacity = opacity.current;
-        material.depthWrite = opacity.current > 0.08;
-      });
-    });
 
     if (mode === 'BOOKLET_FOCUS' && phase === 'READING' && !mobile && onBounds) {
       const corners = scratch.corners;
@@ -676,8 +663,7 @@ function BookletRig({ album, p1, mode, page, mobile, reduced, onBooklet, onSettl
       }
       setPhase('RESTING');
     }
-    const opacitySettled = Math.abs(opacity.current - (mode === 'PLAYER_FOCUS' ? 0 : 1)) < 0.02;
-    const geometrySettled = transformError < 0.035 && foldError < 0.002 && opacitySettled && sheetsSettled.current;
+    const geometrySettled = transformError < 0.035 && foldError < 0.002 && sheetsSettled.current;
     const phaseMatchesMode = mode === 'BOOKLET_FOCUS' ? phase === 'READING' : phase === 'RESTING';
     onSettled(geometrySettled && phaseMatchesMode);
   }, -1);
@@ -808,7 +794,6 @@ function Scene(props: SceneProps) {
     const keepClosedTransform = packageMode === 'CLOSED';
     const mobileClosedScale = viewport.width * 0.69 / panelWidth;
     const mobileOpenScale = viewport.width * 0.9 / (panelWidth * 1.94);
-    const mobilePlayerScale = viewport.width * 0.62 / (CD_RADIUS * 2);
     const mobileOpenX = halfPanel * mobileOpenScale;
     const x = keepClosedTransform ? closedX : packageMode === 'BOOKLET_FOCUS' ? 1.05 : packageMode === 'PLAYER_FOCUS' ? (mobile ? 0 : 0.68) : (mobile ? mobileOpenX : halfPanel * 1.08);
     const y = mobile
@@ -819,11 +804,11 @@ function Scene(props: SceneProps) {
       : packageMode === 'BOOKLET_FOCUS'
         ? (mobile ? mobileOpenScale : 0.76)
         : packageMode === 'PLAYER_FOCUS'
-          ? (mobile ? mobilePlayerScale : 0.82)
+          ? (mobile ? mobileOpenScale * 0.72 : 0.78)
           : (mobile ? mobileOpenScale : 1.08);
     packageRig.current.position.x = THREE.MathUtils.lerp(packageRig.current.position.x, x, ease);
     packageRig.current.position.y = THREE.MathUtils.lerp(packageRig.current.position.y, y, ease);
-    const targetZ = packageMode === 'BOOKLET_FOCUS' ? -1 : packageMode === 'PLAYER_FOCUS' ? -0.9 : 0;
+    const targetZ = packageMode === 'BOOKLET_FOCUS' ? -1 : packageMode === 'PLAYER_FOCUS' ? -2.4 : 0;
     packageRig.current.position.z = THREE.MathUtils.lerp(packageRig.current.position.z, targetZ, ease);
     packageRig.current.scale.setScalar(THREE.MathUtils.lerp(packageRig.current.scale.x, scale, ease));
     const fadeTarget = mode === 'PLAYER_FOCUS' ? 0 : 1;
@@ -844,6 +829,7 @@ function Scene(props: SceneProps) {
       && openingFromClosedComplete
       && hingeError < 0.04
       && packageError < 0.055
+      && (mode !== 'PLAYER_FOCUS' || !packageRig.current.visible)
       && (mode === 'CLOSED' || Boolean(textures.interior))
       && bookletSettled.current
       && traySettled.current

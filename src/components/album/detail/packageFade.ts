@@ -1,12 +1,16 @@
 import { Group, Material, Mesh } from 'three';
 
-/** Only shell surfaces fade here; tray, booklet and disc own their materials. */
+export const PACKAGE_FADE_EPSILON = 0.01;
+
+/** One fade owner for shell + booklet; the detached player disc is excluded. */
 export class PackageFade {
+  private root: Group | null = null;
   private entries: Array<{ material: Material; opacity: number; depthWrite: boolean }> = [];
   private originals = new WeakMap<Material, { opacity: number; depthWrite: boolean }>();
   private lastOpacity = Number.NaN;
 
   capture(root: Group | null) {
+    this.root = root;
     this.entries = [];
     this.lastOpacity = Number.NaN;
     root?.traverse((object) => {
@@ -22,11 +26,15 @@ export class PackageFade {
   }
 
   update(opacity: number) {
-    if (Math.abs(this.lastOpacity - opacity) <= 0.001) return;
+    const applied = opacity <= PACKAGE_FADE_EPSILON ? 0 : opacity >= 1 - PACKAGE_FADE_EPSILON ? 1 : opacity;
+    // Transparent materials (including transmission/shadows) are not a
+    // substitute for removing the whole package from the render tree.
+    if (this.root) this.root.visible = applied > 0;
+    if (applied === this.lastOpacity) return;
     for (const entry of this.entries) {
-      entry.material.opacity = entry.opacity * opacity;
-      entry.material.depthWrite = entry.depthWrite && opacity > 0.99;
+      entry.material.opacity = entry.opacity * applied;
+      entry.material.depthWrite = entry.depthWrite && applied > 0.99;
     }
-    this.lastOpacity = opacity;
+    this.lastOpacity = applied;
   }
 }

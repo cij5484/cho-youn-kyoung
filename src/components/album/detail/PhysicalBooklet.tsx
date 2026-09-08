@@ -139,6 +139,7 @@ export function PhysicalBooklet({ album, cover, width, height, page, mobile, ena
       key={leaf.front}
       ref={(mesh) => { meshes.current[index] = mesh; }}
       geometry={geometries[index]}
+      userData={{ packageSurface: true }}
       castShadow
       receiveShadow
       frustumCulled={false}

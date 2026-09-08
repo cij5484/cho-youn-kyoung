@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Group, Mesh, MeshBasicMaterial, BoxGeometry, Quaternion, Scene, Vector3 } from 'three';
 import { DiscMotion } from '../src/components/album/detail/discMotion.ts';
-import { PackageFade } from '../src/components/album/detail/packageFade.ts';
+import { PackageFade, PACKAGE_FADE_EPSILON } from '../src/components/album/detail/packageFade.ts';
 
 function fixture() {
   const scene = new Scene();
@@ -101,4 +101,64 @@ test('shell fade preserves base opacity, excludes disc and survives recapture', 
   assert.equal(plastic.opacity, 0.24);
   assert.equal(plastic.depthWrite, false);
   shell.geometry.dispose(); disc.geometry.dispose(); paper.dispose(); plastic.dispose(); disc.material.dispose();
+});
+
+test('player hides the entire digipack, including both booklet faces and untagged tray parts', () => {
+  const { scene, pack, tray, disc, motion } = fixture();
+  const front = new MeshBasicMaterial();
+  const back = new MeshBasicMaterial();
+  const leaf = new Mesh(new BoxGeometry(), [front, back]);
+  leaf.userData.packageSurface = true;
+  const accent = new Mesh(new BoxGeometry(), new MeshBasicMaterial({ transparent: true, opacity: 0.5 }));
+  const discSurface = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+  pack.add(leaf);
+  tray.add(accent);
+  disc.add(discSurface);
+  motion.step(disc, tray, scene, 0.06, false, 0, 0.7, 1.72, 1);
+  const fade = new PackageFade();
+  fade.capture(pack);
+  fade.update(0.5);
+  assert.equal(front.opacity, 0.5);
+  assert.equal(back.opacity, 0.5);
+  assert.equal(discSurface.material.opacity, 1);
+  // Match the frame order: parent fade runs before the disc detaches.
+  fade.update(PACKAGE_FADE_EPSILON / 2);
+  motion.step(disc, tray, scene, 0.06, true, 0, 0.7, 1.72, 1);
+  assert.equal(pack.visible, false);
+  assert.equal(front.opacity, 0);
+  assert.equal(back.opacity, 0);
+  assert.equal(front.depthWrite, false);
+  const visible = [];
+  scene.traverseVisible((object) => { if (object instanceof Mesh) visible.push(object); });
+  assert.deepEqual(visible, [discSurface], 'only the CD remains behind its transparent hub / hole');
+  fade.update(1);
+  motion.step(disc, tray, scene, 0.06, false, 0, 0.7, 1.72, 1);
+  assert.equal(pack.visible, true);
+  assert.equal(front.opacity, 1);
+  assert.equal(back.opacity, 1);
+  assert.equal(front.depthWrite, true);
+  assert.equal(disc.parent, tray);
+  leaf.geometry.dispose(); accent.geometry.dispose(); discSurface.geometry.dispose();
+  front.dispose(); back.dispose(); accent.material.dispose(); discSurface.material.dispose();
+});
+
+test('zero-opacity capture and repeated player cycles never resurrect a hidden package', () => {
+  const root = new Group();
+  const material = new MeshBasicMaterial();
+  const shell = new Mesh(new BoxGeometry(), material);
+  shell.userData.packageSurface = true;
+  root.add(shell);
+  const fade = new PackageFade();
+  fade.capture(root);
+  for (let cycle = 0; cycle < 4; cycle++) {
+    fade.update(0);
+    fade.capture(root);
+    fade.update(0);
+    assert.equal(root.visible, false);
+    assert.equal(material.opacity, 0);
+    fade.update(1);
+    assert.equal(root.visible, true);
+    assert.equal(material.opacity, 1);
+  }
+  shell.geometry.dispose(); material.dispose();
 });
