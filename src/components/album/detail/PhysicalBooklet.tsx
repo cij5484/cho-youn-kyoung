@@ -110,16 +110,16 @@ export function PhysicalBooklet({ album, cover, width, height, page, mobile, ena
     }
     if (turn) elapsed.current = reduced ? 0.72 : Math.min(0.72, elapsed.current + Math.min(delta, 1));
     const progress = turn ? elapsed.current / 0.72 : 1;
-    const eased = progress * progress * (3 - 2 * progress);
     leaves.forEach((_, index) => {
       const mesh = meshes.current[index];
       if (!mesh) return;
       const from = index < (turn?.from ?? source) ? 1 : 0;
       const to = index < (turn?.to ?? source) ? 1 : 0;
-      const openness = (from + (to - from) * eased) * openProgress.current;
+      const openness = (from + (to - from) * progress) * openProgress.current;
       poseBookletLeaf(mesh, index, leaves.length, openness);
       if (lastOpenness.current[index] !== openness) {
-        bendBookletLeaf(geometries[index], width, openness);
+        const direction = openness < (lastOpenness.current[index] ?? openness) ? -1 : 1;
+        bendBookletLeaf(geometries[index], width, openness, direction);
         lastOpenness.current[index] = openness;
       }
     });

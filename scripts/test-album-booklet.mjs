@@ -38,18 +38,53 @@ test('mobile P2 → P3 pans within a spread; P3 → P4 turns the same physical l
 test('front and reverse share the same deformed surface, with opposite winding and mirrored UVs', () => {
   const geometry = createBookletLeafGeometry(2, 3);
   const vertices = geometry.attributes.position.count / 2;
-  for (const openness of [0, 0.25, 0.5, 0.75, 1]) {
-    bendBookletLeaf(geometry, 2, openness);
-    for (let i = 0; i < vertices; i++) {
-      const front = new Vector3().fromBufferAttribute(geometry.attributes.position, i);
-      const back = new Vector3().fromBufferAttribute(geometry.attributes.position, i + vertices);
-      assert.ok(front.distanceTo(back) < 1e-9);
-      assert.ok(Math.abs(geometry.attributes.uv.getX(i) + geometry.attributes.uv.getX(i + vertices) - 1) < 1e-6);
+  for (const direction of [1, -1]) {
+    for (const openness of [0, 0.25, 0.5, 0.75, 1, 0]) {
+      bendBookletLeaf(geometry, 2, openness, direction);
+      for (let i = 0; i < vertices; i++) {
+        const front = new Vector3().fromBufferAttribute(geometry.attributes.position, i);
+        const back = new Vector3().fromBufferAttribute(geometry.attributes.position, i + vertices);
+        assert.ok(front.distanceTo(back) < 1e-9);
+        assert.ok(Math.abs(geometry.attributes.uv.getX(i) + geometry.attributes.uv.getX(i + vertices) - 1) < 1e-6);
+      }
     }
   }
   const indices = geometry.index.array;
   const reverseStart = geometry.groups[1].start;
   assert.deepEqual([...indices.slice(reverseStart, reverseStart + 3)], [...indices.slice(0, 3)].reverse().map((i) => i + vertices));
+  geometry.dispose();
+});
+
+test('paired leaves retain the deployed soft curve in both turn directions and return flat', () => {
+  const geometry = createBookletLeafGeometry(2, 3);
+  const mesh = new Mesh(geometry);
+  // Samples from 239d180 TurningPage at 180/360/540ms of its 720ms turn.
+  const samples = [
+    [0.25, [0.8580918312, 0.1614913940], [1.8549128771, 0.1795564890]],
+    [0.5, [-0.4183932841, 0.2969640791], [0, 0.5939282179]],
+    [0.75, [-0.9968211651, 0.0180651154], [-1.8549129963, 0.1795564890]],
+  ];
+  for (const direction of [1, -1]) {
+    for (const [progress, middle, tip] of samples) {
+      const openness = direction > 0 ? progress : 1 - progress;
+      poseBookletLeaf(mesh, 0, 1, openness);
+      bendBookletLeaf(geometry, 2, openness, direction);
+      for (const [column, expected] of [[24, middle], [48, tip]]) {
+        const actual = new Vector3().fromBufferAttribute(geometry.attributes.position, column).applyEuler(mesh.rotation);
+        assert.ok(Math.abs(actual.x - direction * expected[0]) < 1e-6);
+        assert.ok(Math.abs(actual.z - expected[1]) < 1e-6);
+      }
+    }
+    for (const openness of [0, 1, 0]) {
+      poseBookletLeaf(mesh, 0, 1, openness);
+      bendBookletLeaf(geometry, 2, openness, direction);
+      for (let column = 0; column <= 48; column++) {
+        const actual = new Vector3().fromBufferAttribute(geometry.attributes.position, column).applyEuler(mesh.rotation);
+        assert.ok(Math.abs(actual.x - (1 - 2 * openness) * column / 24) < 1e-6);
+        assert.ok(Math.abs(actual.z) < 1e-6, 'closed/open endpoints have no residual curl');
+      }
+    }
+  }
   geometry.dispose();
 });
 

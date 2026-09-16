@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 
+const PAGE_TURN_SEGMENTS = 48;
+
 // Image indices are zero-based; each leaf owns P(2n+1) / P(2n+2).
 export function bookletLeaves(pageCount: number) {
   return Array.from({ length: Math.ceil(pageCount / 2) }, (_, index) => ({
@@ -32,7 +34,7 @@ export function bookletTextureWindow(pageCount: number, ...turnedCounts: number[
 }
 
 export function createBookletLeafGeometry(width: number, height: number) {
-  const plane = new THREE.PlaneGeometry(width, height, 24, 2);
+  const plane = new THREE.PlaneGeometry(width, height, PAGE_TURN_SEGMENTS, 2);
   const count = plane.attributes.position.count;
   const positions = new Float32Array(count * 2 * 3);
   const normals = new Float32Array(count * 2 * 3);
@@ -57,15 +59,39 @@ export function createBookletLeafGeometry(width: number, height: number) {
   geometry.setIndex([...front, ...back]);
   geometry.addGroup(0, front.length, 0);
   geometry.addGroup(front.length, back.length, 1);
+  geometry.userData.arc = {
+    x: new Float32Array(PAGE_TURN_SEGMENTS + 1),
+    z: new Float32Array(PAGE_TURN_SEGMENTS + 1),
+  };
   plane.dispose();
   return geometry;
 }
 
-export function bendBookletLeaf(geometry: THREE.BufferGeometry, width: number, openness: number) {
+export function bendBookletLeaf(geometry: THREE.BufferGeometry, width: number, openness: number, direction = 1) {
   const positions = geometry.attributes.position as THREE.BufferAttribute;
-  const bend = Math.sin(Math.PI * openness) * width * 0.035;
+  const arc = geometry.userData.arc as { x: Float32Array; z: Float32Array };
+  const progress = direction > 0 ? openness : 1 - openness;
+  const segmentLength = width / PAGE_TURN_SEGMENTS;
+  // Preserve 239d180's soft turn: the gutter leads the outer edge by 28%.
+  // Both printed faces use this one curve; closing mirrors the same motion.
+  for (let column = 1; column <= PAGE_TURN_SEGMENTS; column++) {
+    const previous = THREE.MathUtils.clamp((progress - (column - 1) / PAGE_TURN_SEGMENTS * 0.28) / 0.72, 0, 1);
+    const current = THREE.MathUtils.clamp((progress - column / PAGE_TURN_SEGMENTS * 0.28) / 0.72, 0, 1);
+    const previousEase = previous * previous * (3 - 2 * previous);
+    const currentEase = current * current * (3 - 2 * current);
+    const angle = Math.PI * (previousEase + currentEase) / 2;
+    arc.x[column] = arc.x[column - 1] + Math.cos(angle) * segmentLength;
+    arc.z[column] = arc.z[column - 1] + Math.sin(angle) * segmentLength * 0.34;
+  }
+  const angle = -Math.PI * openness;
+  const cos = Math.cos(angle), sin = Math.sin(angle);
   for (let index = 0; index < positions.count; index++) {
-    positions.setZ(index, Math.sin(Math.PI * positions.getX(index) / width) * bend);
+    const column = index % (PAGE_TURN_SEGMENTS + 1);
+    const x = direction * arc.x[column], z = arc.z[column];
+    // Undo the leaf's rigid rotation so its world surface follows the curve,
+    // while poseBookletLeaf keeps the physical stack's thickness/order.
+    positions.setX(index, cos * x - sin * z);
+    positions.setZ(index, sin * x + cos * z);
   }
   positions.needsUpdate = true;
 }
