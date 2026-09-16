@@ -46,12 +46,13 @@ img {
 .brand {
   font-family: Georgia, serif;
   font-size: clamp(1rem, 1.35vw, 1.35rem);
+  white-space: nowrap;
   color: var(--text);
 }
 .desktop-nav {
   display: flex;
   align-items: center;
-  gap: 38px;
+  gap: clamp(16px, 2.5vw, 38px);
   font-size: 0.78rem;
   font-weight: 700;
   line-height: 1.5;
